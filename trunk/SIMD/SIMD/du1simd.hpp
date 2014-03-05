@@ -1,96 +1,149 @@
 // DU1simd.hpp
 // Ondrej Kov·Ë NPRG051 2013/2014
 #include <iterator>
-#include <vector>
+#include <memory>
 #include <algorithm>
 
-// Iterator wrapper which allows to jump several positions in one step
-template<typename Iterator, std::size_t Step>
-class step_iterator
+template<typename Item, typename ItemIter>
+class item_iterator
 {
 public:
 	// types
-	typedef typename Iterator::iterator_category iterator_category;
-	typedef typename Iterator::difference_type difference_type;
-	// TODO: this is wrong - value is Step sized "array"
-	typedef typename Iterator::value_type value_type;
+	typedef typename std::random_access_iterator_tag iterator_category;
+	typedef typename std::ptrdiff_t difference_type;
+	typedef typename Item value_type;
 	typedef typename value_type* pointer;
 	typedef typename value_type& reference;
-private:
+protected:
 	// data
-	Iterator iterator;
+	pointer data;
+	std::size_t index;
+
+	void check_comp(const ItemIter& it)
+	{
+		if (data == nullptr || data != it.data)
+			_DEBUG_ERROR("incompatible iterators");
+	}
 public:
 	// operators
-	step_iterator &operator=(const step_iterator &it)
+	ItemIter &operator=(const ItemIter &it)
 	{
-		iterator = it.iterator;
+		data = it.data;
+		index = it.index;
 		return *this;
 	}
-	reference operator*() { return *iterator;  }
-	reference operator[](const difference_type n) { return iterator[n * Step]; }
-	reference operator->() { return *iterator; }
+	reference operator*() { return data[index]; }
+	reference operator[](const difference_type n) { return iterator[index + n]; }
+	reference operator->() { return data[index]; }
 
-	step_iterator operator+(const difference_type n) { return step_iterator(iterator + n); }
-	step_iterator operator-(const difference_type n) { return step_iterator(iterator - n); }
-	step_iterator operator+(const step_iterator &it) { return step_iterator(iterator + it.iterator); }
-	step_iterator operator-(const step_iterator &it) { return step_iterator(iterator - it.iterator); }
-
-	step_iterator &operator++() { std::advance(iterator, Step); return *this; }
-	step_iterator &operator--() { std::advance(iterator, -Step); return *this; }
-	step_iterator &operator+=(const difference_type n) { iterator += (n * Step); return *this; }
-	step_iterator &operator-=(const difference_type n) { iterator -= (n * Step); return *this; }
-	step_iterator operator++(int) 
-	{ 
-		step_iterator it(*this);
-		std::advance(iterator, Step);
-		return it;
-	}
-	step_iterator operator--(int) 
+	ItemIter operator+(const difference_type n) { return ItemIter(data, index + n); }
+	ItemIter operator-(const difference_type n) { return ItemIter(data, index - n); }
+	ItemIter operator+(const ItemIter &it)
 	{
-		step_iterator it(*this);
-		std::advance(iterator, -Step);
+		check_comp(it);
+		return ItemIter(data, index + it.index);
+	}
+	ItemIter operator-(const ItemIter &it)
+	{
+		check_comp(it);
+		return ItemIter(data, index - it.index);
+	}
+
+	ItemIter &operator++() { ++index; return *static_cast<ItemIter*>(this); }
+	ItemIter &operator--() { --index; return *static_cast<ItemIter*>(this); }
+	ItemIter &operator+=(const difference_type n) { index += n; return *static_cast<ItemIter*>(this); }
+	ItemIter &operator-=(const difference_type n) { index -= n; return *static_cast<ItemIter*>(this); }
+	ItemIter operator++(int)
+	{
+		ItemIter it(*static_cast<ItemIter*>(this));
+		++index;
 		return it;
 	}
-	friend step_iterator operator+(const difference_type n, const step_iterator &it) { return step_iterator(n * Step + it.iterator); }
+	ItemIter operator--(int)
+	{
+		ItemIter it(*static_cast<ItemIter*>(this));
+		--index;
+		return it;
+	}
+	friend ItemIter operator+(const difference_type n, const ItemIter &it)
+	{
+		return ItemIter(it.data, n + it.index);
+	}
 
-	bool operator==(const step_iterator& it) { return iterator == it.iterator; }
-	bool operator!=(const step_iterator& it) { return iterator != it.iterator; }
-	bool operator>=(const step_iterator& it) { return iterator >= it.iterator; }
-	bool operator<=(const step_iterator& it) { return iterator <= it.iterator; }
-	bool operator>(const step_iterator& it) { return iterator > it.iterator; }
-	bool operator<(const step_iterator& it) { return iterator < it.iterator; }
+	bool operator==(const ItemIter& it)
+	{
+		check_comp(it);
+		return index == it.index;
+	}
+	bool operator!=(const ItemIter& it)
+	{
+		check_comp(it);
+		return index != it.index;
+	}
+	bool operator>=(const ItemIter& it)
+	{
+		check_comp(it);
+		return index >= it.index;
+	}
+	bool operator<=(const ItemIter& it)
+	{
+		check_comp(it);
+		return index <= it.index;
+	}
+	bool operator>(const ItemIter& it)
+	{
+		check_comp(it);
+		return index > it.index;
+	}
+	bool operator<(const ItemIter& it)
+	{
+		check_comp(it);
+		return index < it.index;
+	}
 public:
-	step_iterator() : iterator() {}
-	step_iterator(const step_iterator &it) : iterator(it.iterator) {}
-	explicit step_iterator(Iterator it) : iterator(it) {}
-	~step_iterator() {}
+	item_iterator() : data(nullptr), index(0) {}
+	item_iterator(const ItemIter &it) : data(it.data), index(it.index) {}
+	item_iterator(pointer data, std::size_t index) : data(data), index(index) {}
+	virtual ~item_iterator() {}
+};
+
+template<typename S>
+class simd_iterator :
+	public item_iterator<S, simd_iterator<S>>
+{
+public:
+	simd_iterator() : item_iterator() {}
+	simd_iterator(const simd_iterator &it) : item_iterator(it) {}
+	simd_iterator(pointer data, std::size_t index) : item_iterator(data, index) {}
+	virtual ~simd_iterator() {}
 };
 
 template< typename T, typename S>
-class simd_vector_iterator {
+class simd_vector_iterator :
+	public item_iterator<T, simd_vector_iterator<T, S>>
+{
 public:
-	typedef std::vector<T> data_type;
-
-	typedef std::random_access_iterator_tag iterator_category;
-	typedef std::ptrdiff_t difference_type;
-	typedef T value_type;
-	typedef value_type* pointer;
-	typedef value_type& reference;
-
-	static const std::size_t K = sizeof(S) / sizeof(T);
-	typedef step_iterator<typename data_type::iterator, K> simd_iterator;
-private:
-	pointer current;
-
+	typedef simd_iterator<S> simd_iterator;
 
 public:
-	/*simd_iterator lower_block() { return simd_iterator(); }
-	simd_iterator upper_block();
-	simd_iterator lower_offset();
-	simd_iterator upper_offset();*/
+	// TODO: this is totally wrong
+	simd_iterator lower_block() 
+	{
+		return simd_iterator((simd_iterator::pointer)data, index - index % sizeof(S)); 
+	}
+	simd_iterator upper_block()
+	{
+		return simd_iterator((simd_iterator::pointer)data, index + sizeof(S) - index % sizeof(S));
+	}
+	std::size_t lower_offset() { return index % sizeof(S); }
+	std::size_t upper_offset() { return index % sizeof(S)-sizeof(S); }
 	/*...*/
-	
-	simd_vector_iterator() { }
+
+public:
+	simd_vector_iterator() : item_iterator() {}
+	simd_vector_iterator(const simd_vector_iterator &it) : item_iterator(it) {}
+	simd_vector_iterator(pointer data, std::size_t index) : item_iterator(data, index) {}
+	virtual ~simd_vector_iterator() {}
 };
 
 template< typename T, typename S>
@@ -103,32 +156,61 @@ simd_vector_iterator< T, S> operator+( simd_vector_iterator< T, S> a, std::ptrdi
 
 template< typename T, typename S>
 class simd_vector {
-private:
-	typedef std::vector<T> data_type;
-	data_type data_;
-
 public:
+	// types
 	typedef simd_vector_iterator< T, S> iterator;
-
-	typedef typename simd_vector_iterator< T, S>::simd_iterator simd_iterator;
+	typedef typename iterator::simd_iterator simd_iterator;
+private:
+	// data
+	std::unique_ptr<T[]> data;	// let the array to free automatically
+	std::size_t data_size;
 
 public:
-	explicit simd_vector( std::size_t s) :
-		data_(s)
-	{/*...*/}
+	
 
-	iterator begin()
+	iterator begin() { return iterator(data.get(), 0); }
+	iterator end() { return iterator(data.get(), data_size); }
+	std::size_t size() { return data_size; }
+
+	simd_vector &operator=(const simd_vector &vec) = delete;
+	simd_vector &operator=(simd_vector &&vec)
 	{
-		//return std::begin(data_);
-		/*...*/
-	}
+		if (this != &vec)
+		{
+			data = std::move(vec.data);
+			data_size = std::move(vec.data_size);
 
-	iterator end()
-	{
-		/*...*/
+			vec.data = nullptr;
+			vec.data_size = 0;
+		}
+		return *this;
 	}
-
-	std::size_t size() { return data_.size(); }
 
 	/*...*/
+public:
+	explicit simd_vector(std::size_t s) :
+		data(new T[s]), data_size(s) { }
+		//data(new T[s + sizeof(S) - s % sizeof(S)]), size(s) { }
+	simd_vector(const simd_vector &vec) = delete;
+	simd_vector(simd_vector &&vec) :
+		data(std::move(vec.data)), data_size(std::move(vec.data_size))
+	{
+		vec.data = nullptr;
+		vec.data_size = 0;
+	}
+		
+	~simd_vector() {}
 };
+
+template <typename T>
+T* aligned_alloc(std::size_t a = __alignof(T))
+{
+	if (std::align(a, sizeof(T), p, sz))
+	{
+		T* result = reinterpret_cast<T*>(p);
+		p = (char*)p + sizeof(T);
+		sz -= sizeof(T);
+		return result;
+	}
+	return nullptr;
+}

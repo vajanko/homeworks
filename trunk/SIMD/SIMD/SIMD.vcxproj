@@ -80,6 +80,7 @@
   <ItemGroup>
     <ClCompile Include="du1simd.cpp" />
     <ClCompile Include="du1test.cpp" />
+    <ClCompile Include="test.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="du1simd.hpp" />

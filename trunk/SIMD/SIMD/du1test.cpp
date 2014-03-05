@@ -1,5 +1,7 @@
 #include "du1simd.hpp"
+//#include "test.hpp"
 #include<vector>
+#include<array>
 #include<iostream>
 
 //#include <memory>
@@ -238,31 +240,44 @@ typedef std::vector<int>::iterator my_iter;
 
 int main(int argc, char* *argv)
 {
-	int *p = new int[12];
-	int f[10];
-	auto x = std::begin(f);
+	char ar[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+	simd_vector_iterator<char, int> iter1(ar, 0);
+	auto low = iter1.lower_block();
+	iter1++;
+	auto iter3 = iter1.lower_block();
+	iter1++;
+	auto iter4 = iter1.lower_block();
 
-	std::vector<int> v = { 1, 0, 0, 4, 5, 6, 7, 8, 9, 10 };
-	step_iterator<my_iter, 4> it(v.begin());
-	cout << *it << endl;
-	cout << it[1] << endl;
-	std::vector<int>::difference_type g = 1;
-	//12 - it;
-	auto it2 = it + 1;
-	auto it3 = it2 - 1;
-	auto it4 = 1 + it;
+
+	simd_iterator<short> iter((short *)ar, 0);
+	simd_iterator<short> end((short *)ar, 5);
+	int size = sizeof((short *)ar);
+
+	while (iter < end)
+	{
+		cout << *iter << endl;
+		++iter;
+	}
+	--iter;
+	iter++;
+	iter--;
+	iter += 1;
+	iter -= 1;
+
+	simd_vector<char, int> xvec(24);
+	simd_vector<char, int> vec = std::move(xvec);
+	simd_vector<char, int> vec2 = simd_vector<char, int>(std::move(xvec));
+	vec = std::move(vec2);
 	
-	auto val = *it;
+	std::vector<int> v;
 
-	simd_vector_iterator<float, float>::simd_iterator sit;
-	simd_vector_iterator<float, __m128>::K;
-	int *pi = v.data();
-	float *pf = (float*)pi;
-	cout << *pf << endl;
-	//float f = (*pf);
-	int *p1 = v.begin()._Ptr;
-
+	size_t len = 10;
+	int *p = new int[len];
+	auto result = std::align(3, sizeof(short) * 5, (void *&)p, len);
+	
+	
 	//du1example::test();
+	system("pause");
 	return 0;
 }
 
