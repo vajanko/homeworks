@@ -124,20 +124,21 @@ class simd_vector_iterator :
 {
 public:
 	typedef simd_iterator<S> simd_iterator;
+private:
+	static const std::size_t K = sizeof(S) / sizeof(T);
 
 public:
 	// TODO: this is totally wrong
 	simd_iterator lower_block() 
 	{
-		return simd_iterator((simd_iterator::pointer)data, index - index % sizeof(S)); 
+		return simd_iterator((simd_iterator::pointer)data, index / K);
 	}
 	simd_iterator upper_block()
-	{
-		return simd_iterator((simd_iterator::pointer)data, index + sizeof(S) - index % sizeof(S));
+	{   // +1 only if this is not the end() of simd_vector
+		return simd_iterator((simd_iterator::pointer)data, index / K + 1);
 	}
-	std::size_t lower_offset() { return index % sizeof(S); }
-	std::size_t upper_offset() { return index % sizeof(S)-sizeof(S); }
-	/*...*/
+	difference_type lower_offset() { return index % K; }
+	difference_type upper_offset() { return index % K + 1 - K; }
 
 public:
 	simd_vector_iterator() : item_iterator() {}
@@ -188,8 +189,10 @@ public:
 
 	/*...*/
 public:
+	// TODO: the size of data array is not calculated correctly
 	explicit simd_vector(std::size_t s) :
-		data(new T[s]), data_size(s) { }
+		data(new T[s]), data_size(s) {}
+		//data((T *)new S[s / sizeof(T)]), data_size(s) {}
 		//data(new T[s + sizeof(S) - s % sizeof(S)]), size(s) { }
 	simd_vector(const simd_vector &vec) = delete;
 	simd_vector(simd_vector &&vec) :
@@ -201,16 +204,3 @@ public:
 		
 	~simd_vector() {}
 };
-
-template <typename T>
-T* aligned_alloc(std::size_t a = __alignof(T))
-{
-	if (std::align(a, sizeof(T), p, sz))
-	{
-		T* result = reinterpret_cast<T*>(p);
-		p = (char*)p + sizeof(T);
-		sz -= sizeof(T);
-		return result;
-	}
-	return nullptr;
-}
