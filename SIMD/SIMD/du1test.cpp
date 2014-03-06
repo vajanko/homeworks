@@ -306,7 +306,7 @@ namespace unittest
 		short param = 7;
 		std::generate(vec.begin(), vec.end(), [&acc, param](){ return acc += param; });
 
-		simd_vector<char, int> vec2{ 'a', 'b', 'c', 'd' };
+		//simd_vector<char, int> vec2{ 'a', 'b', 'c', 'd' };
 
 		test_vector(vec);
 	}
