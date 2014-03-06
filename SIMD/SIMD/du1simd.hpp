@@ -2,21 +2,19 @@
 // Ondrej Kov·Ë NPRG051 2013/2014
 #include <iterator>
 #include <memory>
-#include <algorithm>
 
 template<typename Item, typename ItemIter>
 class item_iterator
+	: public std::iterator<std::random_access_iterator_tag, Item>
 {
 public:
-	// types
-	typedef typename std::random_access_iterator_tag iterator_category;
-	typedef typename std::ptrdiff_t difference_type;
-	typedef typename Item value_type;
-	typedef typename value_type* pointer;
-	typedef typename value_type& reference;
+	typedef const pointer const_pointer;
+	typedef const reference const_reference;
+
 protected:
 	// data
 	pointer data;			// pointer to the beginning of allocated data
+	std::size_t data_size;	// size of the data array
 	std::size_t index;		// position of iterator item from the beginning
 
 	// check whether given iterator is compatible with the this one
@@ -30,12 +28,15 @@ public:
 	ItemIter &operator=(const ItemIter &it)
 	{
 		data = it.data;
+		data_size = it.data_size;
 		index = it.index;
 		return *this;
 	}
 	reference operator*() { return data[index]; }
-	reference operator[](const difference_type n) { return iterator[index + n]; }
-	reference operator->() { return data[index]; }
+	const_reference operator*() const { return data[index]; }
+	reference operator[](const difference_type n) { return data[index + n]; }
+	const_reference operator[](const difference_type n) const { return data[index + n]; }
+	pointer operator->() const { return data + index; }
 
 	ItemIter operator+(const difference_type n) { return ItemIter(data, index + n); }
 	ItemIter operator-(const difference_type n) { return ItemIter(data, index - n); }
@@ -68,7 +69,7 @@ public:
 	}
 	friend ItemIter operator+(const difference_type n, const ItemIter &it)
 	{
-		return ItemIter(it.data, n + it.index);
+		return ItemIter(it.data, it.data_size, n + it.index);
 	}
 
 	bool operator==(const ItemIter& it)
@@ -102,9 +103,10 @@ public:
 		return index < it.index;
 	}
 public:
-	item_iterator() : data(nullptr), index(0) {}
-	item_iterator(const ItemIter &it) : data(it.data), index(it.index) {}
-	item_iterator(pointer data, std::size_t index) : data(data), index(index) {}
+	item_iterator() : data(nullptr), data_size(), index() {}
+	item_iterator(const ItemIter &it) : data(it.data), data_size(it.data_size), index(it.index) {}
+	item_iterator(pointer data, std::size_t data_size, std::size_t index) :
+		data(data), data_size(data_size), index(index) {}
 	virtual ~item_iterator() {}
 };
 
@@ -115,7 +117,7 @@ class simd_iterator :
 public:
 	simd_iterator() : item_iterator() {}
 	simd_iterator(const simd_iterator &it) : item_iterator(it) {}
-	simd_iterator(pointer data, std::size_t index) : item_iterator(data, index) {}
+	simd_iterator(pointer data, std::size_t data_size, std::size_t index) : item_iterator(data, data_size, index) {}
 	virtual ~simd_iterator() {}
 };
 
@@ -129,14 +131,17 @@ private:
 	static const std::size_t K = sizeof(S) / sizeof(T);
 
 public:
-	// TODO: this is totally wrong
 	simd_iterator lower_block() 
 	{
-		return simd_iterator((simd_iterator::pointer)data, index / K);
+		return simd_iterator((simd_iterator::pointer)data, data_size / K, index / K);
 	}
 	simd_iterator upper_block()
 	{   // +1 only if this is not the end() of simd_vector
-		return simd_iterator((simd_iterator::pointer)data, index / K + 1);
+		std::size_t i = index / K;
+		if (index < data_size)
+			++i;
+
+		return simd_iterator((simd_iterator::pointer)data, data_size / K, i);
 	}
 	difference_type lower_offset() { return index % K; }
 	difference_type upper_offset() { return index % K + 1 - K; }
@@ -144,7 +149,7 @@ public:
 public:
 	simd_vector_iterator() : item_iterator() {}
 	simd_vector_iterator(const simd_vector_iterator &it) : item_iterator(it) {}
-	simd_vector_iterator(pointer data, std::size_t index) : item_iterator(data, index) {}
+	simd_vector_iterator(pointer data, std::size_t data_size, std::size_t index) : item_iterator(data, data_size, index) {}
 	virtual ~simd_vector_iterator() {}
 };
 
@@ -152,6 +157,11 @@ template< typename T, typename S>
 simd_vector_iterator< T, S> operator+( simd_vector_iterator< T, S> a, std::ptrdiff_t b)
 {
 	return a += b;
+}
+template< typename T, typename S>
+simd_vector_iterator< T, S> operator-(simd_vector_iterator< T, S> a, std::ptrdiff_t b)
+{
+	return a -= b;
 }
 
 /*...*/
@@ -168,10 +178,8 @@ private:
 	std::size_t data_size;
 
 public:
-	
-
-	iterator begin() { return iterator(data.get(), 0); }
-	iterator end() { return iterator(data.get(), data_size); }
+	iterator begin() { return iterator(data.get(), data_size, 0); }
+	iterator end() { return iterator(data.get(), data_size, data_size); }
 	std::size_t size() { return data_size; }
 
 	simd_vector &operator=(const simd_vector &vec) = delete;
@@ -202,6 +210,11 @@ public:
 		vec.data = nullptr;
 		vec.data_size = 0;
 	}
+	/*simd_vector(std::initializer_list<T> list) :
+		simd_vector(list.size())
+	{
+		std::copy(list.begin(), list.end(), data.get());
+	}*/
 		
 	~simd_vector() {}
 };

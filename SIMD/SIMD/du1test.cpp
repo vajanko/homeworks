@@ -1,8 +1,6 @@
 #include "du1simd.hpp"
 
 #include<vector>
-#include<array>
-//#include<iostream>
 
 #include <memory>
 #include <algorithm>
@@ -11,6 +9,8 @@
 #include <string>
 #include <iostream>
 #include <chrono>
+
+using namespace std;
 
 namespace du1simd {
 
@@ -235,8 +235,82 @@ namespace du1example {
 	}
 };
 
-using namespace std;
-typedef std::vector<int>::iterator my_iter;
+namespace unittest
+{
+	template<typename T, typename S>
+	void test_simd_vector_iterator(simd_vector<T, S> &v, simd_vector_iterator<T, S> &it)
+	{
+		it++;
+		++it;
+		--it;
+		it--;
+		it += v.size() - 1;
+		it -= v.size() - 1;
+		it += v.size();
+		it -= v.size();
+
+		it = it;
+		auto x = it;
+		it = std::move(it);
+		auto y(std::move(it));
+		it = std::move(y);
+		T z = *it;
+		const T r = *it;
+		T u = it[0];
+		T p = it[1];
+
+		it = it + 1;
+		it = it - 1;
+
+		it == it;
+		it != it;
+		it >= it;
+		it <= it;
+		it > it;
+		it < it;
+
+		simd_vector_iterator<std::pair<int, int>, S> it3;
+		it3->first;
+	}
+
+	template<typename T, typename S>
+	void test_vector(simd_vector<T, S> &vector)
+	{
+		simd_vector<T, S> v(std::move(vector));
+
+		for (auto bb = v.begin().lower_block(); bb < v.end().upper_block(); ++bb)
+			cout << *bb << endl;
+
+		simd_vector<T, S>::iterator it = v.begin();
+		test_simd_vector_iterator(v, it);
+
+		simd_vector<T, S> vec2(3);
+		simd_vector<T, S>::iterator it2;
+
+		//it == vec2.begin();
+		//it2 == it2;
+
+		typedef typename simd_vector<T, S>::iterator vec_iter;
+		vec_iter::value_type val = vec_iter::value_type();
+		vec_iter::pointer p = nullptr;
+		vec_iter::const_pointer cp = nullptr;
+		vec_iter::reference ref = val;
+
+		simd_vector<T, S>::iterator it1_;
+		simd_vector<T, S>::simd_iterator it2_;
+	}
+	void test_complete()
+	{
+		simd_vector<short, int> vec(59);
+		short acc = 1;
+		short param = 7;
+		std::generate(vec.begin(), vec.end(), [&acc, param](){ return acc += param; });
+
+		simd_vector<char, int> vec2{ 'a', 'b', 'c', 'd' };
+
+		test_vector(vec);
+	}
+};
 
 int main(int argc, char* *argv)
 {
@@ -290,7 +364,8 @@ int main(int argc, char* *argv)
 		cout << *bb << endl;
 	}
 	
-	du1example::test();
+	//du1example::test();
+	unittest::test_complete();
 
 	system("pause");
 	return 0;
