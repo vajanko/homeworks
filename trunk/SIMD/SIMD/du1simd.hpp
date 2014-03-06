@@ -16,11 +16,12 @@ public:
 	typedef typename value_type& reference;
 protected:
 	// data
-	pointer data;
-	std::size_t index;
+	pointer data;			// pointer to the beginning of allocated data
+	std::size_t index;		// position of iterator item from the beginning
 
+	// check whether given iterator is compatible with the this one
 	void check_comp(const ItemIter& it)
-	{
+	{   // iterator is not empty and points to the same data
 		if (data == nullptr || data != it.data)
 			_DEBUG_ERROR("incompatible iterators");
 	}
