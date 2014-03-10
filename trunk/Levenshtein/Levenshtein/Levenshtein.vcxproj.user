@@ -4,7 +4,7 @@
     <ShowAllFiles>false</ShowAllFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>"c:\Users\Ondrej\Documents\Visual Studio 2013\Projects\Homeworks\Levenshtein\Debug\32890.3.data" "c:\Users\Ondrej\Documents\Visual Studio 2013\Projects\Homeworks\Levenshtein\Debug\1024.5.data"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"c:\Users\Ondrej\Documents\Visual Studio 2013\Projects\Homeworks\Levenshtein\Debug\32768.2.data" "c:\Users\Ondrej\Documents\Visual Studio 2013\Projects\Homeworks\Levenshtein\Debug\32768.1.data"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
