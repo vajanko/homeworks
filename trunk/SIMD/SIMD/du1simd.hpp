@@ -2,6 +2,7 @@
 // Ondrej Kov·Ë NPRG051 2013/2014
 #include <iterator>
 #include <memory>
+#include <assert.h>
 
 template<typename Item, typename ItemIter>
 class item_iterator
@@ -20,8 +21,9 @@ protected:
 	// check whether given iterator is compatible with the this one
 	void check_comp(const ItemIter& it)
 	{   // iterator is not empty and points to the same data
-		if (data == nullptr || data != it.data)
-			_DEBUG_ERROR("incompatible iterators");
+		assert(data != nullptr && data == it.data);
+		//if (data == nullptr || data != it.data)
+			//_DEBUG_ERROR("incompatible iterators");
 	}
 public:
 	// operators
@@ -38,8 +40,8 @@ public:
 	const_reference operator[](const difference_type n) const { return data[index + n]; }
 	pointer operator->() const { return data + index; }
 
-	ItemIter operator+(const difference_type n) { return ItemIter(data, index + n); }
-	ItemIter operator-(const difference_type n) { return ItemIter(data, index - n); }
+	ItemIter operator+(const difference_type n) { return ItemIter(data, data_size, index + n); }
+	ItemIter operator-(const difference_type n) { return ItemIter(data, data_size, index - n); }
 	ItemIter operator+(const ItemIter &it)
 	{
 		check_comp(it);
@@ -71,6 +73,10 @@ public:
 	{
 		return ItemIter(it.data, it.data_size, n + it.index);
 	}
+	/*friend ItemIter operator-(const difference_type n, const IterIter &it)
+	{
+		return ItemIter(it.data, it.data_size, n - it.index);
+	}*/
 
 	bool operator==(const ItemIter& it)
 	{
@@ -121,6 +127,12 @@ public:
 	virtual ~simd_iterator() {}
 };
 
+//template< typename T, typename S>
+//simd_iterator<S> operator-(simd_vector_iterator< T, S> a, std::ptrdiff_t b)
+//{
+//	return a -= b;
+//}
+
 template< typename T, typename S>
 class simd_vector_iterator :
 	public item_iterator<T, simd_vector_iterator<T, S>>
@@ -140,11 +152,16 @@ public:
 		std::size_t i = index / K;
 		if (index < data_size)
 			++i;
+		//i -= i % K;
 
 		return simd_iterator((simd_iterator::pointer)data, data_size / K, i);
 	}
 	difference_type lower_offset() { return index % K; }
-	difference_type upper_offset() { return index % K + 1 - K; }
+	difference_type upper_offset() 
+	{
+		// return 0 if this is the end
+		return index < data_size ? index % K + 1 - K : 0;
+	}
 
 public:
 	simd_vector_iterator() : item_iterator() {}
@@ -210,11 +227,6 @@ public:
 		vec.data = nullptr;
 		vec.data_size = 0;
 	}
-	/*simd_vector(std::initializer_list<T> list) :
-		simd_vector(list.size())
-	{
-		std::copy(list.begin(), list.end(), data.get());
-	}*/
 		
 	~simd_vector() {}
 };

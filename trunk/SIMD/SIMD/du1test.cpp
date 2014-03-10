@@ -274,10 +274,8 @@ namespace unittest
 	}
 
 	template<typename T, typename S>
-	void test_vector(simd_vector<T, S> &vector)
+	void test_vector(simd_vector<T, S> &v)
 	{
-		simd_vector<T, S> v(std::move(vector));
-
 		for (auto bb = v.begin().lower_block(); bb < v.end().upper_block(); ++bb)
 			cout << *bb << endl;
 
@@ -299,16 +297,275 @@ namespace unittest
 		simd_vector<T, S>::iterator it1_;
 		simd_vector<T, S>::simd_iterator it2_;
 	}
+
+	template<typename T, typename S>
+	void test_invariants()
+	{
+		typedef simd_vector<T, S> simd_vector;
+		typedef typename simd_vector::iterator iterator;
+		typedef typename simd_vector::simd_iterator simd_iterator;
+		const int K = sizeof(S) / sizeof(T);
+
+		simd_vector vec(K * 8);
+		iterator b = vec.begin();
+		iterator e = vec.end();
+		assert(b < e);
+		assert((b + vec.size()) == e);
+
+		assert(b.lower_offset() == 0);
+		assert(b.upper_offset() == -K + 1);
+
+		for (iterator i = b; i < e; ++i)
+		{
+			assert(0 <= i.lower_offset() && i.lower_offset() < K);
+			assert(-K < i.upper_offset() && i.upper_offset() <= 0);
+		}
+
+		assert(&*b == (T*)&*b.lower_block() + b.lower_offset());
+		assert(&*e == (T*)&*e.upper_block() + e.upper_offset());
+
+		for (iterator i = b; i < e; ++i)
+		{
+			assert(&*i == (T*)&*i.lower_block() + i.lower_offset());
+			//assert(&*i == (T*)&*i.upper_block() + i.upper_offset());
+
+			auto of = i.upper_offset();
+			auto a = &*i.upper_block() - of;
+			auto b = (&*i.upper_block()) - of;
+			auto c = &*(i.upper_block() - of);
+			//assert(a == b == c);
+
+			auto u = (T*)&*i.upper_block() - of;
+			auto v = (T*)(&*i.upper_block()) - of;
+			auto w = (T*)(&*i.upper_block() - of);
+
+			assert((T *)c == w);
+
+			/*simd_iterator it = i.upper_block() + i.upper_offset();
+			S *ptr_s = &*i.upper_block() + i.upper_offset();
+			T *ptr_t = (T*)&*i.upper_block() + i.upper_offset();
+			T *ptr_t2 = ((T*)&*i.upper_block()) + i.upper_offset();*/
+			auto x = (T*)(&*i.upper_block() + i.upper_offset());
+			T *y = &*i;
+			
+			int jjdfasdf = 0;
+			//assert(*i == *((T*)&*i.upper_block() + i.upper_offset()));
+		}
+	}
+
+	template<typename T, typename S>
+	void test_offsets()
+	{
+		typedef simd_vector<T, S> simd_vector;
+		typedef typename simd_vector::iterator iterator;
+		typedef typename simd_vector::simd_iterator simd_iterator;
+		const int K = sizeof(S) / sizeof(T);
+
+		{
+			simd_vector vec(K * 2);
+
+			iterator b = vec.begin();
+			assert(b.lower_offset() == 0);
+			assert(b.upper_offset() == -K + 1);
+
+			iterator e = vec.end();
+			assert(e.lower_offset() == 0);
+			// this is a special case, when we are at the end
+			assert(e.upper_offset() == 0);
+		}
+
+		{
+			simd_vector vec(K + 1);
+
+			iterator b = vec.begin();
+			assert(b.lower_offset() == 0);
+			assert(b.upper_offset() == -K + 1);
+
+			iterator e = vec.end();
+			assert(e.lower_offset() == (vec.size() % K));
+			// this is a special case, when we are at the end
+			assert(e.upper_offset() == 0);
+		}
+
+		for (int i = 0; i < K; ++i)
+		{
+			simd_vector vec(K + i);
+
+			iterator b = vec.begin();
+			assert(b.lower_offset() == 0);
+			assert(b.upper_offset() == -K + 1);
+
+			iterator e = vec.end();
+			assert(e.lower_offset() == (vec.size() % K));
+			// this is a special case, when we are at the end
+			assert(e.upper_offset() == 0);
+		}
+
+		{
+			simd_vector vec(K * 3);
+
+			iterator b = vec.begin();
+			iterator e = vec.end();
+			//cout << "K: " << K << endl;
+			int index = 0;
+			for (iterator i = b; i < e; ++i)
+			{
+				//cout << "lower: " << i.lower_offset() << " upper: " << i.upper_offset() << " index % K: " << index % K << endl;
+				assert(i.lower_offset() == index % K);
+				assert(i.upper_offset() == -K + 1 + index % K);
+
+				++index;
+			}
+		}
+	}
+
+	template<typename T, typename S>
+	void test_blocks()
+	{
+		typedef simd_vector<T, S> simd_vector;
+		typedef typename simd_vector::iterator iterator;
+		typedef typename simd_vector::simd_iterator simd_iterator;
+		const int K = sizeof(S) / sizeof(T);
+
+		{
+			simd_vector vec(K * 2);
+
+			iterator b = vec.begin();
+			simd_iterator bb = b.lower_block();
+			simd_iterator eb = b.upper_block();
+			assert(bb < eb);
+			assert(bb + 1 == eb);
+			assert(bb == eb - 1);
+
+			iterator e = vec.end();
+			simd_iterator be = e.lower_block();
+			simd_iterator ee = e.upper_block();
+			assert(be == ee);	// iterator is not moveing behind the end
+		}
+
+		{
+			simd_vector vec(K + 1);
+
+			iterator b = vec.begin();
+			simd_iterator bb = b.lower_block();
+			simd_iterator eb = b.upper_block();
+			assert(bb < eb);
+			assert(bb + 1 == eb);
+			assert(bb == eb - 1);
+
+			iterator e = vec.end();
+			simd_iterator be = e.lower_block();
+			simd_iterator ee = e.upper_block();
+			assert(be == ee);	// iterator is not moveing behind the end
+		}
+
+		for (int i = 0; i < K; ++i)
+		{
+			simd_vector vec(K + i);
+
+			iterator b = vec.begin();
+			simd_iterator bb = b.lower_block();
+			simd_iterator eb = b.upper_block();
+			assert(bb < eb);
+			assert(bb + 1 == eb);
+			assert(bb == eb - 1);
+
+			iterator e = vec.end();
+			simd_iterator be = e.lower_block();
+			simd_iterator ee = e.upper_block();
+			assert(be == ee);	// iterator is not moveing behind the end
+		}
+
+		{
+			simd_vector vec(1);
+
+			iterator b = vec.begin();
+			simd_iterator bb = b.lower_block();
+			simd_iterator eb = b.upper_block();
+			assert(bb < eb);
+			assert(bb + 1 == eb);
+			assert(bb == eb - 1);
+
+			iterator e = vec.end();
+			simd_iterator be = e.lower_block();
+			simd_iterator ee = e.upper_block();
+			assert(be == ee);	// iterator is not moveing behind the end
+		}
+	}
+
+	template<typename T, typename S>
+	void test_iterator()
+	{
+		typedef simd_vector<T, S> simd_vector;
+		typedef typename simd_vector::iterator iterator;
+		typedef typename simd_vector::simd_iterator simd_iterator;
+		const int K = sizeof(S) / sizeof(T);
+
+		{
+			simd_vector vec(K * 4);
+
+			iterator b = vec.begin();
+			iterator e = vec.end();
+			for (auto it = b + 1; it < e - 1; ++it)
+			{
+				simd_iterator bi = it.lower_block();
+				simd_iterator ei = it.upper_block();
+				assert(bi < ei);
+				assert(bi + 1 == ei);
+				assert(bi == ei - 1);
+
+				auto val = *it;
+				auto b_val = *bi;
+			}
+		}
+
+	}
+
+	void test_simd_vector_iterator_methods()
+	{
+		test_offsets<short, int>();
+		test_offsets<short, long>();
+		test_offsets<short, float>();
+		test_offsets<short, double>();
+		test_offsets<char, short>();
+		test_offsets<char, int>();
+		test_offsets<char, long>();
+		test_offsets<char, float>();
+		test_offsets<char, double>();
+
+		test_blocks<short, int>();
+		test_blocks<short, long>();
+		test_blocks<short, float>();
+		test_blocks<short, double>();
+		test_blocks<char, short>();
+		test_blocks<char, int>();
+		test_blocks<char, long>();
+		test_blocks<char, float>();
+		test_blocks<char, double>();
+
+		test_iterator<short, int>();
+		test_iterator<short, long>();
+		test_iterator<short, float>();
+		test_iterator<short, double>();
+		test_iterator<char, short>();
+		test_iterator<char, int>();
+		test_iterator<char, long>();
+		test_iterator<char, float>();
+		test_iterator<char, double>();
+	}
+
 	void test_complete()
 	{
-		simd_vector<short, int> vec(59);
+		simd_vector<short, int> vec(4);
 		short acc = 1;
 		short param = 7;
 		std::generate(vec.begin(), vec.end(), [&acc, param](){ return acc += param; });
 
-		//simd_vector<char, int> vec2{ 'a', 'b', 'c', 'd' };
-
 		test_vector(vec);
+
+		test_simd_vector_iterator_methods();
+
+		test_invariants<char, int>();
 	}
 };
 
