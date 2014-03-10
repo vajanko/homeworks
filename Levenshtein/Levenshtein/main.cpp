@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <omp.h>
+#include <climits>
 
 typedef int size_type;
 
@@ -143,12 +144,12 @@ size_type levenshtein_parallel(const char *s, size_t s_size, const char *t, size
 #pragma omp parallel for
 		for (size_type i = 1; i < step; ++i)
 		{
-			size_type minus1 = i - 1;
-			char cost = (s[step - 1 - i] == t[minus1]) ? 0 : 1;
+			size_type i1 = i - 1;
+			char cost = (s[step - 1 - i] == t[i1]) ? 0 : 1;
 
-			size_type upper = diag1[minus1];
+			size_type upper = diag1[i1];
 			size_type left = diag1[i];
-			size_type upperleft = diag2[minus1];
+			size_type upperleft = diag2[i1];
 
 			diag3[i] = smaller<size_type>(upper + 1, left + 1, upperleft + cost);
 		}
@@ -214,7 +215,7 @@ size_type levenshtein_parallel(const char *s, size_t s_size, const char *t, size
 	return res;
 }
 
-size_type block_width = 2;
+size_type block_width = 8;
 
 void print_matrix(size_type ** matrix, size_t s_size, size_t t_size)
 {
@@ -225,12 +226,101 @@ void print_matrix(size_type ** matrix, size_t s_size, size_t t_size)
 		std::cout << std::endl;
 	}
 }
-void calculate_diagonal(size_type h_base, size_type v_base, size_type block_count, size_type block_size, const char*s, const char *t, size_type **matrix)
+size_type **allocate_matrix(size_t s_size, size_t t_size)
+{
+	size_type **matrix = new size_type*[s_size + 1];		// rows
+
+	matrix[0] = new size_type[t_size + 1];		// first rows
+	for (size_type j = 0; j <= t_size; ++j)
+		matrix[0][j] = j;
+	for (size_type i = 1; i <= s_size; ++i)
+	{
+		matrix[i] = new size_type[t_size + 1];	// alocate rows
+		matrix[i][0] = i;		// initialize first column
+	}
+
+	return matrix;
+}
+void delete_matrix(size_type ** matrix, size_t s_size, size_t t_size)
+{
+	for (size_type i = 0; i <= s_size; ++i)
+		delete[] matrix[i];
+	delete[]matrix;
+}
+void calculate_diagonal(size_type h_base, size_type v_base, size_type block_count, const char*s, const char *t, size_type **matrix)
+{
+	size_type h_start = h_base + 1;
+	size_type v_start = v_base + block_count;
+	//v_base + block_count - block_index + 1;
+
+#pragma omp parallel for firstprivate (h_start, v_start)
+	//for (size_type block_index = 1; block_index <= block_count; ++block_index)
+	//for (size_type block_index = h_base + 1; block_index <= h_base + block_count; ++block_index)
+	for (size_type i = 0; i < block_count; ++i)
+	{
+		
+
+		char cost = (s[h_start - 1] == t[v_start - 1]) ? 0 : 1;
+
+		size_type upper = matrix[h_start - 1][v_start];
+		size_type left = matrix[h_start][v_start - 1];
+		size_type upperleft = matrix[h_start - 1][v_start - 1];
+
+		matrix[h_start][v_start] = smaller<size_type>(upper + 1, left + 1, upperleft + cost);
+
+		/*++h_start;
+		--v_start;*/
+	}
+}
+size_type levenshtein_single_blocks(const char *s, size_t s_size, const char *t, size_t t_size)
+{
+	if (s_size < t_size)
+	{
+		std::swap(s, t);
+		std::swap(s_size, t_size);
+	}
+
+	// INITIALIZATION - allocate memory
+	size_type **matrix = allocate_matrix(s_size, t_size);
+
+	// width of matrix divided into blocks
+	size_type max_blocks = t_size;
+
+	// number of blocks on the diagonal is growing
+	for (size_type block_count = 1; block_count < max_blocks; ++block_count)
+	{
+		calculate_diagonal(0, 0, block_count, s, t, matrix);
+	}
+
+	// number of blocks is constant = total_blocks
+	size_type block_rows = s_size;
+	size_type block_cols = t_size;
+	size_type diag_count = block_rows + block_cols - 1;
+	size_type max_block_diagonals = diag_count - 2 * block_cols + 2;
+	for (size_type i = 0; i < max_block_diagonals; ++i)
+	{
+		calculate_diagonal(i, 0, max_blocks, s, t, matrix);
+	}
+
+	// number of blocks is falling
+	for (size_type block_count = max_blocks - 1; block_count > 0; --block_count)
+	{
+		size_type h_base = block_rows - block_count;		// 1, 2, 3, ...
+		size_type v_base = max_blocks - block_count;
+		calculate_diagonal(h_base, v_base, block_count, s, t, matrix);
+	}
+
+	size_type res = matrix[s_size][t_size];
+	//delete_matrix(matrix, s_size, t_size);
+
+	return res;
+}
+void calculate_block_diagonal(size_type h_base, size_type v_base, size_type block_count, size_type block_size, const char*s, const char *t, size_type **matrix)
 {
 	// in this step we have "block_count" block on the diagonale
 	// we will start with the block most up and right and follow down and left
 
-//#pragma omp parallel for
+#pragma omp parallel for
 	for (size_type block_index = 1; block_index <= block_count; ++block_index)
 	{
 		// start (up-)right and move (down-)left  -> first part is the block index, multipling by block_size
@@ -251,11 +341,11 @@ void calculate_diagonal(size_type h_base, size_type v_base, size_type block_coun
 			for (size_type j = v_start; j < v_end; ++j)		// block_size iterations
 			{
 				// this is calculation for one block
-				char cost = (s[i - 1] == t[j - 1]) ? 0 : 1;
+				char cost = (s[i-1] == t[j-1]) ? 0 : 1;
 
-				size_type upper = matrix[i - 1][j];
-				size_type left = matrix[i][j - 1];
-				size_type upperleft = matrix[i - 1][j - 1];
+				size_type upper = matrix[i-1][j];
+				size_type left = matrix[i][j-1];
+				size_type upperleft = matrix[i-1][j-1];
 
 				matrix[i][j] = smaller<size_type>(upper + 1, left + 1, upperleft + cost);
 			}
@@ -271,18 +361,9 @@ size_type levenshtein_blocks(const char *s, size_t s_size, const char *t, size_t
 	}
 
 	// INITIALIZATION - allocate memory
-	size_type **matrix = new size_type*[s_size + 1];		// rows
+	size_type **matrix = allocate_matrix(s_size, t_size);
 
-	matrix[0] = new size_type[t_size + 1];		// first rows
-	for (size_type j = 0; j <= t_size; ++j)
-		matrix[0][j] = j;
-	for (size_type i = 1; i <= s_size; ++i)
-	{
-		matrix[i] = new size_type[t_size + 1];	// alocate rows
-		matrix[i][0] = i;		// initialize first column
-	}
-
-	size_type block_size = 4;
+	size_type block_size = 256;
 	// width of matrix divided into blocks
 	size_type max_blocks = t_size >> block_width;
 		//t_size / block_size;
@@ -290,7 +371,7 @@ size_type levenshtein_blocks(const char *s, size_t s_size, const char *t, size_t
 	// number of blocks on the diagonal is growing
 	for (size_type block_count = 1; block_count < max_blocks; ++block_count)
 	{
-		calculate_diagonal(0, 0, block_count, block_size, s, t, matrix);
+		calculate_block_diagonal(0, 0, block_count, block_size, s, t, matrix);
 	}
 
 	// number of blocks is constant = total_blocks
@@ -300,7 +381,7 @@ size_type levenshtein_blocks(const char *s, size_t s_size, const char *t, size_t
 	size_type max_block_diagonals = diag_count - 2 * block_cols + 2;
 	for (size_type i = 0; i < max_block_diagonals; ++i)
 	{
-		calculate_diagonal(i, 0, max_blocks, block_size, s, t, matrix);
+		calculate_block_diagonal(i, 0, max_blocks, block_size, s, t, matrix);
 	}
 
 	// number of blocks is falling
@@ -308,12 +389,13 @@ size_type levenshtein_blocks(const char *s, size_t s_size, const char *t, size_t
 	{
 		size_type h_base = block_rows - block_count;		// 1, 2, 3, ...
 		size_type v_base = max_blocks - block_count;
-		calculate_diagonal(h_base, v_base, block_count, block_size, s, t, matrix);
+		calculate_block_diagonal(h_base, v_base, block_count, block_size, s, t, matrix);
 	}
 
-	//print_matrix(matrix, s_size, t_size);
+	size_type res = matrix[s_size][t_size];
+	//delete_matrix(matrix, s_size, t_size);
 
-	return matrix[s_size][t_size];
+	return res;
 }
 
 int calculate(char *argv[])
@@ -329,21 +411,24 @@ int calculate(char *argv[])
 	//size_type dist1 = levenshtein_serial(s, s_size, t, t_size);
 	//std::cout << "serial: " << dist1 << std::endl;
 
-	/*size_type dist2 = levenshtein_parallel(s, s_size, t, t_size);
-	std::cout << dist2 << std::endl;*/
+	size_type dist2 = levenshtein_parallel(s, s_size, t, t_size);
+	std::cout << dist2 << std::endl;
 	//std::cout << "parallel: " << dist2 << std::endl;
 
-	size_type dist2 = levenshtein_blocks(s, s_size, t, t_size);
-	std::cout << dist2 << std::endl;
+	//size_type dist3 = levenshtein_blocks(s, s_size, t, t_size);
+	//std::cout << dist3 << std::endl;
+
+	//size_type dist4 = levenshtein_single_blocks(s, s_size, t, t_size);
+	//std::cout << dist4 << std::endl;
 }
 
 
 void test()
 {
-	char *s = "abcdffff";
+	/*char *s = "abcdffff";
 	char *t = "adbcffff";
 	auto dist = levenshtein_blocks(s, 8, t, 8);
-	system("pause");
+	system("pause");*/
 }
 
 int main(int argc, char* argv[])
@@ -370,6 +455,6 @@ int main(int argc, char* argv[])
 	time = omp_get_wtime() - time;
 	std::cout << "execution time: " << time << " s" << std::endl;
 
-	system("pause");
+	//system("pause");
 	return ret;
 }
