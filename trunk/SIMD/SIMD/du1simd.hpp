@@ -4,6 +4,9 @@
 #include <memory>
 #include <assert.h>
 
+// Iterator base class
+// Item: type of containter item
+// ItemIter: real type of the iterator. Should be a derived class from this iterator
 template<typename Item, typename ItemIter>
 class item_iterator
 	: public std::iterator<std::random_access_iterator_tag, Item>
@@ -13,10 +16,12 @@ public:
 	typedef const reference const_reference;
 
 protected:
-	// data
-	pointer data;			// pointer to the beginning of allocated data
-	std::size_t data_size;	// size of the data array
-	std::size_t index;		// position of iterator item from the beginning
+	// pointer to the beginning of allocated data
+	pointer data;
+	// size of the data array
+	std::size_t data_size;
+	// position of iterator item from the beginning
+	std::size_t index;
 
 	// check whether given iterator is compatible with the this one
 	void check_comp(const ItemIter& it)
@@ -109,13 +114,20 @@ public:
 	item_iterator(const ItemIter &it) : data(it.data), data_size(it.data_size), index(it.index) {}
 	item_iterator(pointer data, std::size_t data_size, std::size_t index) :
 		data(data), data_size(data_size), index(index) {}
-	virtual ~item_iterator() {}
+	virtual ~item_iterator() { }
 };
 
+// Simple specialization of item_iterator. No special behaviour is added. Used
+// as simd_iterator for simd_vector<T, S>
 template<typename S>
 class simd_iterator :
+	// notice that operators and methods defined above actually return "simd_iterator<S>" not "item_iterator<S>"
 	public item_iterator<S, simd_iterator<S>>
 {
+	// Add methods specially for this type of iterator if necessary here
+	// ...
+
+// Copy-paste of constructors defined in the base class above
 public:
 	simd_iterator() : item_iterator() {}
 	simd_iterator(const simd_iterator &it) : item_iterator(it) {}
@@ -132,11 +144,15 @@ public:
 private:
 	static const std::size_t K = sizeof(S) / sizeof(T);
 
+// Methods specially for this type of iterator
 public:
+	// Gets simd_iterator at the first block where current iterator belongs to
 	simd_iterator lower_block() 
 	{
 		return simd_iterator((simd_iterator::pointer)data, data_size / K, index / K);
 	}
+	// Gets simd_iterator at the following block after that into which current iterator belongs to.
+	// Of returns simd end if current iterator is end
 	simd_iterator upper_block()
 	{   // +1 only if this is not the end() of simd_vector
 		std::size_t i = index / K;
@@ -145,12 +161,17 @@ public:
 
 		return simd_iterator((simd_iterator::pointer)data, data_size / K, i);
 	}
+	// Returns number of items between current simd block and current iterator
 	difference_type lower_offset() { return index % K; }
+	// Returns the difference between current iterator position and the end of current simd
+	// block or return zero if current iterator is end. Notice that this number is lower or
+	// equal to zero
 	difference_type upper_offset() 
 	{	// return 0 if this is the end - this is a special case
 		return index < data_size ? index % K + 1 - K : 0;
 	}
 
+// Copy-paste of constructors defined in the base class above
 public:
 	simd_vector_iterator() : item_iterator() {}
 	simd_vector_iterator(const simd_vector_iterator &it) : item_iterator(it) {}
@@ -176,9 +197,8 @@ public:
 	typedef simd_vector_iterator< T, S> iterator;
 	typedef typename iterator::simd_iterator simd_iterator;
 private:
-	// data
 	std::unique_ptr<T[]> data;	// let the array to free automatically
-	std::size_t data_size;
+	std::size_t data_size;		// size of the "data" array
 
 public:
 	iterator begin() { return iterator(data.get(), data_size, 0); }
@@ -200,8 +220,10 @@ public:
 	}
 
 public:
+	// Creates a new simd_vector of given fixed size
 	explicit simd_vector(std::size_t s) :
 		simd_vector(aligned_mem(s)) {}
+	// Creates a new simd_vector of given fixed size initialized with "init" value
 	simd_vector(std::size_t s, T init) :
 		simd_vector(aligned_mem(s, init)) {}
 	simd_vector(const simd_vector &vec) = delete;
@@ -220,6 +242,8 @@ private:
 	{
 		T *memory;			// pointer to allocated aligned memory
 		std::size_t size;	// size of "memory"
+
+		// Allocates aligned memory and stores it to "memory"
 		aligned_mem(std::size_t s) :
 			size(s)
 		{
@@ -244,14 +268,18 @@ private:
 
 			memory = aligned_mem;		// everything went OK
 		}
+
+		// Allocates aligned memory, stores it to "memory" and initialize with "init" value
 		aligned_mem(std::size_t s, T init) :
 			aligned_mem(s)
 		{
-			// std::fill_n(memory, s, init);		// WARNNING
+			// std::fill_n(memory, s, init);		// some WARNNINGS must be disabled
+
 			for (std::size_t i = 0; i < s; ++i)
-				memory[i] = init;
+				memory[i] = init;			// copy constructor needed here, this could be a problem
 		}
 	};
+	// Serve for other constructors as initialization of aligned memory
 	explicit simd_vector(aligned_mem m) :
 		data(m.memory), data_size(m.size) {}
 		
