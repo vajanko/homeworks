@@ -73,10 +73,6 @@ public:
 	{
 		return ItemIter(it.data, it.data_size, n + it.index);
 	}
-	/*friend ItemIter operator-(const difference_type n, const IterIter &it)
-	{
-		return ItemIter(it.data, it.data_size, n - it.index);
-	}*/
 
 	bool operator==(const ItemIter& it)
 	{
@@ -127,12 +123,6 @@ public:
 	virtual ~simd_iterator() {}
 };
 
-//template< typename T, typename S>
-//simd_iterator<S> operator-(simd_vector_iterator< T, S> a, std::ptrdiff_t b)
-//{
-//	return a -= b;
-//}
-
 template< typename T, typename S>
 class simd_vector_iterator :
 	public item_iterator<T, simd_vector_iterator<T, S>>
@@ -152,14 +142,12 @@ public:
 		std::size_t i = index / K;
 		if (index < data_size)
 			++i;
-		//i -= i % K;
 
 		return simd_iterator((simd_iterator::pointer)data, data_size / K, i);
 	}
 	difference_type lower_offset() { return index % K; }
 	difference_type upper_offset() 
-	{
-		// return 0 if this is the end
+	{	// return 0 if this is the end - this is a special case
 		return index < data_size ? index % K + 1 - K : 0;
 	}
 
@@ -180,8 +168,6 @@ simd_vector_iterator< T, S> operator-(simd_vector_iterator< T, S> a, std::ptrdif
 {
 	return a -= b;
 }
-
-/*...*/
 
 template< typename T, typename S>
 class simd_vector {
@@ -217,9 +203,7 @@ public:
 public:
 	// TODO: the size of data array is not calculated correctly
 	explicit simd_vector(std::size_t s) :
-		data(new T[s]), data_size(s) {}
-		//data((T *)new S[s / sizeof(T)]), data_size(s) {}
-		//data(new T[s + sizeof(S) - s % sizeof(S)]), size(s) { }
+		simd_vector(s, aligned_mem(s)) {}
 	simd_vector(const simd_vector &vec) = delete;
 	simd_vector(simd_vector &&vec) :
 		data(std::move(vec.data)), data_size(std::move(vec.data_size))
@@ -227,6 +211,40 @@ public:
 		vec.data = nullptr;
 		vec.data_size = 0;
 	}
-		
 	~simd_vector() {}
+
+private:
+	// constructor pattern for non-trivial calculation:
+	// allocates array of T aligned at S size
+	struct aligned_mem 
+	{
+		T *memory;		// pointer to allocated aligned memory
+		aligned_mem(std::size_t size)
+		{
+			const std::size_t ALIGNMENT = sizeof(S);
+
+			// we allocate array of T of size "size" + something to be able to 
+			// move this array in such a way that is will be aligned at sizeof(S)
+			T* mem = new T[size + ALIGNMENT / sizeof(T)];
+
+			// minimum required size of "mem" in bytes (without alignment)
+			std::size_t required_size = size * sizeof(T);
+			// size of allocated "mem" array in bytes
+			std::size_t real_size = (size + 1) * sizeof(T);
+
+			void *ptr = (void*)mem;
+			// we want to setup "ptr" in such a wat that it will be aligned at "ALIGNMENT",
+			// it will have "required_size" and we shall not use more than "real_size"
+			T* aligned_mem = (T*)std::align(ALIGNMENT, required_size, ptr, real_size);
+
+			if (aligned_mem == nullptr)
+				throw std::bad_alloc();		// align wasn't successful
+
+			memory = aligned_mem;		// everything went OK
+		}
+	};
+	simd_vector(std::size_t s, aligned_mem m) :
+		data(m.memory), data_size(s) {}
+		
+	
 };
