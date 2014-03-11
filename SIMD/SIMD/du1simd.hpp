@@ -53,25 +53,13 @@ public:
 		index = it.index;
 		return *this;
 	}
-	reference operator*() { return data[index]; }
-	const_reference operator*() const { return data[index]; }
-	reference operator[](const difference_type n) { return data[index + n]; }
-	const_reference operator[](const difference_type n) const { return data[index + n]; }
+	reference operator*() const { return data[index]; }
+	reference operator[](const difference_type n) const { return data[index + n]; }
 	pointer operator->() const { return data + index; }
 
-	ItemIter operator+(const difference_type n) { return ItemIter(data, data_size, index + n); }
-	ItemIter operator-(const difference_type n) { return ItemIter(data, data_size, index - n); }
-	/*ItemIter operator+(const ItemIter &it)
-	{
-		check_comp(it);
-		return ItemIter(data, index + it.index);
-	}
-	ItemIter operator-(const ItemIter &it)
-	{
-		check_comp(it);
-		return ItemIter(data, index - it.index);
-	}*/
-
+	ItemIter operator+(const difference_type n) const { return ItemIter(data, data_size, index + n); }
+	ItemIter operator-(const difference_type n) const { return ItemIter(data, data_size, index - n); }
+	
 	ItemIter &operator++() { ++index; return *static_cast<ItemIter*>(this); }
 	ItemIter &operator--() { --index; return *static_cast<ItemIter*>(this); }
 	ItemIter &operator+=(const difference_type n) { index += n; return *static_cast<ItemIter*>(this); }
@@ -92,10 +80,11 @@ public:
 	{
 		return ItemIter(it.data, it.data_size, n + it.index);
 	}
-	/*friend dirrerence_type operator-(const ItemIter &a)
+	// Returns difference of iterators
+	difference_type operator-(const ItemIter& it) const
 	{
-		return a.index - b.index;
-	}*/
+		return index - it.index;
+	}
 
 	bool operator==(const ItemIter& it)
 	{
