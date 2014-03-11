@@ -761,7 +761,7 @@ namespace unittest
 
 		test_performance();
 
-		const vector<int> v(10, 0);
+		
 	}
 
 };
