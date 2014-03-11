@@ -414,6 +414,8 @@ namespace unittest
 	template<typename T, typename S>
 	void test_vector(simd_vector<T, S> &v)
 	{
+		//assert((v.end() - v.begin()) == v.size());
+
 		for (auto bb = v.begin().lower_block(); bb < v.end().upper_block(); ++bb)
 			cout << *bb << endl;
 
