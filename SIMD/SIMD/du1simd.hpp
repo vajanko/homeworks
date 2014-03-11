@@ -199,11 +199,11 @@ public:
 		return *this;
 	}
 
-	/*...*/
 public:
-	// TODO: the size of data array is not calculated correctly
 	explicit simd_vector(std::size_t s) :
-		simd_vector(s, aligned_mem(s)) {}
+		simd_vector(aligned_mem(s)) {}
+	simd_vector(std::size_t s, T init) :
+		simd_vector(aligned_mem(s, init)) {}
 	simd_vector(const simd_vector &vec) = delete;
 	simd_vector(simd_vector &&vec) :
 		data(std::move(vec.data)), data_size(std::move(vec.data_size))
@@ -218,19 +218,21 @@ private:
 	// allocates array of T aligned at S size
 	struct aligned_mem 
 	{
-		T *memory;		// pointer to allocated aligned memory
-		aligned_mem(std::size_t size)
+		T *memory;			// pointer to allocated aligned memory
+		std::size_t size;	// size of "memory"
+		aligned_mem(std::size_t s) :
+			size(s)
 		{
 			const std::size_t ALIGNMENT = sizeof(S);
 
 			// we allocate array of T of size "size" + something to be able to 
 			// move this array in such a way that is will be aligned at sizeof(S)
-			T* mem = new T[size + ALIGNMENT / sizeof(T)];
+			T* mem = new T[s + ALIGNMENT / sizeof(T)];
 
 			// minimum required size of "mem" in bytes (without alignment)
-			std::size_t required_size = size * sizeof(T);
+			std::size_t required_size = s * sizeof(T);
 			// size of allocated "mem" array in bytes
-			std::size_t real_size = (size + 1) * sizeof(T);
+			std::size_t real_size = (s + 1) * sizeof(T);
 
 			void *ptr = (void*)mem;
 			// we want to setup "ptr" in such a wat that it will be aligned at "ALIGNMENT",
@@ -242,9 +244,16 @@ private:
 
 			memory = aligned_mem;		// everything went OK
 		}
+		aligned_mem(std::size_t s, T init) :
+			aligned_mem(s)
+		{
+			// std::fill_n(memory, s, init);		// WARNNING
+			for (std::size_t i = 0; i < s; ++i)
+				memory[i] = init;
+		}
 	};
-	simd_vector(std::size_t s, aligned_mem m) :
-		data(m.memory), data_size(s) {}
+	explicit simd_vector(aligned_mem m) :
+		data(m.memory), data_size(m.size) {}
 		
 	
 };

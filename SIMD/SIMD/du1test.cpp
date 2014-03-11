@@ -129,6 +129,144 @@ namespace du1simd {
 	};
 
 	const simd< float, __m128>::mask_data simd< float, __m128>::mask_data_;
+
+	template<>
+	struct simd< double, __m128d> {
+		static __m128d broadcast(double x)
+		{
+			__m128d a = _mm_load_pd(&x);
+			return _mm_shuffle_pd(a, a, 0x00);
+		}
+		static __m128d zero()
+		{
+			return _mm_setzero_pd();
+		}
+		static __m128d add(__m128d a, __m128d b)
+		{
+			return _mm_add_pd(a, b);
+		}
+		static __m128d sub(__m128d a, __m128d b)
+		{
+			return _mm_sub_pd(a, b);
+		}
+		static __m128d mul(__m128d a, __m128d b)
+		{
+			return _mm_mul_pd(a, b);
+		}
+		static double sum(__m128d a)
+		{
+			double x;
+			__m128d b = _mm_hadd_pd(a, a);
+			//__m128d c = _mm_hadd_pd(b, b);
+			_mm_store_sd(&x, b);
+			return x;
+		}
+
+		static __m128d mask_lower(__m128d a, std::ptrdiff_t lgap)
+		{
+			assert(lgap >= 0);
+			assert(lgap < 2);
+			return _mm_and_pd(a, mask_data_.lmask_[lgap]);
+		}
+		static __m128d mask_upper(__m128d a, std::ptrdiff_t ugap)
+		{
+			assert(ugap > -2);
+			assert(ugap <= 0);
+			return _mm_and_pd(a, mask_data_.umask_[ugap + 3]);
+		}
+		static __m128d mask_both(__m128d a, std::ptrdiff_t lgap, std::ptrdiff_t ugap)
+		{
+			return mask_upper(mask_lower(a, lgap), ugap);
+		}
+	private:
+		struct mask_data {
+			__m128d lmask_[4];
+			__m128d umask_[4];
+			mask_data()
+			{
+				lmask_[0] = _mm_castsi128_pd(_mm_set_epi32(-1, -1, -1, -1));
+				lmask_[1] = _mm_castsi128_pd(_mm_set_epi32(-1, -1, -1, 0));
+				lmask_[2] = _mm_castsi128_pd(_mm_set_epi32(-1, -1, 0, 0));
+				lmask_[3] = _mm_castsi128_pd(_mm_set_epi32(-1, 0, 0, 0));
+				umask_[0] = _mm_castsi128_pd(_mm_set_epi32(0, 0, 0, -1));
+				umask_[1] = _mm_castsi128_pd(_mm_set_epi32(0, 0, -1, -1));
+				umask_[2] = _mm_castsi128_pd(_mm_set_epi32(0, -1, -1, -1));
+				umask_[3] = _mm_castsi128_pd(_mm_set_epi32(-1, -1, -1, -1));
+			}
+		};
+		static const mask_data mask_data_;
+	};
+
+	template<>
+	struct simd< int, __m128i> {
+		/*static __m128i broadcast(int x)
+		{
+			__m128i a = _mm_maskload_epi32(&x, );
+			return _mm_shuffle_ps(a, a, 0x00);
+		}*/
+		static __m128i zero()
+		{
+			return _mm_setzero_si128();
+		}
+		static __m128i add(__m128i a, __m128i b)
+		{
+			return _mm_add_epi32(a, b);
+		}
+		static __m128i sub(__m128i a, __m128i b)
+		{
+			return _mm_sub_epi32(a, b);
+		}
+		static __m128i mul(__m128i a, __m128i b)
+		{
+			return _mm_mul_epi32(a, b);
+		}
+		static int sum(__m128i a)
+		{
+			int x[4];
+			//__m128i b = _mm_hadd_epi32(a, a);
+			//__m128i c = _mm_hadd_epi32(b, b);
+			//_mm_store_si128((__m128i *)&x, c);
+			//_mm_store_ss(&x, c);
+			//return x[0];
+
+			// WRONG: elements must be summarized
+			return _mm_cvtsi128_si32(a);
+		}
+
+		static __m128i mask_lower(__m128i a, std::ptrdiff_t lgap)
+		{
+			assert(lgap >= 0);
+			assert(lgap < 4);
+			return _mm_and_si128(a, mask_data_.lmask_[lgap]);
+		}
+		static __m128i mask_upper(__m128i a, std::ptrdiff_t ugap)
+		{
+			assert(ugap > -4);
+			assert(ugap <= 0);
+			return _mm_and_si128(a, mask_data_.umask_[ugap + 3]);
+		}
+		static __m128i mask_both(__m128i a, std::ptrdiff_t lgap, std::ptrdiff_t ugap)
+		{
+			return mask_upper(mask_lower(a, lgap), ugap);
+		}
+	private:
+		struct mask_data {
+			__m128i lmask_[4];
+			__m128i umask_[4];
+			mask_data()
+			{
+				lmask_[0] = _mm_set_epi32(-1, -1, -1, -1);
+				lmask_[1] = _mm_set_epi32(-1, -1, -1, 0);
+				lmask_[2] = _mm_set_epi32(-1, -1, 0, 0);
+				lmask_[3] = _mm_set_epi32(-1, 0, 0, 0);
+				umask_[0] = _mm_set_epi32(0, 0, 0, -1);
+				umask_[1] = _mm_set_epi32(0, 0, -1, -1);
+				umask_[2] = _mm_set_epi32(0, -1, -1, -1);
+				umask_[3] = _mm_set_epi32(-1, -1, -1, -1);
+			}
+		};
+		static const mask_data mask_data_;
+	};
 };
 
 namespace du1example {
@@ -565,14 +703,47 @@ namespace unittest
 	template<typename T, typename S>
 	void test_sum(size_t count)
 	{
-		const simd_vector<T, S> vector(count);
+		simd_vector<T, S> vec(count, 1);
+		T sum = T();
+
+		/*for (auto it : vec)
+		{
+			sum += it;
+		}*/
+		S sum1 = S();
+		auto bb = vec.begin().lower_block();
+		auto ee = vec.end().upper_block();
+		for (auto it = bb; it < ee; ++it)
+		{
+			sum1 = du1simd::simd<T, S>::add(sum1, *it);
+		}
+		sum = du1simd::simd<T, S>::sum(sum1);
+
+		cout << "sum: " << sum << endl;
 	}
 
 	void test_performance()
 	{
-		double time = measure_time([]{
+		double time;
+
+
+		cout << "float: sum performance test:" << endl;
+		time = measure_time([]{
 			test_sum<float, __m128>(10000000);
 		});
+		cout << "time: " << time << " s" << endl;
+
+		cout << "double: sum performance test:" << endl;
+		time = measure_time([]{
+			test_sum<double, __m128d>(10000000);
+		});
+		cout << "time: " << time << " s" << endl;
+
+		cout << "int: sum performance test:" << endl;
+		time = measure_time([]{
+			test_sum<int, __m128i>(10000000);
+		});
+		cout << "time: " << time << " s" << endl;
 	}
 
 	void test_complete()
