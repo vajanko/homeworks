@@ -554,6 +554,27 @@ namespace unittest
 		test_iterator<char, double>();
 	}
 
+	template< typename F>
+	double measure_time(F f)
+	{
+		auto tb = std::chrono::steady_clock::now();
+		f();
+		auto te = std::chrono::steady_clock::now();
+		return std::chrono::duration_cast<std::chrono::microseconds>(te - tb).count() / 1000000.0;
+	}
+	template<typename T, typename S>
+	void test_sum(size_t count)
+	{
+		const simd_vector<T, S> vector(count);
+	}
+
+	void test_performance()
+	{
+		double time = measure_time([]{
+			test_sum<float, __m128>(10000000);
+		});
+	}
+
 	void test_complete()
 	{
 		simd_vector<short, int> vec(4);
@@ -566,7 +587,12 @@ namespace unittest
 		test_simd_vector_iterator_methods();
 
 		test_invariants<char, int>();
+
+		test_performance();
+
+		const vector<int> v(10, 0);
 	}
+
 };
 
 int main(int argc, char* *argv)
