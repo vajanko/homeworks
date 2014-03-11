@@ -4,6 +4,8 @@
 #include <memory>
 #include <assert.h>
 
+// Compiled in VS 2013 and GCC 4.8 
+
 // Iterator base class
 // Item: type of containter item
 // ItemIter: real type of the iterator. Should be a derived class from this iterator
@@ -11,7 +13,16 @@ template<typename Item, typename ItemIter>
 class item_iterator
 	: public std::iterator<std::random_access_iterator_tag, Item>
 {
+private:
+	typedef std::iterator<std::random_access_iterator_tag, Item> base_type;
 public:
+	// Aaa ... grrrr ... gcc
+	typedef typename base_type::value_type value_type;
+	typedef typename base_type::pointer pointer;
+	typedef typename base_type::reference reference;
+	typedef typename base_type::difference_type difference_type;
+	typedef typename base_type::iterator_category iterator_category;
+
 	typedef const pointer const_pointer;
 	typedef const reference const_reference;
 
@@ -26,9 +37,12 @@ protected:
 	// check whether given iterator is compatible with the this one
 	void check_comp(const ItemIter& it)
 	{   // iterator is not empty and points to the same data
+#ifdef __GNUC__
 		assert(data != nullptr && data == it.data);
-		//if (data == nullptr || data != it.data)
-			//_DEBUG_ERROR("incompatible iterators");
+#else
+		if (data == nullptr || data != it.data)
+			_DEBUG_ERROR("incompatible iterators");
+#endif
 	}
 public:
 	// operators
@@ -47,7 +61,7 @@ public:
 
 	ItemIter operator+(const difference_type n) { return ItemIter(data, data_size, index + n); }
 	ItemIter operator-(const difference_type n) { return ItemIter(data, data_size, index - n); }
-	ItemIter operator+(const ItemIter &it)
+	/*ItemIter operator+(const ItemIter &it)
 	{
 		check_comp(it);
 		return ItemIter(data, index + it.index);
@@ -56,7 +70,7 @@ public:
 	{
 		check_comp(it);
 		return ItemIter(data, index - it.index);
-	}
+	}*/
 
 	ItemIter &operator++() { ++index; return *static_cast<ItemIter*>(this); }
 	ItemIter &operator--() { --index; return *static_cast<ItemIter*>(this); }
@@ -78,6 +92,10 @@ public:
 	{
 		return ItemIter(it.data, it.data_size, n + it.index);
 	}
+	/*friend dirrerence_type operator-(const ItemIter &a)
+	{
+		return a.index - b.index;
+	}*/
 
 	bool operator==(const ItemIter& it)
 	{
@@ -124,14 +142,19 @@ class simd_iterator :
 	// notice that operators and methods defined above actually return "simd_iterator<S>" not "item_iterator<S>"
 	public item_iterator<S, simd_iterator<S>>
 {
+private:
+	typedef item_iterator<S, simd_iterator<S>> base_type;
+public:
+	typedef typename base_type::pointer pointer;
+
 	// Add methods specially for this type of iterator if necessary here
 	// ...
 
 // Copy-paste of constructors defined in the base class above
 public:
-	simd_iterator() : item_iterator() {}
-	simd_iterator(const simd_iterator &it) : item_iterator(it) {}
-	simd_iterator(pointer data, std::size_t data_size, std::size_t index) : item_iterator(data, data_size, index) {}
+	simd_iterator() : base_type() {}
+	simd_iterator(const simd_iterator &it) : base_type(it) {}
+	simd_iterator(pointer data, std::size_t data_size, std::size_t index) : base_type(data, data_size, index) {}
 	virtual ~simd_iterator() {}
 };
 
@@ -139,43 +162,51 @@ template< typename T, typename S>
 class simd_vector_iterator :
 	public item_iterator<T, simd_vector_iterator<T, S>>
 {
+private:
+	typedef item_iterator<T, simd_vector_iterator<T, S>> base_type;
 public:
-	typedef simd_iterator<S> simd_iterator;
+	typedef typename base_type::pointer pointer;
+	typedef typename base_type::difference_type difference_type;
+
+	typedef simd_iterator<S> iterator;
 private:
 	static const std::size_t K = sizeof(S) / sizeof(T);
 
 // Methods specially for this type of iterator
+// Notice that we are using this->data_member coding style. It is because of the gcc
+// compiler tries to lookup up the member too early (if it is not dependant on the
+// template argument - we made it dependant)
 public:
 	// Gets simd_iterator at the first block where current iterator belongs to
-	simd_iterator lower_block() 
+	iterator lower_block()
 	{
-		return simd_iterator((simd_iterator::pointer)data, data_size / K, index / K);
+		return iterator((typename iterator::pointer)this->data, this->data_size / K, this->index / K);
 	}
 	// Gets simd_iterator at the following block after that into which current iterator belongs to.
 	// Of returns simd end if current iterator is end
-	simd_iterator upper_block()
+	iterator upper_block()
 	{   // +1 only if this is not the end() of simd_vector
-		std::size_t i = index / K;
-		if (index < data_size)
+		std::size_t i = this->index / K;
+		if (this->index < this->data_size)
 			++i;
 
-		return simd_iterator((simd_iterator::pointer)data, data_size / K, i);
+		return iterator((typename iterator::pointer)this->data, this->data_size / K, i);
 	}
 	// Returns number of items between current simd block and current iterator
-	difference_type lower_offset() { return index % K; }
+	difference_type lower_offset() { return this->index % K; }
 	// Returns the difference between current iterator position and the end of current simd
 	// block or return zero if current iterator is end. Notice that this number is lower or
 	// equal to zero
 	difference_type upper_offset() 
 	{	// return 0 if this is the end - this is a special case
-		return index < data_size ? index % K + 1 - K : 0;
+		return this->index < this->data_size ? this->index % K + 1 - K : 0;
 	}
 
 // Copy-paste of constructors defined in the base class above
 public:
-	simd_vector_iterator() : item_iterator() {}
-	simd_vector_iterator(const simd_vector_iterator &it) : item_iterator(it) {}
-	simd_vector_iterator(pointer data, std::size_t data_size, std::size_t index) : item_iterator(data, data_size, index) {}
+	simd_vector_iterator() : base_type() {}
+	simd_vector_iterator(const simd_vector_iterator &it) : base_type(it) {}
+	simd_vector_iterator(pointer data, std::size_t data_size, std::size_t index) : base_type(data, data_size, index) {}
 	virtual ~simd_vector_iterator() {}
 };
 
@@ -195,7 +226,7 @@ class simd_vector {
 public:
 	// types
 	typedef simd_vector_iterator< T, S> iterator;
-	typedef typename iterator::simd_iterator simd_iterator;
+	typedef typename iterator::iterator simd_iterator;
 private:
 	std::unique_ptr<T[]> data;	// let the array to free automatically
 	std::size_t data_size;		// size of the "data" array
@@ -261,7 +292,12 @@ private:
 			void *ptr = (void*)mem;
 			// we want to setup "ptr" in such a wat that it will be aligned at "ALIGNMENT",
 			// it will have "required_size" and we shall not use more than "real_size"
+#ifdef __GNUC__
+			// no support for aligned memory in GCC compiler (actually it is possible to implement yourself)
+			T* aligned_mem = mem;
+#else
 			T* aligned_mem = (T*)std::align(ALIGNMENT, required_size, ptr, real_size);
+#endif
 
 			if (aligned_mem == nullptr)
 				throw std::bad_alloc();		// align wasn't successful
