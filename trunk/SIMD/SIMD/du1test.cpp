@@ -1,14 +1,16 @@
 #include "du1simd.hpp"
 
 #include<vector>
-
 #include <memory>
 #include <algorithm>
 #include <xmmintrin.h>
 #include <cassert>
 #include <string>
 #include <iostream>
+#include <io.h>
 #include <chrono>
+#include <emmintrin.h>
+#include <pmmintrin.h>
 
 using namespace std;
 
@@ -197,76 +199,76 @@ namespace du1simd {
 		static const mask_data mask_data_;
 	};
 
-	template<>
-	struct simd< int, __m128i> {
-		/*static __m128i broadcast(int x)
-		{
-			__m128i a = _mm_maskload_epi32(&x, );
-			return _mm_shuffle_ps(a, a, 0x00);
-		}*/
-		static __m128i zero()
-		{
-			return _mm_setzero_si128();
-		}
-		static __m128i add(__m128i a, __m128i b)
-		{
-			return _mm_add_epi32(a, b);
-		}
-		static __m128i sub(__m128i a, __m128i b)
-		{
-			return _mm_sub_epi32(a, b);
-		}
-		static __m128i mul(__m128i a, __m128i b)
-		{
-			return _mm_mul_epi32(a, b);
-		}
-		static int sum(__m128i a)
-		{
-			int x[4];
-			//__m128i b = _mm_hadd_epi32(a, a);
-			//__m128i c = _mm_hadd_epi32(b, b);
-			//_mm_store_si128((__m128i *)&x, c);
-			//_mm_store_ss(&x, c);
-			//return x[0];
+	//template<>
+	//struct simd< int, __m128i> {
+	//	/*static __m128i broadcast(int x)
+	//	{
+	//		__m128i a = _mm_maskload_epi32(&x, );
+	//		return _mm_shuffle_ps(a, a, 0x00);
+	//	}*/
+	//	static __m128i zero()
+	//	{
+	//		return _mm_setzero_si128();
+	//	}
+	//	static __m128i add(__m128i a, __m128i b)
+	//	{
+	//		return _mm_add_epi32(a, b);
+	//	}
+	//	static __m128i sub(__m128i a, __m128i b)
+	//	{
+	//		return _mm_sub_epi32(a, b);
+	//	}
+	//	static __m128i mul(__m128i a, __m128i b)
+	//	{
+	//		return _mm_mul_epi32(a, b);
+	//	}
+	//	static int sum(__m128i a)
+	//	{
+	//		int x[4];
+	//		//__m128i b = _mm_hadd_epi32(a, a);
+	//		//__m128i c = _mm_hadd_epi32(b, b);
+	//		//_mm_store_si128((__m128i *)&x, c);
+	//		//_mm_store_ss(&x, c);
+	//		//return x[0];
 
-			// WRONG: elements must be summarized
-			return _mm_cvtsi128_si32(a);
-		}
+	//		// WRONG: elements must be summarized
+	//		return _mm_cvtsi128_si32(a);
+	//	}
 
-		static __m128i mask_lower(__m128i a, std::ptrdiff_t lgap)
-		{
-			assert(lgap >= 0);
-			assert(lgap < 4);
-			return _mm_and_si128(a, mask_data_.lmask_[lgap]);
-		}
-		static __m128i mask_upper(__m128i a, std::ptrdiff_t ugap)
-		{
-			assert(ugap > -4);
-			assert(ugap <= 0);
-			return _mm_and_si128(a, mask_data_.umask_[ugap + 3]);
-		}
-		static __m128i mask_both(__m128i a, std::ptrdiff_t lgap, std::ptrdiff_t ugap)
-		{
-			return mask_upper(mask_lower(a, lgap), ugap);
-		}
-	private:
-		struct mask_data {
-			__m128i lmask_[4];
-			__m128i umask_[4];
-			mask_data()
-			{
-				lmask_[0] = _mm_set_epi32(-1, -1, -1, -1);
-				lmask_[1] = _mm_set_epi32(-1, -1, -1, 0);
-				lmask_[2] = _mm_set_epi32(-1, -1, 0, 0);
-				lmask_[3] = _mm_set_epi32(-1, 0, 0, 0);
-				umask_[0] = _mm_set_epi32(0, 0, 0, -1);
-				umask_[1] = _mm_set_epi32(0, 0, -1, -1);
-				umask_[2] = _mm_set_epi32(0, -1, -1, -1);
-				umask_[3] = _mm_set_epi32(-1, -1, -1, -1);
-			}
-		};
-		static const mask_data mask_data_;
-	};
+	//	static __m128i mask_lower(__m128i a, std::ptrdiff_t lgap)
+	//	{
+	//		assert(lgap >= 0);
+	//		assert(lgap < 4);
+	//		return _mm_and_si128(a, mask_data_.lmask_[lgap]);
+	//	}
+	//	static __m128i mask_upper(__m128i a, std::ptrdiff_t ugap)
+	//	{
+	//		assert(ugap > -4);
+	//		assert(ugap <= 0);
+	//		return _mm_and_si128(a, mask_data_.umask_[ugap + 3]);
+	//	}
+	//	static __m128i mask_both(__m128i a, std::ptrdiff_t lgap, std::ptrdiff_t ugap)
+	//	{
+	//		return mask_upper(mask_lower(a, lgap), ugap);
+	//	}
+	//private:
+	//	struct mask_data {
+	//		__m128i lmask_[4];
+	//		__m128i umask_[4];
+	//		mask_data()
+	//		{
+	//			lmask_[0] = _mm_set_epi32(-1, -1, -1, -1);
+	//			lmask_[1] = _mm_set_epi32(-1, -1, -1, 0);
+	//			lmask_[2] = _mm_set_epi32(-1, -1, 0, 0);
+	//			lmask_[3] = _mm_set_epi32(-1, 0, 0, 0);
+	//			umask_[0] = _mm_set_epi32(0, 0, 0, -1);
+	//			umask_[1] = _mm_set_epi32(0, 0, -1, -1);
+	//			umask_[2] = _mm_set_epi32(0, -1, -1, -1);
+	//			umask_[3] = _mm_set_epi32(-1, -1, -1, -1);
+	//		}
+	//	};
+	//	static const mask_data mask_data_;
+	//};
 };
 
 namespace du1example {
@@ -419,23 +421,23 @@ namespace unittest
 		for (auto bb = v.begin().lower_block(); bb < v.end().upper_block(); ++bb)
 			cout << *bb << endl;
 
-		simd_vector<T, S>::iterator it = v.begin();
+		typename simd_vector<T, S>::iterator it = v.begin();
 		test_simd_vector_iterator(v, it);
 
 		simd_vector<T, S> vec2(3);
-		simd_vector<T, S>::iterator it2;
+		typename simd_vector<T, S>::iterator it2;
 
 		//it == vec2.begin();
 		//it2 == it2;
 
 		typedef typename simd_vector<T, S>::iterator vec_iter;
-		vec_iter::value_type val = vec_iter::value_type();
-		vec_iter::pointer p = nullptr;
-		vec_iter::const_pointer cp = nullptr;
-		vec_iter::reference ref = val;
+		typename vec_iter::value_type val = typename vec_iter::value_type();
+		typename vec_iter::pointer p = nullptr;
+		typename vec_iter::const_pointer cp = nullptr;
+		typename vec_iter::reference ref = val;
 
-		simd_vector<T, S>::iterator it1_;
-		simd_vector<T, S>::simd_iterator it2_;
+		typename simd_vector<T, S>::iterator it1_;
+		typename simd_vector<T, S>::simd_iterator it2_;
 	}
 
 	template<typename T, typename S>
@@ -743,7 +745,7 @@ namespace unittest
 
 		cout << "int: sum performance test:" << endl;
 		time = measure_time([]{
-			test_sum<int, __m128i>(10000000);
+			//test_sum<int, __m128i>(10000000);
 		});
 		cout << "time: " << time << " s" << endl;
 	}
@@ -800,30 +802,30 @@ int main(int argc, char* *argv)
 	//int *p = new int[len];
 	//auto result = std::align(3, sizeof(short) * 5, (void *&)p, len);
 
-	size_t size = 8;
-	simd_vector<char, short> vec(size);
-	char i = 0;
+	//size_t size = 8;
+	//simd_vector<char, short> vec(size);
+	//char i = 0;
 
-	for (auto &it : vec)
-		it = i++ % 2 == 0 ? 1 : 0;
+	//for (auto &it : vec)
+	//	it = i++ % 2 == 0 ? 1 : 0;
 
-	for (auto b = vec.begin(); b < vec.end(); ++b)
-	{
-		cout << (short)(*b) << endl;
-	}
-	cout << "finished" << endl;
+	//for (auto b = vec.begin(); b < vec.end(); ++b)
+	//{
+	//	cout << (short)(*b) << endl;
+	//}
+	//cout << "finished" << endl;
 
-	auto bb = vec.begin().lower_block();
-	auto ee = vec.end().upper_block();
-	for (; bb < ee; ++bb)
-	{
-		cout << *bb << endl;
-	}
-	
-	//du1example::test();
-	unittest::test_complete();
+	//auto bb = vec.begin().lower_block();
+	//auto ee = vec.end().upper_block();
+	//for (; bb < ee; ++bb)
+	//{
+	//	cout << *bb << endl;
+	//}
+	//
+	////du1example::test();
+	//unittest::test_complete();
 
-	system("pause");
+	//system("pause");
 	return 0;
 }
 
