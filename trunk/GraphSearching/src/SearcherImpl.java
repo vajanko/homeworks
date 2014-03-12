@@ -12,7 +12,7 @@ class SearcherImpl
 	implements Searcher
 {
 	private static final long serialVersionUID = 1L;
-
+	
 	@Override
 	public int getDistance (Node oFrom, Node oTo) throws RemoteException
 	{
