@@ -408,11 +408,11 @@ int calculate(char *argv[])
 		return -1;
 
 
-	size_type dist1 = levenshtein_serial(s, s_size, t, t_size);
-	std::cout << "serial: " << dist1 << std::endl;
+	//size_type dist1 = levenshtein_serial(s, s_size, t, t_size);
+	//std::cout << "serial: " << dist1 << std::endl;
 
-	//size_type dist2 = levenshtein_parallel(s, s_size, t, t_size);
-	//std::cout << dist2 << std::endl;
+	size_type dist2 = levenshtein_parallel(s, s_size, t, t_size);
+	std::cout << dist2 << std::endl;
 	//std::cout << "parallel: " << dist2 << std::endl;
 
 	//size_type dist3 = levenshtein_blocks(s, s_size, t, t_size);
@@ -429,6 +429,28 @@ void test()
 	char *t = "adbcffff";
 	auto dist = levenshtein_blocks(s, 8, t, 8);
 	system("pause");*/
+
+	//long(*foo)() = &func;
+
+	//long max = 1024 * 1024;// *1024;
+	//long double sum = 0;
+	////long x = foo() * foo() * 1024;
+
+	//for (long i = 0; i < max >> 10; ++i)
+	//{
+	//	for (long j = 1; j < 1024; j <<= 1)
+	//	{
+	//		sum += i + j;
+	//	}
+	//}
+	//std::cout << sum << std::endl;
+	//sum = 0;
+
+	//for (long i = 0; i < max; ++i)
+	//{
+	//	sum += i;
+	//}
+	//std::cout << sum << std::endl;
 }
 
 long func() { return 1024; }
@@ -436,45 +458,24 @@ long func() { return 1024; }
 int main(int argc, char* argv[])
 {
 	int ret = 0;
-	double time = omp_get_wtime();
-	std::cout << "BEGIN" << std::endl;
-	// BEGIN
+	//double time = omp_get_wtime();
+	//std::cout << "BEGIN" << std::endl;
+	//// BEGIN
 
-	/*if (argc == 4)
+	if (argc == 4)
 	{
 		ret = generate_files(argv);
 	}
 	else if (argc == 3)
 	{
 		ret = calculate(argv);
-	}*/
-	long (*foo)() = &func;
-
-	long max = 1024 * 1024;// *1024;
-	long double sum = 0;
-	//long x = foo() * foo() * 1024;
-
-	for (long i = 0; i < max >> 10; ++i)
-	{
-		for (long j = 1; j < 1024; j <<= 1)
-		{
-			sum += i + j;
-		}
 	}
-	std::cout << sum << std::endl;
-	sum = 0;
 
-	for (long i = 0; i < max; ++i)
-	{
-		sum += i;
-	}
-	std::cout << sum << std::endl;
+	//// END
+	//std::cout << "END" << std::endl;
+	//time = omp_get_wtime() - time;
+	//std::cout << "execution time: " << time << " s" << std::endl;
 
-	// END
-	std::cout << "END" << std::endl;
-	time = omp_get_wtime() - time;
-	std::cout << "execution time: " << time << " s" << std::endl;
-
-	system("pause");
+	//system("pause");
 	return ret;
 }
