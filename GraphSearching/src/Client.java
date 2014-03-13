@@ -121,6 +121,12 @@ public class Client {
 	public static void main(String[] args) {
 		try
 		{
+			String hostname = "//localhost";
+			if (args.length == 1)
+				hostname = args[0];
+			String searcherHost = hostname + "/searcher";
+			String generatorHost = hostname + "/generator";
+			
 			System.out.printf ("%8s %8s %8s %8s %13s %13s\n", "Attempt", "Nodes", "Edges", "Distance", "Time", "TTime");
 			
 			for (int i = 2; i < 5; i++)
@@ -128,7 +134,7 @@ public class Client {
 				transDistance = i;
 				System.out.println("Distance: " + transDistance);
 			
-			// A)
+			/*// A)
 			oSearcher = new SearcherImpl ();
 			// each option gets the same graphs
 			oRandom = new Random(SEED);
@@ -143,10 +149,10 @@ public class Client {
 				createNodes (GRAPH_NODES);
 				connectSomeNodes (GRAPH_EDGES);
 				searchBenchmark (SEARCHES);
-			}
+			}*/
 			
 			// B)
-			oSearcher = (Searcher) Naming.lookup ("//localhost/searcher");
+			oSearcher = (Searcher) Naming.lookup (searcherHost);
 			// each option gets the same graphs
 			oRandom = new Random(SEED);
 			attempt = 0;
@@ -164,7 +170,7 @@ public class Client {
 			
 			// C)
 			oSearcher = new SearcherImpl();
-			oGenerator = (GraphGenerator) Naming.lookup("//localhost/generator");
+			oGenerator = (GraphGenerator) Naming.lookup(generatorHost);
 			// each option gets the same graphs
 			oRandom = new Random(SEED);
 			attempt = 0;
@@ -181,8 +187,8 @@ public class Client {
 			}
 			
 			// C)
-			oSearcher = (Searcher) Naming.lookup ("//localhost/searcher");
-			oGenerator = (GraphGenerator) Naming.lookup("//localhost/generator");
+			oSearcher = (Searcher) Naming.lookup (searcherHost);
+			oGenerator = (GraphGenerator) Naming.lookup(generatorHost);
 			// each option gets the same graphs
 			oRandom = new Random(SEED);
 			attempt = 0;
