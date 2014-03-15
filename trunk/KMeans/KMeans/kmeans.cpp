@@ -8,6 +8,10 @@
 #include <sstream>
 #include <stdexcept>
 
+#include <tbb\parallel_for.h>
+#include <tbb\parallel_reduce.h>
+
+#include "simd_vector.hpp"
 
 typedef unsigned long long value_t;
 typedef unsigned char cluster_t;
@@ -44,37 +48,37 @@ inline distance_t distance(const point& a, const point& b)
 void assign_to_clusters(data_t& data, const means_t& means)
 {
 	assert(means.size()>0);
-	for(data_t::iterator it=data.begin();it!=data.end();++it)
+	for (data_t::iterator it = data.begin(); it != data.end(); ++it)
 	{
 		cluster_t closest_cluster(0);
-		distance_t mindist(distance(*it,means[0]));
-		for(means_t::const_iterator mit=means.begin()+1;mit!=means.end();++mit)
+		distance_t mindist(distance(*it, means[0]));
+		for (means_t::const_iterator mit = means.begin() + 1; mit != means.end(); ++mit)
 		{
-			distance_t dist=distance(*it,*mit);
-			if (dist<mindist) { closest_cluster=static_cast<cluster_t>(std::distance(means.begin(),mit)); mindist=dist; }
+			distance_t dist = distance(*it, *mit);
+			if (dist < mindist) { closest_cluster = static_cast<cluster_t>(std::distance(means.begin(), mit)); mindist = dist; }
 		}
-		it->cluster=closest_cluster;
+		it->cluster = closest_cluster;
 	}
 }
 
 void compute_means(const data_t& data, means_t& means)
 {
 	std::vector<std::size_t> counts(means.size(),0);
-	for(means_t::iterator mit=means.begin();mit!=means.end();++mit)
+	for (means_t::iterator mit = means.begin(); mit != means.end(); ++mit)
 	{
-		mit->x=0;
-		mit->y=0;
+		mit->x = 0;
+		mit->y = 0;
 	}
-	for(data_t::const_iterator it=data.begin();it!=data.end();++it)
+	for (data_t::const_iterator it = data.begin(); it != data.end(); ++it)
 	{
 		++counts[it->cluster];
-		means[it->cluster].x+=it->x;
-		means[it->cluster].y+=it->y;
+		means[it->cluster].x += it->x;
+		means[it->cluster].y += it->y;
 	}
-	for(means_t::iterator mit=means.begin();mit!=means.end();++mit)
+	for (means_t::iterator mit = means.begin(); mit != means.end(); ++mit)
 	{
-		mit->x/=counts[std::distance(means.begin(),mit)];
-		mit->y/=counts[std::distance(means.begin(),mit)];
+		mit->x /= counts[std::distance(means.begin(), mit)];
+		mit->y /= counts[std::distance(means.begin(), mit)];
 	}
 }
 
@@ -141,7 +145,105 @@ void save_results(const std::string& means_file_name, const std::string& cluster
 	if (fclose(f)) throw std::runtime_error("closing the file failed");
 }
 
-int main(int argc, const char* argv[])
+using namespace tbb;
+
+namespace parallel
+{
+	struct point
+	{
+		point(value_t x, value_t y) : x(x), y(y) {}
+		value_t x;
+		value_t y;
+	};
+	inline __m128i add(__m128i a, __m128i b)
+	{
+		return _mm_add_epi32(a, b);
+	}
+	inline __m128i sub(__m128i a, __m128i b)
+	{
+		return _mm_sub_epi32(a, b);
+	}
+	inline __m128i mul(__m128i a, __m128i b)
+	{
+		return _mm_mul_epi32(a, b);
+	}
+	inline __m128i pow2(__m128i a)
+	{
+		return _mm_mul_epi32(a, a);
+	}
+	value_t sum(__m128i a)
+	{
+		value_t x[2];
+		a = add(a, a);
+		// TODO:
+		//_mm_store_si128((__m128i *)&x, c);
+		//_mm_cvtsi128_si32(a);
+
+		return x[0];
+	}
+	inline distance_t distance(__m128i a, __m128i b)
+	{
+		return std::sqrt(sum(pow2(sub(b, a))));
+	}
+
+	//inline value_t pow2(value_t x) { return x * x;  }
+	//inline distance_t distance(const point& a, const point& b)
+	//{
+	//	return std::sqrt(pow2(b.x - a.x) + pow2(b.y - a.y));
+	//	//return std::sqrt((double)((b.x - a.x)*(b.x - a.x)) + ((b.y - a.y)*(b.y - a.y)));
+	//}
+
+	typedef __m128i* data_t;
+	typedef __m128i* means_t;
+
+	struct distance_f
+	{
+		data_t data;
+		cluster_t *clusters;
+		means_t means;
+		size_t m_size;
+
+		void operator()(const blocked_range<size_t> &range) const 
+		{
+			for (size_t i = range.begin(); i != range.end(); ++i)
+			{
+				// TODO: parallel for ???
+
+				distance_t min = 0;
+				size_t min_index = 0;
+				distance_t cur;
+				for (size_t j = 0; j < m_size; ++j)
+				{
+					cur = distance(means[i], data[i]);
+					if (cur < min)
+					{
+						min = cur;
+						min_index = j;
+					}
+				}
+
+				// index of minimum
+				clusters[i] = min_index;
+			}
+		}
+
+		distance_f(data_t data, means_t means, size_t m_size) : data(data), means(means), m_size(m_size) { }
+	};
+}
+
+int main(int argc, char **argv)
+{
+	//blocked_range<int>(0, 1024, 128);
+	//parallel_for()
+
+
+#ifndef __GCC__
+	system("pause");
+#endif
+	return 0;
+}
+
+/*int main(int argc, const char* argv[])
 {
 	if (argc==5)
 	{
@@ -186,4 +288,4 @@ int main(int argc, const char* argv[])
 	}
 	usage();
 	return 1;
-}
+}*/
