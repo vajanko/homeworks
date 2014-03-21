@@ -1,23 +1,17 @@
 #include <vector>
-#include <cmath>
-#include <cassert>
-#include <iterator>
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sstream>
-#include <stdexcept>
 #include <memory>
+#include <cassert>
 
 #include<fstream>
 
 #include <tbb\task_scheduler_init.h>
 #include <tbb\parallel_reduce.h>
-#include <tbb\parallel_for.h>
 #include <tbb\blocked_range.h>
 #include <tbb\tick_count.h>
 
-#include "simd_vector.hpp"
+#include <emmintrin.h>
 
 using namespace tbb;
 using namespace std;
@@ -168,6 +162,134 @@ namespace serial1
 	}
 }
 
+namespace simd
+{
+	template<typename Single, typename Multiple> struct Op;
+
+	template<> struct Op<float, __m128>
+	{
+		static __m128 zero() { return _mm_setzero_ps(); }
+		static __m128 add(__m128 a, __m128 b) { return _mm_add_ps(a, b); }
+		static float first(__m128 a)
+		{
+			float x;
+			_mm_store_ss(&x, a);
+			return x;
+		}
+	};
+	template<> struct Op<double, __m128d>
+	{
+		static __m128d zero() { return _mm_setzero_pd(); }
+		static __m128d add(__m128d a, __m128d b) { return _mm_add_pd(a, b); }
+		static double first(__m128d a)
+		{
+			double x;
+			_mm_store_sd(&x, a);
+			return x;
+		}
+	};
+	template<> struct Op<long, __m128i>
+	{
+		static __m128i zero() { return _mm_setzero_si128(); }
+		static __m128i add(__m128i a, __m128i b) { return _mm_add_epi32(a, b); }
+		static long first(__m128i a)
+		{
+			long res[4];
+			_mm_storeu_si128((__m128i*)&res, a);
+			return res[0];
+		}
+	};
+	template<> struct Op<int, __m128i>
+	{
+		static __m128i zero() { return _mm_setzero_si128(); }
+		static __m128i add(__m128i a, __m128i b) { return _mm_add_epi32(a, b); }
+		static int first(__m128i a)
+		{
+			int res[4];
+			_mm_storeu_si128((__m128i*)&res, a);
+			return res[0];
+		}
+	};
+	template<> struct Op<long long, __m128i>
+	{
+		static __m128i zero() { return _mm_setzero_si128(); }
+		static __m128i add(__m128i a, __m128i b) { return _mm_add_epi32(a, b); }
+		static long long first(__m128i a)
+		{
+			long long res[2];
+			_mm_storeu_si128((__m128i*)&res, a);
+			return res[0];
+		}
+	};
+	template<> struct Op<unsigned long long, __m128i>
+	{
+		static __m128i zero() { return _mm_setzero_si128(); }
+		static __m128i add(__m128i a, __m128i b) { return _mm_add_epi32(a, b); }
+		static unsigned long long first(__m128i a)
+		{
+			unsigned long long res[2];
+			_mm_storeu_si128((__m128i*)&res, a);
+			return res[0];
+		}
+	};
+
+	template<typename Single, typename Multiple>
+	Single sum_simd(Single *data1, size_t count1)
+	{
+		const size_t multiplicity = sizeof(Multiple) / sizeof(Single);
+
+		Multiple *data = (Multiple *)data1;
+		size_t count = count1 / multiplicity;
+
+		Multiple sum = Op<Single, Multiple>::zero();
+		for (size_t i = 0; i < count; ++i)
+		{
+			sum = Op<Single, Multiple>::add(sum, data[i]);
+		}
+
+		for (size_t i = 0; i < multiplicity / 2; ++i)
+			sum = Op<Single, Multiple>::add(sum, sum);
+
+		//sum = Op<Single, Multiple>::add(sum, sum);
+
+		return Op<Single, Multiple>::first(sum);
+	}
+	template<typename Single>
+	Single sum_seq(Single *data, size_t count)
+	{
+		Single sum = 0;
+		for (size_t i = 0; i < count; ++i)
+		{
+			sum += data[i];
+		}
+		return sum;
+	}
+
+#ifndef __GCC__
+	template<typename Single, typename Multiple>
+	void test(size_t size)
+	{
+		Single *data1 = new Single[size];
+		Single *data2 = new Single[size];
+		for (size_t i = 0; i < size; ++i)
+		{
+			data1[i] = 1;
+			data2[i] = 1;
+		}
+
+		cout << endl << "parallel: ";
+		measure([&] { cout << sum_simd<Single, Multiple>(data1, size) << " ";  });
+		cout << endl;
+
+		cout << "serial: ";
+		measure([&] { cout << sum_seq<Single>(data2, size) << " "; });
+		cout << endl;
+	}
+#endif
+}
+
+using namespace simd;
+
 namespace parallel
 {
 	typedef unsigned long long value_t;
@@ -195,7 +317,6 @@ namespace parallel
 	inline distance_t distance(const point& a, const center& b)
 	{
 		return std::sqrt(pow2(b.x - a.x) + pow2(b.y - a.y));
-		//return std::sqrt((double)((b.x - a.x)*(b.x - a.x)) + ((b.y - a.y)*(b.y - a.y)));
 	}
 
 	point *points;
@@ -386,20 +507,12 @@ namespace common
 	template< typename F>
 	void measure(F f)
 	{
-		//double time = omp_get_wtime();
-		//std::cout << "BEGIN" << std::endl;
-
 		tick_count t0 = tick_count::now();
 
 		f();
 
 		tick_count t1 = tick_count::now();
 		printf("time for action = %g seconds\n", (t1 - t0).seconds());
-
-		//// END
-		//std::cout << "END" << std::endl;
-		//time = omp_get_wtime() - time;
-		//std::cout << "execution time: " << time << " s" << std::endl;
 	}
 	float *alinged_aloc(size_t size, size_t alignment)
 	{
@@ -462,6 +575,21 @@ namespace common
 }
 
 using namespace common;
+
+
+//int main(int argc, char **argv)
+//{
+//	size_t count = 1000000;
+//	test<float, __m128>(count);
+//	test<long, __m128i>(count);
+//	test<int, __m128i>(count);
+//	test<long long, __m128i>(count);
+//
+//	#ifndef __GCC__
+//		std::system("pause");
+//	#endif
+//		return 0;
+//}
 
 int main(int argc, char **argv)
 {
