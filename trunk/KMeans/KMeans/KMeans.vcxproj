@@ -153,10 +153,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="kmeans.cpp" />
-    <ClCompile Include="serial.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="simd_vector.hpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

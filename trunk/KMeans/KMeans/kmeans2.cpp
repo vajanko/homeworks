@@ -17,11 +17,11 @@
 #include <tbb\blocked_range.h>
 #include <tbb\tick_count.h>
 
+#include "simd_vector.hpp"
 
 using namespace tbb;
 using namespace std;
 
-#ifndef __GCC__
 namespace serial1
 {
 	typedef unsigned long long value_t;
@@ -167,7 +167,6 @@ namespace serial1
 		save_results(means_file_name, clusters_file_name, means, data);
 	}
 }
-#endif
 
 namespace parallel
 {
@@ -259,20 +258,19 @@ namespace parallel
 			}
 		}
 
-		void allocate_memory()
+		kmeans_single_thread() : thread_index(0) 
 		{
 			thread_clusters = new center[centers_count];
 			//thread_clusters = parallel::clusters[thread_index];
 		}
-		kmeans_single_thread() : thread_index(0) 
-		{
-			allocate_memory();
-		}
+			//thread_clusters(new center[centers_count]), thread_index(0) { }
 		kmeans_single_thread(kmeans_single_thread& s, split) : thread_index((s.thread_index + 1) % thread_count) 
 		{
-			allocate_memory();
+			thread_clusters = new center[centers_count];
+			//thread_clusters = parallel::clusters[thread_index];
 		}
-		~kmeans_single_thread() { delete[] thread_clusters; }
+			//thread_clusters(new center[centers_count]), thread_index(s.thread_index + 1) { }
+		//~kmeans_single_thread() { delete[] thread_clusters; }
 	};
 	
 	void load_points(const std::string& file_name)
@@ -387,16 +385,32 @@ namespace common
 		std::cout << "Usage:" << std::endl << "kmeans <data_file> <means_file> <clusters_file> <k> <iterations>" << std::endl << "kmeans --generate <data_file> <size> <seed>" << std::endl;
 	}
 
-#ifndef __GCC__
 	template< typename F>
 	void measure(F f)
 	{
+		//double time = omp_get_wtime();
+		//std::cout << "BEGIN" << std::endl;
+
 		tick_count t0 = tick_count::now();
 
 		f();
 
 		tick_count t1 = tick_count::now();
 		printf("time for action = %g seconds\n", (t1 - t0).seconds());
+
+		//// END
+		//std::cout << "END" << std::endl;
+		//time = omp_get_wtime() - time;
+		//std::cout << "execution time: " << time << " s" << std::endl;
+	}
+	float *alinged_aloc(size_t size, size_t alignment)
+	{
+		size_t real_size = size + 4;
+		float *mem = new float[real_size];
+		void *ptr = (void *)mem;
+		float *aligned_mem = (float*)std::align(alignment, size, ptr, real_size);
+
+		return aligned_mem;
 	}
 
 	bool compare(const std::string& lFilePath, const std::string& rFilePath)
@@ -431,7 +445,6 @@ namespace common
 		delete[] rBuffer;
 		return true;
 	}
-#endif
 
 	int generate_file(char **argv)
 	{
@@ -454,10 +467,9 @@ using namespace common;
 
 int main(int argc, char **argv)
 {
-#ifndef __GCC__
 	task_scheduler_init init(4);
-	parallel::thread_count = 4;		//init.default_num_threads();
-#endif
+	parallel::thread_count = 4;
+		//init.default_num_threads();
 
 	if (argc == 5)
 	{
@@ -478,9 +490,9 @@ int main(int argc, char **argv)
 	std::size_t k = lexical_cast<std::size_t>(s_k);
 	std::size_t iterations = lexical_cast<std::size_t>(s_iterations);
 
-#ifndef __GCC__
 	// customize
 	iterations = 30;
+
 	cout << "iteratrions: " << iterations << endl;
 	cout << "clusters:    " << k << endl;
 
@@ -496,9 +508,6 @@ int main(int argc, char **argv)
 
 	bool comparison2 = compare(clusters_file_name + ".ser", clusters_file_name + ".par");
 	cout << "Comparison result (clusters file): " << comparison2 << endl;
-#else
-	parallel::calculate(file_name, means_file_name, clusters_file_name, k, iterations);
-#endif
 
 #ifndef __GCC__
 	std::system("pause");
