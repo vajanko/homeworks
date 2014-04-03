@@ -13,17 +13,16 @@ template <typename T> int A<T>::n;
 
 int main(int argc, char **argv)
 {
-	table<int> tab{ 1, 2 };
-	int x = 100;
+	typedef std::tuple<int, bool, double> value_type;
+	std::vector<value_type> data;
+	data.push_back(make_tuple(1, true, 1.0));
+	data.push_back(make_tuple(2, false, 2.0));
+	data.push_back(make_tuple(3, true, 3.0));
 
-	int val = 10;
-	int *ptr = &val;
-	int &ref = *ptr;
-
-	ptr = &val;
-	//ref = *ptr;
-	ref = 30;
-
+	typedef index<0, int, value_type> index_type;
+	index<0, int, value_type> ind(data);
+	index_holder<0, index_type> holder(data);
+	
 
 	system("pause");
 	return 0;
