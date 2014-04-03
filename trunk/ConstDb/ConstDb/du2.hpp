@@ -36,19 +36,21 @@ public:
 
 
 // Column = zero-based column position, Type = column data type
-template<typename Key, typename Row> struct index
+template<size_t KeyIndex, typename Key, typename Row> struct index
 {
-	typedef std::vector<Row>::iterator row_ptr;
+	typedef std::vector<Row> data_type;		// shold be defined in the table
+	typedef typename data_type::iterator row_ptr;
 
 	std::map<Key, row_ptr> data_;
 
 	row_ptr get(const Key& value) { return data_.at(value); }
 
-	index(const std::vector<Row> &data)
+	index(const data_type &data)
 	{
-		for (auto it = data.begin(); it < data.end() ++it)
+		for (auto it = data.begin(); it < data.end(); ++it)
 		{
-			
+			auto key = std::get<KeyIndex>(it);
+			data_.operator[key] = it;
 		}
 	}
 	/*const Db::value_type &find(const typename std::tuple_element<Column, typename db::value_type>::type &key)
@@ -56,8 +58,25 @@ template<typename Key, typename Row> struct index
 
 	}*/
 };
-// TODO: specialize index for integral types
 
+template<size_t Index, typename Type> struct index_holder
+{
+	typedef typename Type::data_type data_type;
+
+	std::unique_ptr<Type> index_;
+	data_type &data_;
+
+	Type *operator->()
+	{
+		// create index if does not exist yet
+		if (index_ == nullptr)
+			index_ = std::make_unique(new Type(data_));
+
+		return index_;
+	}
+
+	index_holder(data_type &data) : data_(data), index_(nullptr) { }
+};
 
 template<size_t Size, typename ...ColumnType>
 struct const_db
