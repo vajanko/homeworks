@@ -1,6 +1,7 @@
 #include<tuple>
 #include<vector>
 #include<map>
+#include<memory>
 
 // all_same
 template<typename T, typename ...Types> struct all_same;
@@ -36,47 +37,52 @@ public:
 
 
 // Column = zero-based column position, Type = column data type
-template<size_t KeyIndex, typename Key, typename Row> struct index
+template<size_t KeyIndex, typename Key, typename Row> class index
 {
+public:
 	typedef std::vector<Row> data_type;		// shold be defined in the table
 	typedef typename data_type::iterator row_ptr;
 
-	std::map<Key, row_ptr> data_;
-
 	row_ptr get(const Key& value) { return data_.at(value); }
 
-	index(const data_type &data)
-	{
-		for (auto it = data.begin(); it < data.end(); ++it)
+private:
+	std::map<Key, row_ptr> data_;
+
+public:
+	index(data_type &data)
+	{	// build index
+		for (row_ptr it = data.begin(); it < data.end(); ++it)
 		{
-			auto key = std::get<KeyIndex>(it);
-			data_.operator[key] = it;
+			auto key = std::get<KeyIndex>(*it);
+			data_.insert(std::make_pair(key, it));
 		}
 	}
-	/*const Db::value_type &find(const typename std::tuple_element<Column, typename db::value_type>::type &key)
-	{
-
-	}*/
 };
-
-template<size_t Index, typename Type> struct index_holder
+// Type = type of index class, instance of upper template
+template<size_t Index, typename Type> class index_holder
 {
+public:
 	typedef typename Type::data_type data_type;
-
+private:
 	std::unique_ptr<Type> index_;
 	data_type &data_;
-
+public:
 	Type *operator->()
 	{
 		// create index if does not exist yet
 		if (index_ == nullptr)
-			index_ = std::make_unique(new Type(data_));
+			index_.reset(new Type(data_));
 
-		return index_;
+		// This is just symbolic
+		return index_.operator->();
 	}
 
 	index_holder(data_type &data) : data_(data), index_(nullptr) { }
 };
+/*const Db::value_type &find(const typename std::tuple_element<Column, typename db::value_type>::type &key)
+{
+
+}*/
 
 template<size_t Size, typename ...ColumnType>
 struct const_db
