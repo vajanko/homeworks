@@ -22,7 +22,8 @@ int main(int argc, char **argv)
 	typedef index<0, int, value_type> index_type;
 	index<0, int, value_type> ind(data);
 	index_holder<0, index_type> holder(data);
-	
+
+	auto x = holder->get(1);
 
 	system("pause");
 	return 0;
