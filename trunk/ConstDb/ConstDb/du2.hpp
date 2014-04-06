@@ -2,6 +2,13 @@
 #include<vector>
 #include<map>
 #include<memory>
+#include<stdexcept>
+
+class not_found_exception : public std::runtime_error
+{
+public:
+	not_found_exception(const std::string &msg) : std::runtime_error(msg) { }
+};
 
 // ColumnIndex = zero-based column position
 // RowType = type of the entire row data type (probably std::tuple<...>)
@@ -75,15 +82,6 @@ template<typename RowType> struct index_tuple<0, RowType>
 	
 	index_type index_holder_;
 
-	//template<size_t Index>
-	//void get()
-	//{
-	//	auto &ref = *this;
-	//	index_tuple<Index, RowType> &idx = (index_tuple<Index, RowType> &)ref;
-	//	auto index = idx.index_
-	//	//auto idx = ((index_tuple<Index, RowType> *)this)->index_;
-	//}
-
 	index_tuple(data_type &data) : index_holder_(data) { }
 };
 
@@ -116,8 +114,13 @@ public:
 	
 	template<size_t index>
 	const value_type &find(const column_type<index> &key)
-	{	// returns reference to founded row (get<column> returns an iterator)
-		return *get<index>(key);
+	{	
+		row_ptr row = get<index>(key);
+		if (row == data_.end())
+			throw not_found_exception("Given key not found!");
+
+		// returns reference to founded row
+		return *row;
 	}
 
 	template<size_t index>
