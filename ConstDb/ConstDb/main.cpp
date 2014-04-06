@@ -38,7 +38,13 @@ int main(int argc, char **argv)
 	bool res;
 	res = tab.contains<0>(123);
 	res = tab.contains<0>(1);
-	
+
+	try {
+		tab.find<0>(123);
+	}
+	catch (const not_found_exception &ex) {
+		cout << ex.what() << endl;
+	}
 
 	system("pause");
 	return 0;
