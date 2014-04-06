@@ -19,15 +19,26 @@ int main(int argc, char **argv)
 	data.push_back(make_tuple(2, false, 1.0));
 	data.push_back(make_tuple(3, true, 3.0));
 
-	typedef index<2, double, value_type> index_type;
+	typedef index<2, value_type> index_type;
 	index_type ind(data);
 	index_holder<index_type> holder(data);
 
-	auto x = holder->get(0);
+	auto x = holder->get(1);
 
 	/*map<int, double> m;
 	auto res = m.find(1);
 	res->second*/
+	
+	index_tuple<2, value_type> v(data);
+	//v.get<0>();
+
+	table<int, bool, double> tab(data);
+	auto &val = tab.find<0>(1);
+
+	bool res;
+	res = tab.contains<0>(123);
+	res = tab.contains<0>(1);
+	
 
 	system("pause");
 	return 0;
