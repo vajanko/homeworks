@@ -15,8 +15,8 @@ int main(int argc, char **argv)
 {
 	typedef std::tuple<int, bool, double> value_type;
 	std::vector<value_type> data;
-	data.push_back(make_tuple(1, true, 2.0));
-	data.push_back(make_tuple(2, false, 1.0));
+	data.push_back(make_tuple(1, true, 1.0));
+	data.push_back(make_tuple(3, false, 2.0));
 	data.push_back(make_tuple(3, true, 3.0));
 
 	typedef index<2, value_type> index_type;
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 	index_tuple<2, value_type> v(data);
 	//v.get<0>();
 
-	table<int, bool, double> tab(data);
+	table<value_type> tab(data);
 	auto &val = tab.find<0>(1);
 
 	bool res;
@@ -41,6 +41,13 @@ int main(int argc, char **argv)
 
 	try {
 		tab.find<0>(123);
+	}
+	catch (const not_found_exception &ex) {
+		cout << ex.what() << endl;
+	}
+
+	try {
+		tab.find<0>(3);
 	}
 	catch (const not_found_exception &ex) {
 		cout << ex.what() << endl;
