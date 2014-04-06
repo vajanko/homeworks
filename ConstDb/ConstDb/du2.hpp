@@ -25,7 +25,7 @@ public:
 	typedef std::vector<value_type> data_type;
 
 private:
-	data_type data_;
+	data_type data_;		// this is the real data
 
 public:
 	reference at(size_t index) { return data_.at(index); }
@@ -33,6 +33,9 @@ public:
 
 	table(std::initializer_list<value_type> rows) :
 		data_(rows) { }
+
+private:
+
 };
 
 
@@ -43,23 +46,28 @@ public:
 	typedef std::vector<Row> data_type;		// shold be defined in the table
 	typedef typename data_type::iterator row_ptr;
 
-	row_ptr get(const Key& value) { return data_.at(value); }
+	row_ptr get(const Key& key) 
+	{ 
+		auto res = data_index_.find(key);
+		return res != data_index_.end() ? res->second : data_.end();
+	}
 
 private:
-	std::map<Key, row_ptr> data_;
+	std::map<Key, row_ptr> data_index_;
+	data_type &data_;
 
 public:
-	index(data_type &data)
+	index(data_type &data) : data_(data)
 	{	// build index
 		for (row_ptr it = data.begin(); it < data.end(); ++it)
 		{
 			auto key = std::get<KeyIndex>(*it);
-			data_.insert(std::make_pair(key, it));
+			data_index_.insert(std::make_pair(key, it));
 		}
 	}
 };
 // Type = type of index class, instance of upper template
-template<size_t Index, typename Type> class index_holder
+template<typename Type> class index_holder
 {
 public:
 	typedef typename Type::data_type data_type;
