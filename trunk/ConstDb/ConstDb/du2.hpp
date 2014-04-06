@@ -35,7 +35,15 @@ public:
 		for (row_ptr it = data.begin(); it < data.end(); ++it)
 		{
 			auto key = std::get<ColumnIndex>(*it);
-			data_index_.insert(std::make_pair(key, it));
+			// Check whether current key is alredy present
+			if (data_index_.find(key) != data_index_.end())
+			{	// if key is present more than once row won't be accesible through this key
+				data_index_[key] = data.end();
+			}
+			else
+			{
+				data_index_.insert(std::make_pair(key, it));
+			}
 		}
 	}
 };
@@ -85,10 +93,12 @@ template<typename RowType> struct index_tuple<0, RowType>
 	index_tuple(data_type &data) : index_holder_(data) { }
 };
 
-template<typename ...ColumnType> class table
+//template<typename ...ColumnType> 
+template<typename ValueType> class table
 {
 public:
-	typedef std::tuple<ColumnType...> value_type;
+	//typedef std::tuple<ColumnType...> value_type;
+	typedef ValueType value_type;
 	typedef std::vector<value_type> data_type;
 
 	template<size_t ColIndex>
@@ -140,13 +150,26 @@ public:
 
 }*/
 
-template<size_t Size, typename ...ColumnType>
-struct const_db
+struct db_init
 {
-	typedef std::tuple<ColumnType...> value_type;
-	typedef value_type row_type;
 
-	template<size_t Index, typename Column>
-	void get(Column key) { }
 
+	db_init()
+	{
+
+	}
 };
+struct db 
+{ 
+	//… 
+	//typedef std::tuple<…> value_type; 
+	//… 
+	
+};
+
+template<typename ConstDb, size_t ColumnIndex>
+const typename ConstDb::value_type &
+find(const typename std::tuple_element<ColumnIndex, typename ConstDb::value_type>::type &key)
+{
+	ConstDb db;
+}
