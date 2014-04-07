@@ -54,8 +54,8 @@ int main(int argc, char **argv)
 	}
 
 	my_db db2;
-	auto &x2 = find<my_db, 0>(2);
-	
+	//auto &x2 = find<my_db, 0>(1);
+	my_db::instance();
 
 	system("pause");
 	return 0;
