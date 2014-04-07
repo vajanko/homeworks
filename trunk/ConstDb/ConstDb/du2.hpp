@@ -1,3 +1,6 @@
+// DU2cdb.hpp
+// Ondrej Kov·Ë NPRG051 2013/2014
+
 #include<tuple>
 #include<vector>
 #include<map>
@@ -204,7 +207,7 @@ private:
 
 public:
 	// Returns reference to singleton table
-	static table_type &table()
+	static table_type &instance()
 	{	// here user-defined constructor of DbType is called which allows to insert rows
 		static DbType instance_;
 
@@ -224,5 +227,5 @@ template<typename ConstDb, size_t ColumnIndex>
 const typename ConstDb::value_type &
 	find(const typename std::tuple_element<ColumnIndex, typename ConstDb::value_type>::type &key)
 {
-	return ConstDb::table().find<ColumnIndex>(key);
+	return ConstDb::instance().find<ColumnIndex>(key);
 }
