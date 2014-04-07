@@ -53,6 +53,10 @@ int main(int argc, char **argv)
 		cout << ex.what() << endl;
 	}
 
+	my_db db2;
+	auto &x2 = find<my_db, 0>(2);
+	
+
 	system("pause");
 	return 0;
 }
