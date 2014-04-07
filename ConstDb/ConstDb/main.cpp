@@ -11,7 +11,7 @@ template <typename T> struct A
 }; 
 template <typename T> int A<T>::n;
 
-int main(int argc, char **argv)
+/*int main(int argc, char **argv)
 {
 	typedef std::tuple<int, bool, double> value_type;
 	std::vector<value_type> data;
@@ -25,9 +25,6 @@ int main(int argc, char **argv)
 
 	auto x = holder->get(1);
 
-	/*map<int, double> m;
-	auto res = m.find(1);
-	res->second*/
 	
 	index_tuple<2, value_type> v(data);
 	//v.get<0>();
@@ -53,10 +50,10 @@ int main(int argc, char **argv)
 		cout << ex.what() << endl;
 	}
 
-	my_db db2;
-	//auto &x2 = find<my_db, 0>(1);
-	my_db::instance();
+	//my_db db2;
+	auto &x2 = find<my_db, 0>(1);
+	//my_db::instance();
 
 	system("pause");
 	return 0;
-}
+}*/
