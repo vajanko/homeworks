@@ -47,7 +47,7 @@ public:
 		}
 	}
 };
-// Type = type of index class, instance of upper template
+// IndexType = type of index class, instance of upper template
 template<typename IndexType> class index_holder
 {
 public:
@@ -81,10 +81,7 @@ template<size_t ColumnIndex, typename RowType> struct index_tuple
 	index_tuple(data_type &data) : index_holder_(data), base_type(data) { }
 };
 template<typename RowType> struct index_tuple<0, RowType>
-	//: public index_holder<index<0, RowType>>
 {
-	typedef index_holder<index<0, RowType>> base_type;
-
 	typedef index_holder<index<0, RowType>> index_type;
 	typedef typename index_type::data_type data_type;
 	
@@ -146,35 +143,64 @@ public:
 };
 
 template<typename ...ColumnType>
-std::tuple<ColumnType...> row(ColumnType ...values)
-{
-	return std::make_tuple(values...);
-}
-
-template<typename ValueType>
 struct const_db
 {
-	static table<ValueType> data;
+	typedef std::tuple<ColumnType...> value_type;
+	typedef typename table<value_type>::data_type data_type;
+
+	static typename table<value_type>::data_type data;
+
+	static void insert(ColumnType ...value)
+	{
+		data.push_back(std::make_tuple(value...));
+	}
+
+	static table<value_type> get_table()
+	{
+		if ()
+		return table<value_type>(data);
+	}
 };
 
-struct my_db
-{ 
-	//… 
-	typedef std::tuple<int, bool, double> value_type;
-	//… 
-	table<value_type> data
-	{ {
-		row(1, false, 1.2),
-		row(2, false, 1.2),
-		row(1, true, 1.2)
-	} };
+template<typename ...ColumnType>
+typename const_db<ColumnType...>::data_type const_db<ColumnType...>::data = typename const_db<ColumnType...>::data_type();
 
+template<typename DerivedType>
+class singleton
+{
+	static DerivedType *instance_;
+public:
+	static void insert() { }
+	static DerivedType *instance()
+	{
+		if (instance_ == nullptr)
+			instance_ = new DerivedType();
+
+		return instance_;
+	}
+	singleton() { }
+};
+
+struct my_db : public singleton<my_db>
+	//const_db<int, bool, double>
+{
+	/*static table<value_type> table;
+	static void create()
+	{
+		insert(1, false, 1.0);
+	}*/
+	my_db()
+	{
+		insert();
+		insert();
+	}
 };
 
 template<typename ConstDb, size_t ColumnIndex>
 const typename ConstDb::value_type &
 	find(const typename std::tuple_element<ColumnIndex, typename ConstDb::value_type>::type &key)
 {
-	ConstDb db;
-	return db.data.find<ColumnIndex>(key);
+	ConstDb::create();
+	auto table = ConstDb::get_table();
+	return table.find<ColumnIndex>(key);
 }
