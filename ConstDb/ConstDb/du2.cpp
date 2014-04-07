@@ -1,3 +1,6 @@
+// DU2cdb.cpp
+// Ondrej Kov·Ë NPRG051 2013/2014
+
 #include<iostream>
 #include<string>
 #include "du2.hpp"
@@ -33,48 +36,7 @@ void example1()
 // End of example 1)
 
 // Example 2) (tree structure)
-struct node
-{
-	int id;
-	const node &parent;
-
-	bool operator<(const node &n) const { return id < n.id; }
-
-	node(int id) : id(id), parent(*this) { }
-	node(int id, const node &parent) : id(id), parent(parent) { }
-};
-struct db_tree : public const_db<db_tree, int, node>
-{
-	static const node &find_node(int key)
-	{
-		return std::get<1>(find<db_tree, 0>(key));
-	}
-	
-	db_tree()
-	{
-		insert(0, node(0));
-		insert(1, node(1, find_node(0)));
-		insert(2, node(2, find_node(0)));
-
-		insert(3, node(3, find_node(1)));
-	}
-};
-void example2()
-{
-	cout << "EXAMPLE 2" << endl;
-
-	int key = 3;
-
-	// traversing path from leaf to the root
-	while (key != 0)
-	{
-		const node &n = db_tree::find_node(key);
-		cout << key << endl;
-		key = n.parent.id;
-	}
-
-	cout << endl;
-}
+// :( not enough time to finish
 // End of example 2)
 
 // Example 3) (personal)
@@ -177,10 +139,10 @@ void example4()
 int main(int argc, char **argv)
 {
 	example1();
-	example2();
+	//example2();
 	example3();
 	example4();
 
-	system("pause");
+	//system("pause");
 }
 
