@@ -127,7 +127,7 @@ public:
 	{	
 		row_ptr row = get<index>(key);
 		if (row == data_.end())
-			throw not_found_exception("Given key not found!");
+			throw not_found_exception("Given key not found or multiple instances are present in current column.");
 
 		// returns reference to founded row
 		return *row;
@@ -145,31 +145,36 @@ public:
 		data_(data), index_tuple_(data_) { }
 };
 
-/*const Db::value_type &find(const typename std::tuple_element<Column, typename db::value_type>::type &key)
+template<typename ...ColumnType>
+std::tuple<ColumnType...> row(ColumnType ...values)
 {
+	return std::make_tuple(values...);
+}
 
-}*/
-
-struct db_init
+template<typename ValueType>
+struct const_db
 {
-
-
-	db_init()
-	{
-
-	}
+	static table<ValueType> data;
 };
-struct db 
+
+struct my_db
 { 
 	//… 
-	//typedef std::tuple<…> value_type; 
+	typedef std::tuple<int, bool, double> value_type;
 	//… 
-	
+	table<value_type> data
+	{ {
+		row(1, false, 1.2),
+		row(2, false, 1.2),
+		row(1, true, 1.2)
+	} };
+
 };
 
 template<typename ConstDb, size_t ColumnIndex>
 const typename ConstDb::value_type &
-find(const typename std::tuple_element<ColumnIndex, typename ConstDb::value_type>::type &key)
+	find(const typename std::tuple_element<ColumnIndex, typename ConstDb::value_type>::type &key)
 {
 	ConstDb db;
+	return db.data.find<ColumnIndex>(key);
 }
