@@ -18,12 +18,12 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="du2.cpp">
+    <ClCompile Include="du2cdb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="du2.hpp">
+    <ClInclude Include="du2cdb.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
