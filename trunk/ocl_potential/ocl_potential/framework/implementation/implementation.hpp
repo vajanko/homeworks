@@ -23,6 +23,7 @@ private:
 	index_t mPointCount;
 	cl::Buffer mEdges;
 	index_t mEdgeCount;
+	cl::Buffer mNeighbours;
 
 	struct edge
 	{
@@ -97,6 +98,19 @@ public:
 		//size_t width;
 		//edge *graph = transform_graph(edges, lengths, points, width);
 
+		std::vector<int> neighbours(points + 1);
+		neighbours[0] = 0;
+		size_t v = 0;
+
+		for (size_t i = 1; i < mEdgeCount; ++i)
+		{
+			if (edges[i - 1].p1 != edges[i].p1)
+			{
+				neighbours[v] = i;
+				++v;
+			}
+		}
+
 		edge *my_edges = new edge[mEdgeCount];
 		for (size_t i = 0; i < mEdgeCount; ++i)
 		{
@@ -110,18 +124,20 @@ public:
 		mVelocities = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(Point)* points, velocities);
 		mForces = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, sizeof(Point)* points, velocities);
 		mEdges = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(edge)* mEdgeCount, my_edges);
+		mNeighbours = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int)* (points + 1), neighbours.data());
 	
 		cl::Kernel &kernel = mKernels->at("iteration");
 		kernel.setArg(0, sizeof(cl::Buffer), &mPoints);
 		kernel.setArg(1, sizeof(cl::Buffer), &mVelocities);
 		kernel.setArg(2, sizeof(cl::Buffer), &mForces);
 		kernel.setArg(3, sizeof(cl::Buffer), &mEdges);
-		kernel.setArg(4, mEdgeCount);
-		kernel.setArg(5, mVertexRepulsion);
-		kernel.setArg(6, mVertexMass);
-		kernel.setArg(7, mEdgeCompulsion);
-		kernel.setArg(8, mSlowdown);
-		kernel.setArg(9, mTimeQuantum);
+		kernel.setArg(4, sizeof(cl::Buffer), &mNeighbours);
+		kernel.setArg(5, mEdgeCount);
+		kernel.setArg(6, mVertexRepulsion);
+		kernel.setArg(7, mVertexMass);
+		kernel.setArg(8, mEdgeCompulsion);
+		kernel.setArg(9, mSlowdown);
+		kernel.setArg(10, mTimeQuantum);
 
 		//cl_int err;
 		//const cl::Device &dev = mDevices->at(0);

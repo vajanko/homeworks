@@ -39,7 +39,7 @@ void addRepulsiveForce(__global const point *points, __global point *forces, flo
 		forces[gid].y -= dy;
 	}
 }
-void addCompulsiveForce(__global const point *points, edge e,  __global point *forces, float edgeCompulsion)
+/*void addCompulsiveForce(__global const point *points, edge e,  __global point *forces, float edgeCompulsion)
 {
 	float dx = points[e.p2].x - points[e.p1].x;
 	float dy = points[e.p2].y - points[e.p1].y;
@@ -49,12 +49,12 @@ void addCompulsiveForce(__global const point *points, edge e,  __global point *f
 	dy *= fact;
 	
 	forces[e.p1].x += dx;
-	//forces[e.p1].y += dy;
-	//forces[e.p2].x -= dx;
-	//forces[e.p2].y -= dy;
-}
-void computeForces(__global point *points, __global point *forces, __global const edge *edges, __global const int *neighbours,
-	uint edgeCount, float vertexRepulsion, float vertexMass, float edgeCompulsion, float slowdown, float timeQuantum)
+	forces[e.p1].y += dy;
+	forces[e.p2].x -= dx;
+	forces[e.p2].y -= dy;
+}*/
+void computeForces(__global point *points, __global point *forces, __global const edge *edges, uint edgeCount,
+	float vertexRepulsion, float vertexMass, float edgeCompulsion, float slowdown, float timeQuantum)
 {
 	int gid = get_global_id(0);
 	int gsz = get_global_size(0);
@@ -63,24 +63,48 @@ void computeForces(__global point *points, __global point *forces, __global cons
 	addRepulsiveForce(points, forces, vertexRepulsion);
 
 	// Compute compulsive forces of the edges.
+	for (size_t i = 0; i < edgeCount; ++i)
+	{
+		edge e = edges[i];
+		if (e.p1 == gid)
+		{
+			float dx = points[e.p2].x - points[gid].x;
+			float dy = points[e.p2].y - points[gid].y;
+			float sqLen = dx*dx + dy*dy;
+			float fact = sqrt(sqLen) * edgeCompulsion / (float)(e.len);
+			dx *= fact;
+			dy *= fact;
+
+			forces[gid].x += dx;
+			forces[gid].y += dy;
+		}
+		if (e.p2 == gid)
+		{
+			float dx = points[gid].x - points[e.p1].x;
+			float dy = points[gid].y - points[e.p1].y;
+			float sqLen = dx*dx + dy*dy;
+			float fact = sqrt(sqLen) * edgeCompulsion / (float)(e.len);
+			dx *= fact;
+			dy *= fact;
+
+			forces[gid].x -= dx;
+			forces[gid].y -= dy;
+		}
+	}
+
 	//size_t step = edgeCount / gsz;
 	//for (size_t i = 0; i < step; ++i)
 	//	addCompulsiveForce(points, edges[gid * step + i], forces, edgeCompulsion);
-	for (int i = neighbours[gid]; i < neighbours[gid + 1]; ++i)
-	{
-		addCompulsiveForce(points, edges[i], forces, edgeCompulsion);
-	}
 }
 
-__kernel void iteration(__global point *points, __global point *velocities, __global point *forces, 
-	__global const edge *edges, __global const int *neighbours,
+__kernel void iteration(__global point *points, __global point *velocities, __global point *forces, __global const edge *edges, 
 	uint edgeCount,
 	float vertexRepulsion, float vertexMass, float edgeCompulsion, float slowdown, float timeQuantum)
 {
 	int gid = get_global_id(0);
 
 	// compute forces
-	computeForces(points, forces, edges, neighbours, edgeCount, vertexRepulsion, vertexMass, edgeCompulsion, slowdown, timeQuantum);
+	computeForces(points, forces, edges, edgeCount, vertexRepulsion, vertexMass, edgeCompulsion, slowdown, timeQuantum);
 
 	// update velocities
 	float fact = timeQuantum / vertexMass;		// v = Ft/m  => t/m is mul factor for F
