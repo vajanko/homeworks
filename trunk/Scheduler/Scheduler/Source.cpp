@@ -48,9 +48,19 @@ void TestScheduler(const char* msg, const PrimeMap& value, time_sec serialTime)
 	std::cout << msg << " calculation correct" << std::endl;
 }
 
+struct getter
+{
+	int vlaue_;
+	int operator()(void)
+	{
+		return vlaue_;
+	}
+	getter(int val) : vlaue_(val) { }
+};
+
 int main()
 {
-	ticks_t start = now();
+	/*ticks_t start = now();
 	PrimeMap value;
 	for (std::size_t i = 0; i < Count; i++)
 	{
@@ -60,7 +70,11 @@ int main()
 	time_sec serialTime = ticks_to_time(now() - start);
 	std::cout << "Serial time = " << serialTime << std::endl;
 
-	TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);
+	TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);*/
+
+	Scheduler<int, getter> sch(3);
+	sch.add_task(getter(1));
+	sch.get_task_result(1);
 
 	system("pause");
 	return 0;
