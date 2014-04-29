@@ -73,8 +73,16 @@ int main()
 	TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);*/
 
 	Scheduler<int, getter> sch(3);
-	sch.add_task(getter(1));
-	sch.get_task_result(1);
+	//sch.add_task(getter(1));
+	//sch.get_task_result(1);
+	task_info<int, getter> t(getter(1));
+	t.run();
+	int x = t.get_result();
+
+	std::cout << "result: " << x << std::endl;
+
+	worker<int, getter> w;
+	std::thread th;
 
 	system("pause");
 	return 0;
