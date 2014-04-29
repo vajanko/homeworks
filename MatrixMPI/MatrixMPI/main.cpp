@@ -63,6 +63,17 @@ matrix matrix_load(const char *filename, size_t &rows, size_t &cols)
 
 	return res;
 }
+void matrix_copy(const matrix src, size_t rows, size_t cols, matrix dst, size_t top, size_t left)
+{
+	for (size_t i = 0; i < rows; ++i)
+	{
+		for (size_t j = 0; j < cols; ++j)
+		{
+			dst[top + i][left + j] = src[i][j];
+		}
+	}
+}
+
 void matrix_print(matrix m, size_t rows, size_t cols)
 {
 	for (size_t i = 0; i < rows; ++i)
@@ -87,3 +98,38 @@ int main(int argc, char **argv)
 	system("pause");
 	return err;
 }
+
+#ifdef MPI
+void abort(int err)
+{
+	MPI_Finalize();
+	exit(err);
+}
+int catch_error(int err)
+{
+	if (err)
+		abort(err);
+	return err;
+}
+void test()
+{
+	MPI_Type_vector(count, blocklength, stride, oldtype, &newtype);
+	MPI_Type_commit (&newtype);
+	MPI_Send(buffer, 1, newtype, dest, tag, comm);
+	int MPI_Type_free (&newtype)
+}
+
+int main(int argc, char **argv) 
+{
+	catch_error(MPI_Init(&argc, &argv));
+
+	size_t rows, cols;
+	matrix m = matrix_load("C:\\tmp\\m_3_3.dat", rows, cols);
+	matrix_print(m, rows, cols);
+
+	matrix mult = matrix_multiply(m, m, rows, cols, cols);
+	matrix_print(mult, rows, cols);
+
+	return catch_error(MPI_Finalize());
+}
+#endif
