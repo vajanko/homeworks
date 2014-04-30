@@ -18,35 +18,41 @@ template<typename T, typename TASK>
 class task_info
 {
 private:
-	typedef std::unique_ptr<std::future<T>> future_ptr;
-
 	task_state state_;
 	TASK &task_;
 	T result_;
-	std::future<T> op_;
+
+	// reference to worker
+	// ..
+
+	// not thread safe
+	void run_internal()
+	{
+		state_ = task_state::running;
+		result_ = task_();
+		state_ = task_state::ready;
+	}
 
 public:
-	void run()
+	T run()
 	{
-		// TODO: check and run
-		state_ = task_state::running;
-		//op_ = std::async(task_);
+		run_internal();
+		return result_;
 	}
 	T get_result()
 	{
 		// TODO: check and run
-		if (state_ == task_state::waiting)
-			result_ = task_();		// synchronous run
-		else if (state_ == task_state::running)
-			result_ = op_.get();	// asynchronous run (just wait for the thread)
+		//if (state_ == task_state::waiting)
+		//	result_ = task_();		// synchronous run
+		//else if (state_ == task_state::running)
+		//	result_ = op_.get();	// asynchronous run (just wait for the thread)
 			
 		// at this point task must be already ready
 		state_ = task_state::ready;
 		return result_;
 	}
 
-	task_info(TASK &&task) : task_(task), state_(task_state::waiting), 
-		result_(), op_() {}
+	task_info(TASK &&task) : task_(task), state_(task_state::waiting), result_() {}
 };
 
 template<typename T, typename TASK>
@@ -60,6 +66,9 @@ private:
 
 	thread_ptr thread_;		// thread on which current worker is running
 	bool exit_;				// true if worker should exit
+
+	std::future<T> future_;			// future value of currently running job
+	std::mutex future_mutex_;		// protects future_ field
 	
 	// this could be a class, but for simplification
 	std::list<job_ptr> jobs_;	// a list of jobs to be executed
@@ -68,6 +77,7 @@ private:
 	// thread safe
 	job_ptr pop()
 	{
+		// can be blocked if no job are present
 		job_ptr job;
 		{
 			std::unique_lock<std::mutex> lock(jobs_mutex_);
@@ -94,8 +104,13 @@ private:
 			job_ptr job = pop();
 
 			// execute the job
-			//job->operator()();
-			//(*job)();
+			std::packaged_task<T()> pack(std::bind(&job_type::run, job));
+			// get future value of current job
+			future_mutex_.lock();
+			future_ = pack.get_future();
+			future_mutex_.unlock();
+
+			pack();		// let the job start
 		}
 	}
 public:

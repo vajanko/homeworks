@@ -57,6 +57,10 @@ struct getter
 	}
 	getter(int val) : vlaue_(val) { }
 };
+int get_value()
+{
+	return 456;
+}
 
 int main()
 {
@@ -77,12 +81,18 @@ int main()
 	//sch.get_task_result(1);
 	task_info<int, getter> t(getter(1));
 	t.run();
-	int x = t.get_result();
+	//int x = t.get_result();
 
-	std::cout << "result: " << x << std::endl;
+	//std::cout << "result: " << x << std::endl;
 
 	worker<int, getter> w;
-	std::thread th;
+	getter gt(79);
+	
+	std::packaged_task<int()> pt(gt);
+	pt();
+
+	auto fut = pt.get_future();
+	int y = fut.get();
 
 	system("pause");
 	return 0;
