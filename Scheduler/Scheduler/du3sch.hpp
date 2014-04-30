@@ -28,6 +28,10 @@ private:
 	// not thread safe
 	void run_internal()
 	{
+		// There are two possibilities of running a task: either it is normally executed by a worker
+		// thread or the client application requests its result synchronously. In the second case
+		// task is executed on the application main thread.
+		// This method should be called only once - from worker thread or from main thread.
 		state_ = task_state::running;
 		result_ = task_();
 		state_ = task_state::ready;
