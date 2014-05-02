@@ -51,23 +51,22 @@ void TestScheduler(const char* msg, const PrimeMap& value, time_sec serialTime)
 	std::cout << msg << " calculation correct" << std::endl;
 }
 
-struct getter
+struct calc
 {
-	int vlaue_;
-	int operator()(void)
+	float value_;
+	double operator()(void)
 	{
-		return vlaue_;
+		float res = 1;
+		for (int i = 1; i < value_; i++)
+			res = std::sqrt(res * i) + res * res / 0.33;
+		return res;
 	}
-	getter(int val) : vlaue_(val) { }
+	calc(float val) : value_(val) { }
 };
-int get_value()
-{
-	return 456;
-}
 
 int main()
 {
-	ticks_t start = now();
+	/*ticks_t start = now();
 	PrimeMap value;
 	for (std::size_t i = 0; i < Count; i++)
 	{
@@ -77,21 +76,33 @@ int main()
 	time_sec serialTime = ticks_to_time(now() - start);
 	std::cout << "Serial time = " << serialTime << std::endl;
 
-	TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);
+	TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);*/
 
-	//sch.add_task(getter(1));
-	//sch.get_task_result(1);
+	Scheduler<float, calc> sch(2);
+	ticks_t start = now();
 
-	//std::cout << "result: " << x << std::endl;
+	size_t ids[4];
 
-	//Scheduler<int, getter> sch(1);
-	//size_t id = sch.add_task(getter(100));
-	//while (!sch.is_task_ready(id))
-	//{
-	//}
+	ids[0] = sch.add_task(calc(100));
+	ids[1] = sch.add_task(calc(10000000));
+	ids[2] = sch.add_task(calc(100));
+	ids[3] = sch.add_task(calc(10000000));
+	
+	while (true)
+	{
+		bool all_true = true;
+			 
+		for (size_t i = 0; i < 4; i++)
+			all_true &= sch.is_task_ready(ids[i]);
+		if (all_true)
+			break;
+	}
+	
+	for (size_t i = 0; i < 4; i++)
+		sch.get_task_result(ids[i]);
 
-	//int res = sch.get_task_result(id);
-	//std::cout << res << std::endl;
+	time_sec total = ticks_to_time(now() - start);
+	std::cout << "Total time = " << total << std::endl;
 
 	system("pause");
 	return 0;
