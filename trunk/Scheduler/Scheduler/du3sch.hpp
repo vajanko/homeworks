@@ -66,7 +66,7 @@ public:
 	task_info(TASK &&task) : task_(std::forward<TASK>(task)), state_(task_state::waiting), result_() { }
 };
 
-template<typename T, typename TASK> class Scheduler;		// forward declaration
+template<typename T, typename TASK> class scheduler_base;		// forward declaration
 
 template<typename T, typename TASK>
 class worker
@@ -92,7 +92,7 @@ private:
 	// notify about new jobs
 	std::condition_variable jobs_pending_;
 
-	Scheduler<T, TASK> &scheduler_;
+	scheduler_base<T, TASK> &scheduler_;
 
 	// retrieves next job from the queue or returns nullptr if exit is needed (thread safe)
 	job_ptr pop()
@@ -173,7 +173,7 @@ public:
 	}
 
 	// Default constructor
-	worker(Scheduler<T, TASK> &scheduler) : scheduler_(scheduler),
+	worker(scheduler_base<T, TASK> &scheduler) : scheduler_(scheduler),
 		exit_(false), thread_(nullptr), jobs_(), jobs_mutex_(), jobs_pending_() { }
 	// no copying
 	worker &operator=(const worker &w) = delete;
@@ -290,7 +290,7 @@ public:
 		task_();
 		return 0;
 	}
-	void_wrapper(TASK &&task) : task_(std::forward(task)) { }
+	void_wrapper(TASK &&task) : task_(std::forward<TASK>(task)) { }
 };
 template<typename TASK> class Scheduler<void, TASK> : public scheduler_base<int, void_wrapper<TASK>>
 {
@@ -300,9 +300,9 @@ private:
 public:
 	std::size_t add_task(TASK &&task)
 	{
-		return add_task_internal(void_wrapper(std::forward(task)));
+		return add_task_internal(void_wrapper<TASK>(std::forward<TASK>(task)));
 	}
-	// don't now if this is even necessary ?? could be used for explicitly running specified task
+	// don't now if this is even necessary ?? could be used for explicitly running specified task synchronously
 	void get_task_result(std::size_t index)
 	{
 		get_task_result_internal(index);
