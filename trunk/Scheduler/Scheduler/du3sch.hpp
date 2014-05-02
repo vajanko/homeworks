@@ -11,50 +11,30 @@
 
 enum class task_state
 {
+	// task waiting to be executed
 	waiting,
+	// task is currently running
 	running,
+	// task result is ready
 	ready
 };
 
-template<typename T, typename TASK>
-class task_info
+// Wrapper class for task, its result and current state. Manages access to task from 
+// multiple threads.
+template<typename T, typename TASK> class task_info
 {
 private:
-	std::atomic<task_state> state_;		// use atomics here
+	// current task state
+	std::atomic<task_state> state_;
+	// task operation (implements operator()(void))
 	TASK task_;
+	// task result as a value
 	T result_;
 
-	//std::once_flag once_flag_;
-	//std::condition_variable result_cond_;
-	//std::mutex result_mutex_;
-
-	// not thread safe
-	void run_internal()
-	{
-		// There are two possibilities of running a task: either it is normally executed by a worker
-		// thread or the client application requests its result synchronously. In the second case
-		// task is executed on the application main thread.
-		// This method should be called only once - from worker thread or from main thread.
-		task_state ex = task_state::waiting;
-		if (state_.compare_exchange_strong(ex, task_state::running))
-		{
-			result_ = task_();
-			std::lock_guard<std::mutex> lock(result_mutex_);
-			result_cond_.notify_one();
-			state_.store(task_state::ready);
-		}
-
-		/*state_ = task_state::running;
-		result_ = task_();
-		state_ = task_state::ready;
-		
-		std::lock_guard<std::mutex> lock(result_mutex_);
-		result_cond_.notify_one();*/
-		//std::call_once(once_flag_, std::bind(&task_info::run_internal, this));
-	}
-
 public:
+	// Gets value indicating whether task result is already ready (execution finished)
 	bool is_task_ready() { return state_ == task_state::ready; }
+	// Starts task if not running yet (thread safe)
 	void run_task()
 	{
 		// There are two possibilities of running a task: either it is normally executed by a worker
@@ -65,67 +45,75 @@ public:
 		if (state_.compare_exchange_strong(ex, task_state::running))
 		{	// run task only if not running yet
 			result_ = task_();
+			// here and in the previous condition are the only places where state_ variable is assigned
 			state_ = task_state::ready;
-			//std::lock_guard<std::mutex> lock(result_mutex_);
-			//result_cond_.notify_one();
 		}
 	}
+	// Gets task result (thread safe). This method blocks if task is currently running
 	T get_task_result()
 	{
+		// run task if not running yet
 		run_task();
+
 		// block until task becomes ready (blocking only if already running on worker thread)
+		// we are waiting actively because requested task is currently being executed
 		while (!is_task_ready())
 			;
 
-		//std::unique_lock<std::mutex> lock(result_mutex_);
-		//result_cond_.wait(lock, std::bind(&task_info::is_task_ready, this));
-		
 		return result_;
 	}
 	
-	task_info(TASK &&task) : task_(std::forward<TASK>(task)), state_(task_state::waiting), result_() 
-		/*, once_flag_(), result_cond_(), result_mutex_()*/ { }
+	task_info(TASK &&task) : task_(std::forward<TASK>(task)), state_(task_state::waiting), result_() { }
 };
+
+template<typename T, typename TASK> class Scheduler;		// forward declaration
 
 template<typename T, typename TASK>
 class worker
 {
 public:
-	typedef task_info<T, TASK> job_type;
-	typedef std::shared_ptr<job_type> job_ptr;
+	typedef task_info<T, TASK> job_type;				// type of task wrapper
+	typedef std::shared_ptr<job_type> job_ptr;			// pointer to task wrapper
 private:
-	typedef std::unique_ptr<std::thread> thread_ptr;
+	typedef std::unique_ptr<std::thread> thread_ptr;	// pointer to worker thread
 
-	thread_ptr thread_;		// thread on which current worker is running
-	bool exit_;				// true if worker should exit
+	// thread on which current worker is running
+	thread_ptr thread_;
+	// true if worker should exit
+	bool exit_;
 
-	// this could be a class, but for simplification
-	std::list<job_ptr> jobs_;	// a list of jobs to be executed
-	std::mutex jobs_mutex_;		// protects the jobs_ queue
+	// usually parallel access to queue would be implemented in a separate class, but
+	// this one also need to access private fields
+
+	// a list of jobs to be executed
+	std::list<job_ptr> jobs_;
+	// protects the jobs_ queue
+	std::mutex jobs_mutex_;
+	// notify about new jobs
 	std::condition_variable jobs_pending_;
 
-	bool idle_;
+	Scheduler<T, TASK> &scheduler_;
 
-	// thread safe
+	// retrieves next job from the queue or returns nullptr if exit is needed (thread safe)
 	job_ptr pop()
 	{
 		// can be blocked if no job are present
 		job_ptr job;
 		{
 			std::unique_lock<std::mutex> lock(jobs_mutex_);
-			idle_ = jobs_.empty();
+			// waits until there are some jobs in the queue of exit signal was sent
 			jobs_pending_.wait(lock, [&]() { return exit_ || !jobs_.empty(); });
-			idle_ = false;
 
 			if (exit_)
 				return nullptr;
 
+			// get next job
 			job = jobs_.front();
 			jobs_.pop_front();
 		}
 		return job;
 	}
-	// thread safe
+	// inserts a new job into the queue and notifies about it (thread safe)
 	void push(job_ptr job)
 	{
 		std::lock_guard<std::mutex> lock(jobs_mutex_);
@@ -133,33 +121,64 @@ private:
 		jobs_pending_.notify_one();
 	}
 
+	// worker main function
 	void run()
 	{
 		while (!exit_)
 		{
 			// take a job from queue
 			job_ptr job = pop();
+			if (exit_) break;
 
 			// run the job (if there is not an exit request)
 			if (job != nullptr)
 				job->run_task();
+
+			// notify scheduler if current worker is idle - load balancing
+			if (jobs_.size() == 0)
+				scheduler_.idle_notify(*this);
 		}
 	}
 	
 public:
+	// Adds given job to worker queue to be executed
 	void add_job(job_ptr job) { push(job); }
-	bool idle() { return idle_; }
-	void work()
+	// Gets number of jobs waiting to be executed
+	std::size_t waiting_jobs() { return jobs_.size(); }
+
+	// Divide your work with the other one. Give him half of the jobs
+	void divide_work(worker &other)
+	{
+		// lock both queues at once
+		std::unique_lock<std::mutex> lock1(jobs_mutex_, std::defer_lock);
+		std::unique_lock<std::mutex> lock2(other.jobs_mutex_, std::defer_lock);
+		std::lock(lock1, lock2);
+
+		// take a half of one queue and put it to the other
+		std::size_t count = (jobs_.size() + 1) / 2;
+		for (std::size_t i = 0; i < count; ++i)
+		{
+			other.jobs_.push_back(jobs_.front());
+			jobs_.pop_front();
+		}
+
+		lock1.unlock();
+		lock2.unlock();
+	}
+
+	// Start worker thread
+	void start()
 	{
 		thread_ = thread_ptr(new std::thread(std::bind(&worker::run, this)));
 	}
 
-	worker() : exit_(false), idle_(true), thread_(nullptr), jobs_(), jobs_mutex_(), jobs_pending_() { }
-
+	// Default constructor
+	worker(Scheduler<T, TASK> &scheduler) : scheduler_(scheduler),
+		exit_(false), thread_(nullptr), jobs_(), jobs_mutex_(), jobs_pending_() { }
 	// no copying
 	worker &operator=(const worker &w) = delete;
 	worker(const worker &w) = delete;
-
+	// Destructor
 	~worker()
 	{	// exit the thread
 		{
@@ -185,8 +204,30 @@ public:
 private:
 	std::vector<worker_ptr> workers_;
 	std::vector<job_ptr> jobs_;
+	std::size_t current_ = 0;
 
 public:
+	// TODO: make friend
+	void idle_notify(worker_type &worker)
+	{
+		std::size_t max_jobs = 0;
+		std::size_t max_index = current_;
+
+		// do not search all
+		for (std::size_t i = 0; i < workers_.size(); ++i)
+		{
+			current_ = (current_ + 1) % workers_.size();
+			if (workers_[current_]->waiting_jobs() > max_jobs)
+			{
+				max_jobs = workers_[current_]->waiting_jobs();
+				max_index = current_;
+			}
+		}
+
+		if (workers_[max_index]->waiting_jobs() > 0)
+			workers_[max_index]->divide_work(worker);
+	}
+
 	std::size_t add_task(TASK &&task)
 	{
 		// create job
@@ -199,7 +240,6 @@ public:
 		// index of currently added job
 		return jobs_.size() - 1;
 	}
-
 	bool is_task_ready(std::size_t index)
 	{
 		return jobs_[index]->is_task_ready();
@@ -214,11 +254,10 @@ public:
 	{
 		for (std::size_t i = 0; i < core_count; ++i)
 		{
-			workers_.emplace_back(worker_ptr(new worker_type()));
-			workers_[i]->work();
+			workers_.emplace_back(worker_ptr(new worker_type(*this)));
+			workers_[i]->start();
 		}
 	}
-
 	~Scheduler() {}
 };
 
