@@ -191,8 +191,7 @@ public:
 	}
 };
 
-template<typename T, typename TASK>
-class Scheduler
+template<typename T, typename TASK> class scheduler_base
 {
 public:
 	typedef worker<T, TASK> worker_type;
@@ -205,6 +204,24 @@ private:
 	std::vector<worker_ptr> workers_;
 	std::vector<job_ptr> jobs_;
 	std::size_t current_ = 0;
+
+protected:
+	T get_task_result_internal(std::size_t index) 
+	{
+		return jobs_[index]->get_task_result(); 
+	}
+	std::size_t add_task_internal(TASK &&task)
+	{
+		// create job
+		job_ptr job(new job_type(std::forward<TASK>(task)));
+		jobs_.push_back(job);
+
+		// assign to a worker (round robin)
+		workers_[jobs_.size() % workers_.size()]->add_job(job);
+
+		// index of currently added job
+		return jobs_.size() - 1;
+	}
 
 public:
 	// TODO: make friend
@@ -228,29 +245,13 @@ public:
 			workers_[max_index]->divide_work(worker);
 	}
 
-	std::size_t add_task(TASK &&task)
-	{
-		// create job
-		job_ptr job(new job_type(std::forward<TASK>(task)));
-		jobs_.push_back(job);
 
-		// assign to a worker (round robin)
-		workers_[jobs_.size() % workers_.size()]->add_job(job);
-
-		// index of currently added job
-		return jobs_.size() - 1;
-	}
 	bool is_task_ready(std::size_t index)
 	{
 		return jobs_[index]->is_task_ready();
 	}
 
-	T get_task_result(std::size_t index)
-	{
-		return jobs_[index]->get_task_result();
-	}
-
-	Scheduler(std::size_t core_count)
+	scheduler_base(std::size_t core_count)
 	{
 		for (std::size_t i = 0; i < core_count; ++i)
 		{
@@ -258,6 +259,126 @@ public:
 			workers_[i]->start();
 		}
 	}
-	~Scheduler() {}
+	virtual ~scheduler_base() { }
 };
+
+template<typename T, typename TASK> class Scheduler : public scheduler_base<T, TASK>
+{
+private:
+	typedef scheduler_base<T, TASK> base_type;
+
+public:
+	std::size_t add_task(TASK &&task)
+	{
+		return add_task_internal(std::forward<TASK>(task));
+	}
+	T get_task_result(std::size_t index)
+	{
+		return get_task_result_internal(index);
+	}
+
+	explicit Scheduler(std::size_t core_count) : base_type(core_count) { }
+	virtual ~Scheduler() { }
+};
+template<typename TASK> class void_wrapper
+{
+private:
+	TASK task_;
+public:
+	int operator()()
+	{
+		task_();
+		return 0;
+	}
+	void_wrapper(TASK &&task) : task_(std::forward(task)) { }
+};
+template<typename TASK> class Scheduler<void, TASK> : public scheduler_base<int, void_wrapper<TASK>>
+{
+private:
+	typedef scheduler_base<int, void_wrapper<TASK>> base_type;
+
+public:
+	std::size_t add_task(TASK &&task)
+	{
+		return add_task_internal(void_wrapper(std::forward(task)));
+	}
+	// don't now if this is even necessary ?? could be used for explicitly running specified task
+	void get_task_result(std::size_t index)
+	{
+		get_task_result_internal(index);
+	}
+
+	explicit Scheduler(std::size_t core_count) : base_type(core_count) { }
+	virtual ~Scheduler() { }
+};
+
+//template<typename T, typename TASK>
+//class Scheduler
+//{
+//public:
+//	typedef worker<T, TASK> worker_type;
+//	typedef std::unique_ptr<worker_type> worker_ptr;
+//
+//	typedef typename worker_type::job_type job_type;
+//	typedef typename worker_type::job_ptr job_ptr;
+//
+//private:
+//	std::vector<worker_ptr> workers_;
+//	std::vector<job_ptr> jobs_;
+//	std::size_t current_ = 0;
+//
+//public:
+//	// TODO: make friend
+//	void idle_notify(worker_type &worker)
+//	{
+//		std::size_t max_jobs = 0;
+//		std::size_t max_index = current_;
+//
+//		// do not search all
+//		for (std::size_t i = 0; i < workers_.size(); ++i)
+//		{
+//			current_ = (current_ + 1) % workers_.size();
+//			if (workers_[current_]->waiting_jobs() > max_jobs)
+//			{
+//				max_jobs = workers_[current_]->waiting_jobs();
+//				max_index = current_;
+//			}
+//		}
+//
+//		if (workers_[max_index]->waiting_jobs() > 0)
+//			workers_[max_index]->divide_work(worker);
+//	}
+//
+//	std::size_t add_task(TASK &&task)
+//	{
+//		// create job
+//		job_ptr job(new job_type(std::forward<TASK>(task)));
+//		jobs_.push_back(job);
+//
+//		// assign to a worker (round robin)
+//		workers_[jobs_.size() % workers_.size()]->add_job(job);
+//
+//		// index of currently added job
+//		return jobs_.size() - 1;
+//	}
+//	bool is_task_ready(std::size_t index)
+//	{
+//		return jobs_[index]->is_task_ready();
+//	}
+//
+//	T get_task_result(std::size_t index)
+//	{
+//		return jobs_[index]->get_task_result();
+//	}
+//
+//	Scheduler(std::size_t core_count)
+//	{
+//		for (std::size_t i = 0; i < core_count; ++i)
+//		{
+//			workers_.emplace_back(worker_ptr(new worker_type(*this)));
+//			workers_[i]->start();
+//		}
+//	}
+//	virtual ~Scheduler() {}
+//};
 
