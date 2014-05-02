@@ -63,6 +63,13 @@ struct calc
 	}
 	calc(float val) : value_(val) { }
 };
+struct job
+{
+	void operator()(void)
+	{
+		std::cout << "void operator()" << std::endl;
+	}
+};
 
 int main()
 {
@@ -103,6 +110,10 @@ int main()
 
 	time_sec total = ticks_to_time(now() - start);
 	std::cout << "Total time = " << total << std::endl;
+
+	Scheduler<void, job> sch2(2);
+	for (int i = 0; i < 10; i++)
+		sch2.add_task(job());
 
 	system("pause");
 	return 0;
