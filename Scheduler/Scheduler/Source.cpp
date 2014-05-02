@@ -8,11 +8,13 @@
 #include "Stopwatch.hpp"
 #include "du3sch.hpp"
 
+//static std::size_t Count = 1000;
 static std::size_t Count = 1000;
 
 static std::size_t MaxNum = 10000000;
 
-static std::size_t CoreCount = 8;
+//static std::size_t CoreCount = 8;
+static std::size_t CoreCount = 3;
 
 typedef std::map<std::size_t, bool> PrimeMap;
 
@@ -43,6 +45,7 @@ void TestScheduler(const char* msg, const PrimeMap& value, time_sec serialTime)
 		if (value.at(i->first) != scheduler.get_task_result(i->second))
 			throw 0;
 	}
+
 	time_sec parallelTime = ticks_to_time(now() - start);
 	std::cout << msg << " time = " << parallelTime << " [s]  -  Serial time portion = " << parallelTime / (serialTime / 100.0) << " [%]" << std::endl;
 	std::cout << msg << " calculation correct" << std::endl;
@@ -64,7 +67,7 @@ int get_value()
 
 int main()
 {
-	/*ticks_t start = now();
+	ticks_t start = now();
 	PrimeMap value;
 	for (std::size_t i = 0; i < Count; i++)
 	{
@@ -74,25 +77,21 @@ int main()
 	time_sec serialTime = ticks_to_time(now() - start);
 	std::cout << "Serial time = " << serialTime << std::endl;
 
-	TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);*/
+	TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);
 
-	Scheduler<int, getter> sch(3);
 	//sch.add_task(getter(1));
 	//sch.get_task_result(1);
-	task_info<int, getter> t(getter(1));
-	t.run();
-	//int x = t.get_result();
 
 	//std::cout << "result: " << x << std::endl;
 
-	worker<int, getter> w;
-	getter gt(79);
-	
-	std::packaged_task<int()> pt(gt);
-	pt();
+	//Scheduler<int, getter> sch(1);
+	//size_t id = sch.add_task(getter(100));
+	//while (!sch.is_task_ready(id))
+	//{
+	//}
 
-	auto fut = pt.get_future();
-	int y = fut.get();
+	//int res = sch.get_task_result(id);
+	//std::cout << res << std::endl;
 
 	system("pause");
 	return 0;
