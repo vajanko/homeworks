@@ -288,6 +288,8 @@ public:
 	explicit Scheduler(std::size_t core_count) : base_type(core_count) { }
 	virtual ~Scheduler() { }
 };
+// Task with int return type (implements int operator()(void)).
+// Wrapps void task and mask it to return some value
 template<typename TASK> class void_wrapper
 {
 private:
