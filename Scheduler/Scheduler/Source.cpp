@@ -73,7 +73,7 @@ struct job
 
 int main()
 {
-	/*ticks_t start = now();
+	ticks_t start = now();
 	PrimeMap value;
 	for (std::size_t i = 0; i < Count; i++)
 	{
@@ -83,9 +83,9 @@ int main()
 	time_sec serialTime = ticks_to_time(now() - start);
 	std::cout << "Serial time = " << serialTime << std::endl;
 
-	TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);*/
+	TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);
 
-	Scheduler<float, calc> sch(2);
+	/*Scheduler<float, calc> sch(2);
 	ticks_t start = now();
 
 	size_t ids[4];
@@ -113,7 +113,7 @@ int main()
 
 	Scheduler<void, job> sch2(2);
 	for (int i = 0; i < 10; i++)
-		sch2.add_task(job());
+		sch2.add_task(job());*/
 
 	system("pause");
 	return 0;

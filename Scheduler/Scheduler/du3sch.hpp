@@ -9,6 +9,7 @@
 #include <vector>
 #include <atomic>
 
+// Describes current state of a task in the scheduler.
 enum class task_state
 {
 	// task waiting to be executed
@@ -19,8 +20,7 @@ enum class task_state
 	ready
 };
 
-// Wrapper class for task, its result and current state. Manages access to task from 
-// multiple threads.
+// Wrapper class for task, its result and current state. Manages access to task from multiple threads.
 template<typename T, typename TASK> class task_info
 {
 private:
@@ -46,6 +46,8 @@ public:
 		{	// run task only if not running yet
 			result_ = task_();
 			// here and in the previous condition are the only places where state_ variable is assigned
+			// this block of code is always executed only in one thread threfore it is safe the following
+			// assignment
 			state_ = task_state::ready;
 		}
 	}
@@ -68,8 +70,8 @@ public:
 
 template<typename T, typename TASK> class scheduler_base;		// forward declaration
 
-template<typename T, typename TASK>
-class worker
+// Wroker runs own thread and allows to execute multiple tasks
+template<typename T, typename TASK> class worker
 {
 public:
 	typedef task_info<T, TASK> job_type;				// type of task wrapper
@@ -92,7 +94,7 @@ private:
 	// notify about new jobs
 	std::condition_variable jobs_pending_;
 
-	scheduler_base<T, TASK> &scheduler_;
+	scheduler_base<T, TASK> &scheduler_;		// if no jobs - ask the schduler to find some
 
 	// retrieves next job from the queue or returns nullptr if exit is needed (thread safe)
 	job_ptr pop()
@@ -172,18 +174,16 @@ public:
 		thread_ = thread_ptr(new std::thread(std::bind(&worker::run, this)));
 	}
 
-	// Default constructor
 	worker(scheduler_base<T, TASK> &scheduler) : scheduler_(scheduler),
 		exit_(false), thread_(nullptr), jobs_(), jobs_mutex_(), jobs_pending_() { }
 	// no copying
 	worker &operator=(const worker &w) = delete;
 	worker(const worker &w) = delete;
-	// Destructor
 	~worker()
 	{	// exit the thread
 		{
 			std::lock_guard<std::mutex> lock(jobs_mutex_);
-			exit_ = true;
+			exit_ = true;		// send a signal to exit
 			jobs_pending_.notify_one();
 		}
 		// wait for the last task to be finished
@@ -191,25 +191,31 @@ public:
 	}
 };
 
+// Two major types of tasks are those that return a value and void tasks. scheduler_base
+// implemnts functionality which is common for both types.
 template<typename T, typename TASK> class scheduler_base
 {
 public:
-	typedef worker<T, TASK> worker_type;
-	typedef std::unique_ptr<worker_type> worker_ptr;
+	typedef worker<T, TASK> worker_type;				// type of worker thread
+	typedef std::unique_ptr<worker_type> worker_ptr;	// pointer to worker thread
 
-	typedef typename worker_type::job_type job_type;
+	typedef typename worker_type::job_type job_type;	// shortcuts
 	typedef typename worker_type::job_ptr job_ptr;
 
 private:
+	// a collection of worker thread - for each core one worker
 	std::vector<worker_ptr> workers_;
+	// complete collection of tasks added to scheduler. tasks are never removed from this collection
 	std::vector<job_ptr> jobs_;
 	std::size_t current_ = 0;
 
 protected:
+	// returns value of a task specified by given index. for void task this mehtod return 0 as int
 	T get_task_result_internal(std::size_t index) 
-	{
+	{	// blocked if task is not ready yet
 		return jobs_[index]->get_task_result(); 
 	}
+	// process given task: add it to some worker and executed when possible
 	std::size_t add_task_internal(TASK &&task)
 	{
 		// create job
@@ -224,7 +230,7 @@ protected:
 	}
 
 public:
-	// TODO: make friend
+	// this method should be only visible to worker class
 	void idle_notify(worker_type &worker)
 	{
 		std::size_t max_jobs = 0;
@@ -245,13 +251,13 @@ public:
 			workers_[max_index]->divide_work(worker);
 	}
 
-
+	// Returns value indicating whether task specified by given index is ready.
 	bool is_task_ready(std::size_t index)
 	{
 		return jobs_[index]->is_task_ready();
 	}
-
-	scheduler_base(std::size_t core_count)
+	// Creates a scheduler with specified number of cores (threads of execution)
+	explicit scheduler_base(std::size_t core_count)
 	{
 		for (std::size_t i = 0; i < core_count; ++i)
 		{
@@ -262,12 +268,14 @@ public:
 	virtual ~scheduler_base() { }
 };
 
+// Implementation of scheduler for tasks that return some value
 template<typename T, typename TASK> class Scheduler : public scheduler_base<T, TASK>
 {
 private:
 	typedef scheduler_base<T, TASK> base_type;
 
 public:
+	// Process given task when possible
 	std::size_t add_task(TASK &&task)
 	{
 		return add_task_internal(std::forward<TASK>(task));
@@ -276,7 +284,7 @@ public:
 	{
 		return get_task_result_internal(index);
 	}
-
+	// Creates a scheduler with specified number of cores (threads of execution)
 	explicit Scheduler(std::size_t core_count) : base_type(core_count) { }
 	virtual ~Scheduler() { }
 };
@@ -292,14 +300,16 @@ public:
 	}
 	void_wrapper(TASK &&task) : task_(std::forward<TASK>(task)) { }
 };
+// Implementation of scheduler for void tasks
 template<typename TASK> class Scheduler<void, TASK> : public scheduler_base<int, void_wrapper<TASK>>
 {
 private:
 	typedef scheduler_base<int, void_wrapper<TASK>> base_type;
 
 public:
+	// Process given task when possible
 	std::size_t add_task(TASK &&task)
-	{
+	{	// wrapp given void task to another task that executes it and returns zero
 		return add_task_internal(void_wrapper<TASK>(std::forward<TASK>(task)));
 	}
 	// don't now if this is even necessary ?? could be used for explicitly running specified task synchronously
@@ -307,78 +317,7 @@ public:
 	{
 		get_task_result_internal(index);
 	}
-
+	// Creates a scheduler with specified number of cores (threads of execution)
 	explicit Scheduler(std::size_t core_count) : base_type(core_count) { }
 	virtual ~Scheduler() { }
 };
-
-//template<typename T, typename TASK>
-//class Scheduler
-//{
-//public:
-//	typedef worker<T, TASK> worker_type;
-//	typedef std::unique_ptr<worker_type> worker_ptr;
-//
-//	typedef typename worker_type::job_type job_type;
-//	typedef typename worker_type::job_ptr job_ptr;
-//
-//private:
-//	std::vector<worker_ptr> workers_;
-//	std::vector<job_ptr> jobs_;
-//	std::size_t current_ = 0;
-//
-//public:
-//	// TODO: make friend
-//	void idle_notify(worker_type &worker)
-//	{
-//		std::size_t max_jobs = 0;
-//		std::size_t max_index = current_;
-//
-//		// do not search all
-//		for (std::size_t i = 0; i < workers_.size(); ++i)
-//		{
-//			current_ = (current_ + 1) % workers_.size();
-//			if (workers_[current_]->waiting_jobs() > max_jobs)
-//			{
-//				max_jobs = workers_[current_]->waiting_jobs();
-//				max_index = current_;
-//			}
-//		}
-//
-//		if (workers_[max_index]->waiting_jobs() > 0)
-//			workers_[max_index]->divide_work(worker);
-//	}
-//
-//	std::size_t add_task(TASK &&task)
-//	{
-//		// create job
-//		job_ptr job(new job_type(std::forward<TASK>(task)));
-//		jobs_.push_back(job);
-//
-//		// assign to a worker (round robin)
-//		workers_[jobs_.size() % workers_.size()]->add_job(job);
-//
-//		// index of currently added job
-//		return jobs_.size() - 1;
-//	}
-//	bool is_task_ready(std::size_t index)
-//	{
-//		return jobs_[index]->is_task_ready();
-//	}
-//
-//	T get_task_result(std::size_t index)
-//	{
-//		return jobs_[index]->get_task_result();
-//	}
-//
-//	Scheduler(std::size_t core_count)
-//	{
-//		for (std::size_t i = 0; i < core_count; ++i)
-//		{
-//			workers_.emplace_back(worker_ptr(new worker_type(*this)));
-//			workers_[i]->start();
-//		}
-//	}
-//	virtual ~Scheduler() {}
-//};
-
