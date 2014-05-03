@@ -1,7 +1,10 @@
 // DU3sch.hpp
 // Ondrej Kov·Ë NPRG051 2013/2014
 
-#pragma once
+// Compiled in VS 2013 and GCC 4.8.2
+
+#ifndef DU3SCH_HDR
+#define DU3SCH_HDR
 
 #include <memory>
 #include <future>
@@ -278,11 +281,11 @@ public:
 	// Process given task when possible
 	std::size_t add_task(TASK &&task)
 	{
-		return add_task_internal(std::forward<TASK>(task));
+		return this->add_task_internal(std::forward<TASK>(task));
 	}
 	T get_task_result(std::size_t index)
 	{
-		return get_task_result_internal(index);
+		return this->get_task_result_internal(index);
 	}
 	// Creates a scheduler with specified number of cores (threads of execution)
 	explicit Scheduler(std::size_t core_count) : base_type(core_count) { }
@@ -312,14 +315,16 @@ public:
 	// Process given task when possible
 	std::size_t add_task(TASK &&task)
 	{	// wrapp given void task to another task that executes it and returns zero
-		return add_task_internal(void_wrapper<TASK>(std::forward<TASK>(task)));
+		return this->add_task_internal(void_wrapper<TASK>(std::forward<TASK>(task)));
 	}
 	// don't now if this is even necessary ?? could be used for explicitly running specified task synchronously
 	void get_task_result(std::size_t index)
 	{
-		get_task_result_internal(index);
+		this->get_task_result_internal(index);
 	}
 	// Creates a scheduler with specified number of cores (threads of execution)
 	explicit Scheduler(std::size_t core_count) : base_type(core_count) { }
 	virtual ~Scheduler() { }
 };
+
+#endif
