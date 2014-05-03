@@ -141,7 +141,7 @@ private:
 				scheduler_.idle_notify(*this);
 		}
 	}
-	
+
 public:
 	// Adds given job to worker queue to be executed
 	void add_job(job_ptr job) { push(job); }
@@ -230,7 +230,7 @@ protected:
 	}
 
 public:
-	// this method should be only visible to worker class
+	// Notify scheduler that worker is idle.
 	void idle_notify(worker_type &worker)
 	{
 		std::size_t max_jobs = 0;
