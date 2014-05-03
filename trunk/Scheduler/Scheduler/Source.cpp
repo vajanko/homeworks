@@ -73,17 +73,17 @@ struct job
 
 int main()
 {
-	ticks_t start = now();
+	//ticks_t start = now();
 	PrimeMap value;
 	for (std::size_t i = 0; i < Count; i++)
 	{
 		value[i] = IsPrime(i);
 		value[MaxNum - i] = IsPrime(MaxNum - i);
 	}
-	time_sec serialTime = ticks_to_time(now() - start);
-	std::cout << "Serial time = " << serialTime << std::endl;
+	//time_sec serialTime = ticks_to_time(now() - start);
+	//std::cout << "Serial time = " << serialTime << std::endl;
 
-	TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);
+	//TestScheduler<Scheduler<bool, std::function<bool(void)> > >("Scheduler", value, serialTime);
 
 	/*Scheduler<float, calc> sch(2);
 	ticks_t start = now();
