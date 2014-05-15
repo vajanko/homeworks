@@ -3,6 +3,7 @@
 
 using namespace std;
 
+// TODO: second matrix represent as an array of columns
 // size of matrix size type is 4 by definition
 #define MATRIX_SIZE_TYPE_SIZE 4
 
