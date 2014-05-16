@@ -57,14 +57,6 @@ void matrix_read_size(std::ifstream &file, size_t &rows, size_t &cols)
 	file.read((char *)&rows, MATRIX_SIZE_TYPE_SIZE);
 	file.read((char *)&cols, MATRIX_SIZE_TYPE_SIZE);
 }
-matrix matrix_load(std::ifstream &file, size_t top, size_t left, size_t rows, size_t cols, size_t width)
-{
-	matrix res = matrix_alloc(rows, cols);
-
-	matrix_load(res, file, top, left, rows, cols, width);
-
-	return res;
-}
 void matrix_load(matrix res, std::ifstream &file, size_t top, size_t left, size_t rows, size_t cols, size_t width)
 {
 	const size_t base = 2 * MATRIX_SIZE_TYPE_SIZE;
@@ -76,9 +68,17 @@ void matrix_load(matrix res, std::ifstream &file, size_t top, size_t left, size_
 		file.read((char *)(res + i * cols), sizeof(float)* cols);
 	}
 }
+matrix matrix_load(std::ifstream &file, size_t top, size_t left, size_t rows, size_t cols, size_t width)
+{
+	matrix res = matrix_alloc(rows, cols);
+
+	matrix_load(res, file, top, left, rows, cols, width);
+
+	return res;
+}
 void matrix_save(const char *filename, const matrix m, size_t rows, size_t cols)
 {
-	std::ofstream output(filename, ios::binary);
+	std::ofstream output(filename, std::ios::binary);
 
 	output.write((char *)&rows, MATRIX_SIZE_TYPE_SIZE);
 	output.write((char *)&cols, MATRIX_SIZE_TYPE_SIZE);
@@ -103,8 +103,8 @@ void matrix_print(matrix m, size_t rows, size_t cols)
 	for (size_t i = 0; i < rows; ++i)
 	{
 		for (size_t j = 0; j < cols; ++j)
-			cout << m[i * cols + j] << " ";
-		cout << endl;
+			std::cout << m[i * cols + j] << " ";
+		std::cout << std::endl;
 	}
 }
 
