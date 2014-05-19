@@ -2,6 +2,7 @@
 #define matrix_hdr
 
 #include<fstream>
+#include<iostream>
 
 #define MATRIX_SIZE_TYPE_SIZE 4
 

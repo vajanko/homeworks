@@ -1,9 +1,10 @@
+#include "master.hpp"
+#include "worker.hpp"
+
 #include<fstream>
 #include<iostream>
 #include<memory>
 
-#include "master.hpp"
-#include "worker.hpp"
 
 using namespace std;
 
