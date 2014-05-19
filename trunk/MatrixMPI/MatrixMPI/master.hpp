@@ -1,11 +1,12 @@
 #ifndef master_hdr
 #define master_hdr
 
+#include<mpi.h>
+
 #include<string>
 #include<fstream>
 #include<vector>
 #include<memory>
-#include<mpi.h>
 #include "matrix.hpp"
 
 #define TAG 0
@@ -69,13 +70,13 @@ public:
 	}
 	worker_task(int worker_id, size_t max_dim1, size_t max_dim2, size_t max_dim3) :
 		worker_id(worker_id),
-		req_buff_size(sizeof(my_dim1)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)),
-		req_buff(new char[req_buff_size])
+		req_buff_size(sizeof(int)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)),
+		req_buff(new char[sizeof(int)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)])
 	{}
 	~worker_task()
 	{
-		if (req_buff != nullptr)
-			delete[] req_buff;
+		if (req_buff != NULL)
+			delete[] (char *)req_buff;
 	}
 };
 
@@ -96,7 +97,7 @@ private:
 	size_t group_size;
 	// ID of the current worker
 	int worker_id;
-	std::vector<std::unique_ptr<worker_task>> workers;
+	std::vector<worker_task *> workers;
 
 	std::ifstream file1, file2;
 	const char *output;
@@ -113,7 +114,7 @@ public:
 		chunk_dim3 = 2;
 
 		for (size_t i = 0; i < group_size; ++i)
-			workers.push_back(std::make_unique<worker_task>(new worker_task(i, chunk_dim1, chunk_dim2, chunk_dim3)));
+			workers.push_back(new worker_task(i, chunk_dim1, chunk_dim2, chunk_dim3));
 
 		// broadcast max size of chunk
 		int max_chunk[3];
@@ -214,12 +215,12 @@ public:
 			if (file1.is_open())
 				file1.close();
 		}
-		catch (const std::exception &e) { }
+		catch (const std::exception) { }
 		try {
 			if (file2.is_open())
 				file2.close();
 		}
-		catch (const std::exception &e) { }
+		catch (const std::exception) { }
 	}
 };
 

@@ -3,6 +3,10 @@
 
 #include<mpi.h>
 
+#include<fstream>
+#include<string>
+
+
 class worker
 {
 private:
@@ -21,6 +25,12 @@ public:
 	{
 		int max_chunk[3];
 		MPI_Bcast(max_chunk, 3, MPI_INT, master_id, MPI_COMM_WORLD);
+
+		std::ofstream file("tmp" + std::to_string((long long)worker_id) + ".txt");
+		file << max_chunk[0] << std::endl;
+		file << max_chunk[1] << std::endl;
+		file << max_chunk[2] << std::endl;
+		file.close();
 
 		// allocate buffers
 		req_buff_size = sizeof(int)* 3 + sizeof(float)* (max_chunk[0] * max_chunk[1] + max_chunk[1] * max_chunk[2]);
@@ -48,6 +58,8 @@ public:
 	{
 		init();
 
+		return;
+
 		while (true)
 		{
 			// receive request - if poisonous break
@@ -68,7 +80,7 @@ public:
 	}
 	void finish()
 	{
-		delete[] req_buff;
+		delete[] (char *)req_buff;
 	}
 
 	worker(int worker_id, int master_id) : worker_id(worker_id), master_id(master_id)
