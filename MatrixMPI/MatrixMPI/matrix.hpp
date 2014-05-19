@@ -51,6 +51,16 @@ void matrix_add(matrix m1, const matrix m2, size_t rows, size_t cols)
 	for (size_t i = 0; i < rows * cols; ++i)
 		m1[i] += m2[i];
 }
+void matrix_add(matrix m1, size_t top, size_t left, size_t width, const matrix m2, size_t rows, size_t cols)
+{
+	for (size_t i = 0; i < rows; ++i)
+	{
+		for (size_t j = 0; j < cols; ++j)
+		{
+			m1[(top + i) * width + left + j] += m2[i * cols + j];
+		}
+	}
+}
 
 void matrix_read_size(std::ifstream &file, size_t &rows, size_t &cols)
 {

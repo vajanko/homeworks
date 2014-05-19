@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 		int group_size;
 		catch_error(MPI_Comm_size(MPI_COMM_WORLD, &group_size));
 
-		master master(id, "", "", "", group_size);
+		master master(id, argv[1], argv[2], argv[3], group_size);
 		master.work();
 	}
 	else

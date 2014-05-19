@@ -25,26 +25,30 @@ private:
 	MPI_Request send_req;
 	MPI_Request recv_req;
 	void *req_buff;
+	size_t req_buff_size;
 
 public:
 	bool is_idle() { return !working; }
 	bool is_working() { return working; }
-	void send(size_t chunk_dim1, size_t chunk_dim2, size_t chunk_dim3)
+	void send(matrix a, matrix b, size_t chunk_dim1, size_t chunk_dim2, size_t chunk_dim3)
 	{
 		working = true;
 		my_dim1 = chunk_dim1;
 		my_dim2 = chunk_dim2;
 		my_dim3 = chunk_dim3;
-		// TODO: pack, size of buffer
-		/*MPI_Pack(&dim1, 1, MPI_INT, buff, buff_size, &pos, MPI_COMM_WORLD);
-		MPI_Pack(&dim2, 1, MPI_INT, buff, buff_size, &pos, MPI_COMM_WORLD);
-		MPI_Pack(&dim3, 1, MPI_INT, buff, buff_size, &pos, MPI_COMM_WORLD);
-		MPI_Pack(m1, dim1 * dim2, MPI_FLOAT, buff, buff_size, &pos, MPI_COMM_WORLD);
-		MPI_Pack(m2, dim2 * dim3, MPI_FLOAT, buff, buff_size, &pos, MPI_COMM_WORLD);*/
+
+		int pos = 0;
+		MPI_Pack(&chunk_dim1, 1, MPI_INT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		MPI_Pack(&chunk_dim2, 1, MPI_INT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		MPI_Pack(&chunk_dim3, 1, MPI_INT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		// TODO: add data
+		MPI_Pack(a, chunk_dim1 * chunk_dim2, MPI_FLOAT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		MPI_Pack(b, chunk_dim2 * chunk_dim3, MPI_FLOAT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
 		
-		MPI_Isend(req_buff, 10000, MPI_PACKED, worker_id, TAG, MPI_COMM_WORLD, &send_req);
+		MPI_Isend(req_buff, pos, MPI_PACKED, worker_id, TAG, MPI_COMM_WORLD, &send_req);
+
 		// start receiving imediatelly
-		MPI_Irecv(req_buff, 10000, MPI_PACKED, worker_id, TAG, MPI_COMM_WORLD, &recv_req);
+		MPI_Irecv(req_buff, chunk_dim2 * chunk_dim2, MPI_FLOAT, worker_id, TAG, MPI_COMM_WORLD, &recv_req);
 	}
 	bool receive_ready()
 	{
@@ -54,15 +58,19 @@ public:
 
 		return flag != 0;
 	}
-	void receive(matrix &a, matrix &b, size_t &chunk_dim1, size_t &chunk_dim2, size_t &chunk_dim3)
+	void receive(matrix &res, size_t &top, size_t &left, size_t &dim)
 	{
-		// TODO: unpack
+		res = (matrix)req_buff;
+		top = this->top;
+		left = this->left;
+		dim = this->my_dim2;
 
 		working = false;
 	}
 	worker_task(int worker_id, size_t max_dim1, size_t max_dim2, size_t max_dim3) :
 		worker_id(worker_id),
-		req_buff(new char[sizeof(my_dim1)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)])
+		req_buff_size(sizeof(my_dim1)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)),
+		req_buff(new char[req_buff_size])
 	{}
 	~worker_task()
 	{
@@ -107,6 +115,7 @@ public:
 		for (size_t i = 0; i < group_size; ++i)
 			workers.push_back(std::make_unique<worker_task>(new worker_task(i, chunk_dim1, chunk_dim2, chunk_dim3)));
 
+		// broadcast max size of chunk
 		int max_chunk[3];
 		max_chunk[0] = chunk_dim1;
 		max_chunk[1] = chunk_dim2;
@@ -129,7 +138,9 @@ public:
 		{
 			if (workers[worker_id]->is_working() && workers[worker_id]->receive_ready())
 			{
-				//workers[]
+				matrix res;
+				size_t top, left, dim;
+				workers[worker_id]->receive(res, top, left, dim);
 			}
 		}
 	}
@@ -138,7 +149,7 @@ public:
 		int id = get_idle_worker();
 		if (id != master_id)
 		{	// we have found an idle worker
-			workers[id]->send(ch_dim1, ch_dim2, ch_dim3);
+			workers[id]->send(a, b, ch_dim1, ch_dim2, ch_dim3);
 		}
 		else
 		{	// all workers are working currently
