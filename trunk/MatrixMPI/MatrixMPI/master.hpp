@@ -9,6 +9,15 @@
 #include<memory>
 #include "matrix.hpp"
 
+#ifdef WIN32
+#include<future>
+void sleep(int seconds) {
+	std::this_thread::sleep_for(std::chrono::seconds(seconds));
+}
+#else
+#include <unistd.h>
+#endif
+
 #define TAG 0
 
 // hold by master
@@ -31,25 +40,28 @@ private:
 public:
 	bool is_idle() { return !working; }
 	bool is_working() { return working; }
-	void send(matrix a, matrix b, size_t chunk_dim1, size_t chunk_dim2, size_t chunk_dim3)
+	void send(matrix a, matrix b, size_t top, size_t left, size_t chunk_dim1, size_t chunk_dim2, size_t chunk_dim3)
 	{
 		working = true;
+		this->top = top;
+		this->left = left;
 		my_dim1 = chunk_dim1;
 		my_dim2 = chunk_dim2;
 		my_dim3 = chunk_dim3;
 
 		int pos = 0;
-		MPI_Pack(&chunk_dim1, 1, MPI_INT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
-		MPI_Pack(&chunk_dim2, 1, MPI_INT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
-		MPI_Pack(&chunk_dim3, 1, MPI_INT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
-		// TODO: add data
-		MPI_Pack(a, chunk_dim1 * chunk_dim2, MPI_FLOAT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
-		MPI_Pack(b, chunk_dim2 * chunk_dim3, MPI_FLOAT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		MPI_Pack(&my_dim1, 1, MPI_UNSIGNED_LONG, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		MPI_Pack(&my_dim2, 1, MPI_UNSIGNED_LONG, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		MPI_Pack(&my_dim3, 1, MPI_UNSIGNED_LONG, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		MPI_Pack(a, my_dim1 * my_dim2, MPI_FLOAT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		MPI_Pack(b, my_dim2 * my_dim3, MPI_FLOAT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
 		
 		MPI_Isend(req_buff, pos, MPI_PACKED, worker_id, TAG, MPI_COMM_WORLD, &send_req);
+		//MPI_Send(req_buff, pos, MPI_PACKED, worker_id, TAG, MPI_COMM_WORLD);
+		//std::cout << "data sent" << std::endl;
 
 		// start receiving imediatelly
-		MPI_Irecv(req_buff, chunk_dim2 * chunk_dim2, MPI_FLOAT, worker_id, TAG, MPI_COMM_WORLD, &recv_req);
+		MPI_Irecv(req_buff, my_dim1 * my_dim3, MPI_FLOAT, worker_id, TAG, MPI_COMM_WORLD, &recv_req);
 	}
 	bool receive_ready()
 	{
@@ -59,19 +71,36 @@ public:
 
 		return flag != 0;
 	}
-	void receive(matrix &res, size_t &top, size_t &left, size_t &dim)
+	void receive(matrix &res, size_t &top, size_t &left, size_t &rows, size_t &cols)
 	{
 		res = (matrix)req_buff;
 		top = this->top;
 		left = this->left;
-		dim = this->my_dim2;
+		rows = this->my_dim1;
+		cols = this->my_dim3;
 
 		working = false;
 	}
+	void kill()
+	{
+		std::cout << "sending poison pill" << std::endl;
+
+		size_t zero = 0;
+
+		int pos = 0;
+		MPI_Pack(&zero, 1, MPI_UNSIGNED_LONG, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		MPI_Pack(&zero, 1, MPI_UNSIGNED_LONG, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+		MPI_Pack(&zero, 1, MPI_UNSIGNED_LONG, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
+
+		MPI_Send(req_buff, pos, MPI_PACKED, worker_id, TAG, MPI_COMM_WORLD);
+		working = false;
+
+		std::cout << "poison pill sent" << std::endl;
+	}
 	worker_task(int worker_id, size_t max_dim1, size_t max_dim2, size_t max_dim3) :
 		worker_id(worker_id),
-		req_buff_size(sizeof(int)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)),
-		req_buff(new char[sizeof(int)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)])
+		req_buff_size(sizeof(unsigned long)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)),
+		req_buff(new char[sizeof(unsigned long)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)])
 	{}
 	~worker_task()
 	{
@@ -108,10 +137,23 @@ public:
 		matrix_read_size(file1, dim1, dim2);
 		matrix_read_size(file2, dim2, dim3);
 
+		/*a = matrix_load(file1, 0, 0, dim1, dim2, dim2);
+		matrix_print(a, dim1, dim2);
+		matrix_free(a);
+
+		b = matrix_load(file2, 0, 0, dim2, dim3, dim3);
+		matrix_print(b, dim2, dim3);
+		matrix_free(b);*/
+
 		// TODO: decide
 		chunk_dim1 = 2;
 		chunk_dim2 = 2;
 		chunk_dim3 = 2;
+
+		a = matrix_alloc(chunk_dim1, chunk_dim2);
+		b = matrix_alloc(chunk_dim2, chunk_dim3);
+		result = matrix_alloc(dim1, dim3);
+		matrix_init(result, dim1, dim3, 0);
 
 		for (size_t i = 0; i < group_size; ++i)
 			workers.push_back(new worker_task(i, chunk_dim1, chunk_dim2, chunk_dim3));
@@ -131,6 +173,17 @@ public:
 		// return either ID of the next idle worker or ROOT if none of them is idle
 		return workers[worker_id]->is_idle() ? worker_id : master_id;
 	}
+	void receive_result(int worker_id)
+	{
+		//std::cout << "reveiving result from " << worker_id << std::endl;
+
+		matrix chunk_res;
+		size_t top, left, rows, cols;
+		workers[worker_id]->receive(chunk_res, top, left, rows, cols);
+
+		// dim3 == width of the result matrix
+		matrix_add(result, top, left, dim3, chunk_res, rows, cols);
+	}
 	void check_workers_status()
 	{
 		matrix chunk_a, chunk_b;
@@ -139,18 +192,16 @@ public:
 		{
 			if (workers[worker_id]->is_working() && workers[worker_id]->receive_ready())
 			{
-				matrix res;
-				size_t top, left, dim;
-				workers[worker_id]->receive(res, top, left, dim);
+				receive_result(worker_id);
 			}
 		}
 	}
-	void process_task(size_t ch_dim1, size_t ch_dim2, size_t ch_dim3)
+	void process_task(size_t top, size_t left, size_t ch_dim1, size_t ch_dim2, size_t ch_dim3)
 	{
 		int id = get_idle_worker();
 		if (id != master_id)
 		{	// we have found an idle worker
-			workers[id]->send(a, b, ch_dim1, ch_dim2, ch_dim3);
+			workers[id]->send(a, b, top, left, ch_dim1, ch_dim2, ch_dim3);
 		}
 		else
 		{	// all workers are working currently
@@ -161,9 +212,41 @@ public:
 			{
 				// do peace of your own job
 				// ..
+				sleep(1);
 
 				check_workers_status();
 				id = get_idle_worker();
+			}
+
+			workers[id]->send(a, b, top, left, ch_dim1, ch_dim2, ch_dim3);
+		}
+	}
+	void finish_tasks()
+	{
+		bool all_done = false;
+		while (!all_done)
+		{
+			all_done = true;
+			for (int i = 0; i < group_size; ++i)
+			{
+				if (workers[i]->is_working())
+				{
+					all_done = false;
+					if (workers[i]->receive_ready())
+					{
+						receive_result(i);
+					}
+				}
+			}
+		}		
+	}
+	void kill_workers()
+	{
+		for (int i = 0; i < group_size; ++i)
+		{
+			if (i != master_id)
+			{
+				workers[i]->kill();
 			}
 		}
 	}
@@ -181,10 +264,19 @@ public:
 					matrix_load(b, file2, j, k, chunk_dim2, chunk_dim3, dim3);
 					// at this point there is a new task generated
 
-					process_task(chunk_dim1, chunk_dim2, chunk_dim3);
+					//std::cout << "task data loaded" << std::endl;
+					/*matrix_print(a, chunk_dim1, chunk_dim2);
+					std::cout << std::endl;
+					matrix_print(b, chunk_dim2, chunk_dim3);*/
+
+					process_task(i, k, chunk_dim1, chunk_dim2, chunk_dim3);
 				}
 			}
 		}
+
+		//std::cout << "finishing tasks ..." << std::endl;
+		// wait for all tasks to be finished
+		finish_tasks();
 	}
 	void work() 
 	{
@@ -192,15 +284,24 @@ public:
 
 		generate_tasks();
 
+		kill_workers();
+
 		finish();
 	}
 	void finish()
 	{
 		matrix_save(output, result, dim1, dim3);
+
+		matrix_print(result, dim1, dim3);
+
+		matrix_free(a);
+		matrix_free(b);
+		matrix_free(result);
 	}
 
 	master(int id, const char *filename1, const char *filename2, const char *output, size_t group_size) :
 		master_id(id),
+		worker_id(0),
 		group_size(group_size),
 		file1(filename1, std::ios::binary),
 		file2(filename2, std::ios::binary),
