@@ -27,7 +27,7 @@ void matrix_init(matrix m, size_t rows, size_t cols, float value)
 matrix matrix_multiply(const matrix m1, const matrix m2, size_t dim1, size_t dim2, size_t dim3)
 {
 	// return the result in a newly allocated matrix
-	matrix res = matrix_alloc(dim1, dim2);
+	matrix res = matrix_alloc(dim1, dim3);
 
 	for (size_t i = 0; i < dim1; ++i)
 	{
@@ -65,8 +65,11 @@ void matrix_add(matrix m1, size_t top, size_t left, size_t width, const matrix m
 
 void matrix_read_size(std::ifstream &file, size_t &rows, size_t &cols)
 {
-	file.read((char *)&rows, MATRIX_SIZE_TYPE_SIZE);
-	file.read((char *)&cols, MATRIX_SIZE_TYPE_SIZE);
+	unsigned int r, c;
+	file.read((char *)&r, MATRIX_SIZE_TYPE_SIZE);
+	file.read((char *)&c, MATRIX_SIZE_TYPE_SIZE);
+	rows = r;
+	cols = c;
 }
 void matrix_load(matrix res, std::ifstream &file, size_t top, size_t left, size_t rows, size_t cols, size_t width)
 {
@@ -91,8 +94,9 @@ void matrix_save(const char *filename, const matrix m, size_t rows, size_t cols)
 {
 	std::ofstream output(filename, std::ios::binary);
 
-	output.write((char *)&rows, MATRIX_SIZE_TYPE_SIZE);
-	output.write((char *)&cols, MATRIX_SIZE_TYPE_SIZE);
+	unsigned int r = rows, c = cols;
+	output.write((char *)&r, MATRIX_SIZE_TYPE_SIZE);
+	output.write((char *)&c, MATRIX_SIZE_TYPE_SIZE);
 
 	output.write((char *)m, rows * cols * sizeof(float));
 
