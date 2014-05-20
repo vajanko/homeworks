@@ -57,8 +57,6 @@ public:
 		MPI_Pack(b, my_dim2 * my_dim3, MPI_FLOAT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
 		
 		MPI_Isend(req_buff, pos, MPI_PACKED, worker_id, TAG, MPI_COMM_WORLD, &send_req);
-		//MPI_Send(req_buff, pos, MPI_PACKED, worker_id, TAG, MPI_COMM_WORLD);
-		//std::cout << "data sent" << std::endl;
 
 		// start receiving imediatelly
 		MPI_Irecv(req_buff, my_dim1 * my_dim3, MPI_FLOAT, worker_id, TAG, MPI_COMM_WORLD, &recv_req);
@@ -99,6 +97,7 @@ public:
 	}
 	worker_task(int worker_id, size_t max_dim1, size_t max_dim2, size_t max_dim3) :
 		worker_id(worker_id),
+		working(false),
 		req_buff_size(sizeof(unsigned long)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)),
 		req_buff(new char[sizeof(unsigned long)* 3 + sizeof(float)* (max_dim1 * max_dim2 + max_dim2 * max_dim3)])
 	{}
@@ -134,8 +133,11 @@ private:
 public:
 	void init()
 	{
-		matrix_read_size(file1, dim1, dim2);
-		matrix_read_size(file2, dim2, dim3);
+		matrix_read_size(file1, dim2, dim1);
+		matrix_read_size(file2, dim3, dim2);
+
+		std::cout << "m1 = [" << dim1 << ", " << dim2 << "]" << std::endl;
+		std::cout << "m2 = [" << dim2 << ", " << dim3 << "]" << std::endl;
 
 		/*a = matrix_load(file1, 0, 0, dim1, dim2, dim2);
 		matrix_print(a, dim1, dim2);
@@ -146,14 +148,14 @@ public:
 		matrix_free(b);*/
 
 		// TODO: decide
-		chunk_dim1 = 2;
-		chunk_dim2 = 2;
-		chunk_dim3 = 2;
+
+		chunk_dim1 = 32;
+		chunk_dim2 = 32;
+		chunk_dim3 = 32;
 
 		a = matrix_alloc(chunk_dim1, chunk_dim2);
 		b = matrix_alloc(chunk_dim2, chunk_dim3);
-		result = matrix_alloc(dim1, dim3);
-		matrix_init(result, dim1, dim3, 0);
+		result = matrix_alloc(dim1, dim3, 0.0);
 
 		for (size_t i = 0; i < group_size; ++i)
 			workers.push_back(new worker_task(i, chunk_dim1, chunk_dim2, chunk_dim3));
@@ -167,7 +169,7 @@ public:
 	}
 	int get_idle_worker()
 	{
-		for (int w = 0; w < group_size; ++w, worker_id = (worker_id + 1) % group_size)
+		for (size_t w = 0; w < group_size; ++w, worker_id = (worker_id + 1) % group_size)
 			if (workers[worker_id]->is_idle() && worker_id != master_id)
 				break;
 		// return either ID of the next idle worker or ROOT if none of them is idle
@@ -175,8 +177,6 @@ public:
 	}
 	void receive_result(int worker_id)
 	{
-		//std::cout << "reveiving result from " << worker_id << std::endl;
-
 		matrix chunk_res;
 		size_t top, left, rows, cols;
 		workers[worker_id]->receive(chunk_res, top, left, rows, cols);
@@ -186,9 +186,7 @@ public:
 	}
 	void check_workers_status()
 	{
-		matrix chunk_a, chunk_b;
-
-		for (int w = 0; w < group_size; ++w, worker_id = (worker_id + 1) % group_size)
+		for (size_t w = 0; w < group_size; ++w, worker_id = (worker_id + 1) % group_size)
 		{
 			if (workers[worker_id]->is_working() && workers[worker_id]->receive_ready())
 			{
@@ -227,7 +225,7 @@ public:
 		while (!all_done)
 		{
 			all_done = true;
-			for (int i = 0; i < group_size; ++i)
+			for (size_t i = 0; i < group_size; ++i)
 			{
 				if (workers[i]->is_working())
 				{
@@ -242,39 +240,45 @@ public:
 	}
 	void kill_workers()
 	{
-		for (int i = 0; i < group_size; ++i)
-		{
+		for (size_t i = 0; i < group_size; ++i)
 			if (i != master_id)
-			{
 				workers[i]->kill();
-			}
-		}
 	}
 	void generate_tasks()
 	{
+		size_t ch2 = chunk_dim2;
+		size_t ch3 = chunk_dim3;
+
 		// TODO:
 		for (size_t i = 0; i < dim1; i += chunk_dim1)
 		{
+			if (i + chunk_dim1 > dim1)
+				chunk_dim1 = dim1 - i;
+
 			for (size_t j = 0; j < dim2; j += chunk_dim2)
 			{
+				if (j + chunk_dim2 > dim2)
+					chunk_dim2 = dim2 - j;
+				else
+					chunk_dim2 = ch2;
+
 				matrix_load(a, file1, i, j, chunk_dim1, chunk_dim2, dim2);
 
 				for (size_t k = 0; k < dim3; k += chunk_dim3)
 				{
+					if (k + chunk_dim3 > dim3)
+						chunk_dim3 = dim3 - k;
+					else
+						chunk_dim3 = ch3;
+
 					matrix_load(b, file2, j, k, chunk_dim2, chunk_dim3, dim3);
 					// at this point there is a new task generated
-
-					//std::cout << "task data loaded" << std::endl;
-					/*matrix_print(a, chunk_dim1, chunk_dim2);
-					std::cout << std::endl;
-					matrix_print(b, chunk_dim2, chunk_dim3);*/
 
 					process_task(i, k, chunk_dim1, chunk_dim2, chunk_dim3);
 				}
 			}
 		}
-
-		//std::cout << "finishing tasks ..." << std::endl;
+		
 		// wait for all tasks to be finished
 		finish_tasks();
 	}
@@ -292,7 +296,7 @@ public:
 	{
 		matrix_save(output, result, dim1, dim3);
 
-		matrix_print(result, dim1, dim3);
+		//matrix_print(result, dim1, dim3);
 
 		matrix_free(a);
 		matrix_free(b);

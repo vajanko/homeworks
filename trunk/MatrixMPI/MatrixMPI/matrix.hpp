@@ -14,16 +14,23 @@ matrix matrix_alloc(size_t rows, size_t cols)
 	matrix data = new float[rows * cols];
 	return data;
 }
-void matrix_free(matrix m)
-{
-	delete[] m;
-}
-
 void matrix_init(matrix m, size_t rows, size_t cols, float value)
 {
 	for (size_t i = 0; i < rows * cols; ++i)
 		m[i] = value;
 }
+matrix matrix_alloc(size_t rows, size_t cols, float value)
+{
+	matrix data = matrix_alloc(rows, cols);
+	matrix_init(data, rows, cols, value);
+	return data;
+}
+void matrix_free(matrix m)
+{
+	delete[] m;
+}
+
+
 matrix matrix_multiply(const matrix m1, const matrix m2, size_t dim1, size_t dim2, size_t dim3)
 {
 	// return the result in a newly allocated matrix
