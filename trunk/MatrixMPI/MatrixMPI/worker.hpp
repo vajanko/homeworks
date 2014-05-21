@@ -18,7 +18,7 @@ private:
 	size_t req_buff_size;
 	// sizes of matrix the worker is currently working on
 	size_t my_dim1, my_dim2, my_dim3;
-	matrix a, b;
+	matrix a, b, res;
 
 	//std::ofstream log_file;
 
@@ -33,6 +33,7 @@ public:
 		req_buff = new char[req_buff_size];
 		a = matrix_alloc(max_chunk[0], max_chunk[1]);
 		b = matrix_alloc(max_chunk[1], max_chunk[2]);
+		res = matrix_alloc(1, max_chunk[2]);
 	}
 	void receive(matrix a, matrix b, size_t &chunk_dim1, size_t &chunk_dim2, size_t &chunk_dim3)
 	{
@@ -55,6 +56,18 @@ public:
 		MPI_Send(res, rows * cols, MPI_FLOAT, master_id, TAG, MPI_COMM_WORLD);
 		//log_file << "data sent" << std::endl;
 	}
+	void process_task(matrix a, matrix b, size_t chunk_dim1, size_t chunk_dim2, size_t chunk_dim3)
+	{
+		for (size_t i = 0; i < chunk_dim3; ++i)
+		{
+			float sum = 0;
+			for (size_t j = 0; j < chunk_dim2; ++j)
+			{
+				sum += a[j] * b[j * chunk_dim3 + i];
+			}
+			res[i] = sum;
+		}
+	}
 	void work()
 	{
 		init();
@@ -70,15 +83,16 @@ public:
 				break;
 			}
 
+			process_task(a, b, my_dim1, my_dim2, my_dim3);
 			//log_file << "before multiply: " << my_dim1 << " " << my_dim2 << " " << my_dim3 << std::endl;
 			// calculation (TODO: reused result matrix buffer)
-			matrix res = matrix_multiply(a, b, my_dim1, my_dim2, my_dim3);
+			//matrix res = matrix_multiply(a, b, my_dim1, my_dim2, my_dim3);
 
 			//log_file << "before send" << std::endl;
 			// send result
 			send(res, my_dim1, my_dim3);
 
-			matrix_free(res);
+			//matrix_free(res);
 		}
 
 		//log_file << "finilizing" << std::endl;
@@ -88,6 +102,9 @@ public:
 	{
 		delete[] (char *)req_buff;
 		//log_file.close();
+		matrix_free(res);
+		matrix_free(a);
+		matrix_free(b);
 	}
 
 	worker(int worker_id, int master_id) : worker_id(worker_id), master_id(master_id)//, log_file("tmp.dat")
