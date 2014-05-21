@@ -3,6 +3,7 @@
 
 #include<fstream>
 #include<iostream>
+#include <emmintrin.h>
 
 #define MATRIX_SIZE_TYPE_SIZE 4
 
@@ -61,11 +62,23 @@ void matrix_add(matrix m1, const matrix m2, size_t rows, size_t cols)
 }
 void matrix_add(matrix m1, size_t top, size_t left, size_t width, const matrix m2, size_t rows, size_t cols)
 {
+	/*for (size_t i = 0; i < rows / 4; ++i)
+	{
+		__m128 *line = (__m128*)m1 + top
+		for (size_t j = 0; j < cols / 4; ++j)
+		{
+
+		}
+	}*/
+
 	for (size_t i = 0; i < rows; ++i)
 	{
+		size_t pos_x = (top + i) * width + left;
+		size_t pos_y = i * cols;
+
 		for (size_t j = 0; j < cols; ++j)
 		{
-			m1[(top + i) * width + left + j] += m2[i * cols + j];
+			m1[pos_x + j] = (int)m1[pos_x + j] + (int)m2[i * cols + j];
 		}
 	}
 }
