@@ -33,7 +33,7 @@ public:
 		req_buff = new char[req_buff_size];
 		a = matrix_alloc(max_chunk[0], max_chunk[1]);
 		b = matrix_alloc(max_chunk[1], max_chunk[2]);
-		res = matrix_alloc(1, max_chunk[2]);
+		res = matrix_alloc(max_chunk[0], max_chunk[2]);
 	}
 	void receive(matrix a, matrix b, size_t &chunk_dim1, size_t &chunk_dim2, size_t &chunk_dim3)
 	{
@@ -58,14 +58,17 @@ public:
 	}
 	void process_task(matrix a, matrix b, size_t chunk_dim1, size_t chunk_dim2, size_t chunk_dim3)
 	{
-		for (size_t i = 0; i < chunk_dim3; ++i)
+		for (size_t i = 0; i < chunk_dim1; ++i)
 		{
-			float sum = 0;
-			for (size_t j = 0; j < chunk_dim2; ++j)
+			for (size_t j = 0; j < chunk_dim3; ++j)
 			{
-				sum += a[j] * b[j * chunk_dim3 + i];
+				float sum = 0;
+				for (size_t k = 0; k < chunk_dim2; ++k)
+				{
+					sum += a[i * chunk_dim2 + k] * b[k * chunk_dim3 + j];
+				}
+				res[i * chunk_dim2 + j] = sum;
 			}
-			res[i] = sum;
 		}
 	}
 	void work()
@@ -84,15 +87,10 @@ public:
 			}
 
 			process_task(a, b, my_dim1, my_dim2, my_dim3);
-			//log_file << "before multiply: " << my_dim1 << " " << my_dim2 << " " << my_dim3 << std::endl;
-			// calculation (TODO: reused result matrix buffer)
-			//matrix res = matrix_multiply(a, b, my_dim1, my_dim2, my_dim3);
 
 			//log_file << "before send" << std::endl;
 			// send result
 			send(res, my_dim1, my_dim3);
-
-			//matrix_free(res);
 		}
 
 		//log_file << "finilizing" << std::endl;
