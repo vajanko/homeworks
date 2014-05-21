@@ -139,19 +139,9 @@ public:
 		std::cout << "m1 = [" << dim1 << ", " << dim2 << "]" << std::endl;
 		std::cout << "m2 = [" << dim2 << ", " << dim3 << "]" << std::endl;
 
-		/*a = matrix_load(file1, 0, 0, dim1, dim2, dim2);
-		matrix_print(a, dim1, dim2);
-		matrix_free(a);
-
-		b = matrix_load(file2, 0, 0, dim2, dim3, dim3);
-		matrix_print(b, dim2, dim3);
-		matrix_free(b);*/
-
-		// TODO: decide
-
-		chunk_dim1 = 32;
-		chunk_dim2 = 32;
-		chunk_dim3 = 32;
+		chunk_dim1 = 1;
+		chunk_dim2 = dim1; // or bigger if dim1 is too small
+		chunk_dim3 = dim3;
 
 		a = matrix_alloc(chunk_dim1, chunk_dim2);
 		b = matrix_alloc(chunk_dim2, chunk_dim3);
@@ -249,7 +239,6 @@ public:
 		size_t ch2 = chunk_dim2;
 		size_t ch3 = chunk_dim3;
 
-		// TODO:
 		for (size_t i = 0; i < dim1; i += chunk_dim1)
 		{
 			if (i + chunk_dim1 > dim1)
@@ -264,6 +253,7 @@ public:
 
 				matrix_load(a, file1, i, j, chunk_dim1, chunk_dim2, dim2);
 
+				// this cycle can be removed because it is always executed only once
 				for (size_t k = 0; k < dim3; k += chunk_dim3)
 				{
 					if (k + chunk_dim3 > dim3)
@@ -282,6 +272,7 @@ public:
 		// wait for all tasks to be finished
 		finish_tasks();
 	}
+
 	void work() 
 	{
 		init();
