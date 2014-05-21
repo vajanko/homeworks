@@ -73,8 +73,8 @@ void matrix_add(matrix m1, size_t top, size_t left, size_t width, const matrix m
 void matrix_read_size(std::ifstream &file, size_t &rows, size_t &cols)
 {
 	unsigned int r, c;
-	file.read((char *)&r, MATRIX_SIZE_TYPE_SIZE);
 	file.read((char *)&c, MATRIX_SIZE_TYPE_SIZE);
+	file.read((char *)&r, MATRIX_SIZE_TYPE_SIZE);
 	rows = r;
 	cols = c;
 }
@@ -97,13 +97,14 @@ matrix matrix_load(std::ifstream &file, size_t top, size_t left, size_t rows, si
 
 	return res;
 }
+
 void matrix_save(const char *filename, const matrix m, size_t rows, size_t cols)
 {
 	std::ofstream output(filename, std::ios::binary);
 
 	unsigned int r = rows, c = cols;
-	output.write((char *)&r, MATRIX_SIZE_TYPE_SIZE);
 	output.write((char *)&c, MATRIX_SIZE_TYPE_SIZE);
+	output.write((char *)&r, MATRIX_SIZE_TYPE_SIZE);
 
 	output.write((char *)m, rows * cols * sizeof(float));
 

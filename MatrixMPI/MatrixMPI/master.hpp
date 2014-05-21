@@ -81,7 +81,7 @@ public:
 	}
 	void kill()
 	{
-		std::cout << "sending poison pill" << std::endl;
+		//std::cout << "sending poison pill" << std::endl;
 
 		size_t zero = 0;
 
@@ -93,7 +93,7 @@ public:
 		MPI_Send(req_buff, pos, MPI_PACKED, worker_id, TAG, MPI_COMM_WORLD);
 		working = false;
 
-		std::cout << "poison pill sent" << std::endl;
+		//std::cout << "poison pill sent" << std::endl;
 	}
 	worker_task(int worker_id, size_t max_dim1, size_t max_dim2, size_t max_dim3) :
 		worker_id(worker_id),
@@ -133,15 +133,20 @@ private:
 public:
 	void init()
 	{
-		matrix_read_size(file1, dim2, dim1);
-		matrix_read_size(file2, dim3, dim2);
+		matrix_read_size(file1, dim1, dim2);
+		matrix_read_size(file2, dim2, dim3);
 
+		std::cout << "total dimensions" << std::endl;
 		std::cout << "m1 = [" << dim1 << ", " << dim2 << "]" << std::endl;
 		std::cout << "m2 = [" << dim2 << ", " << dim3 << "]" << std::endl;
 
 		chunk_dim1 = 1;
 		chunk_dim2 = dim1; // or bigger if dim1 is too small
 		chunk_dim3 = dim3;
+
+		std::cout << "chunk dimensions" << std::endl;
+		std::cout << "m1 = [" << chunk_dim1 << ", " << chunk_dim2 << "]" << std::endl;
+		std::cout << "m2 = [" << chunk_dim2 << ", " << chunk_dim3 << "]" << std::endl;
 
 		a = matrix_alloc(chunk_dim1, chunk_dim2);
 		b = matrix_alloc(chunk_dim2, chunk_dim3);
@@ -244,6 +249,7 @@ public:
 			if (i + chunk_dim1 > dim1)
 				chunk_dim1 = dim1 - i;
 
+			file2.seekg(2 * MATRIX_SIZE_TYPE_SIZE, file2.beg);
 			for (size_t j = 0; j < dim2; j += chunk_dim2)
 			{
 				if (j + chunk_dim2 > dim2)
@@ -251,21 +257,11 @@ public:
 				else
 					chunk_dim2 = ch2;
 
-				matrix_load(a, file1, i, j, chunk_dim1, chunk_dim2, dim2);
+				file1.read((char *)a, chunk_dim1 * chunk_dim2 * sizeof(float));
 
-				// this cycle can be removed because it is always executed only once
-				for (size_t k = 0; k < dim3; k += chunk_dim3)
-				{
-					if (k + chunk_dim3 > dim3)
-						chunk_dim3 = dim3 - k;
-					else
-						chunk_dim3 = ch3;
+				file2.read((char *)b, chunk_dim2 * chunk_dim3 * sizeof(float));
 
-					matrix_load(b, file2, j, k, chunk_dim2, chunk_dim3, dim3);
-					// at this point there is a new task generated
-
-					process_task(i, k, chunk_dim1, chunk_dim2, chunk_dim3);
-				}
+				process_task(i, j, chunk_dim1, chunk_dim2, chunk_dim3);
 			}
 		}
 		
