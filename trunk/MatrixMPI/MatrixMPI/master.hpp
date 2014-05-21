@@ -8,6 +8,7 @@
 #include<vector>
 #include<memory>
 #include "matrix.hpp"
+#include "worker.hpp"
 
 #ifdef WIN32
 #include<future>
@@ -18,14 +19,13 @@ void sleep(int seconds) {
 #include <unistd.h>
 #endif
 
-#define TAG 0
-
 // hold by master
 class worker_task
 {
 private:
 	// worker mpi ID
 	int worker_id;
+	int master_id;
 	// true if worker is currently working
 	bool working;
 	// sizes of matrix the worker is currently working on
@@ -55,7 +55,7 @@ public:
 		MPI_Pack(&my_dim3, 1, MPI_UNSIGNED_LONG, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
 		MPI_Pack(a, my_dim1 * my_dim2, MPI_FLOAT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
 		MPI_Pack(b, my_dim2 * my_dim3, MPI_FLOAT, req_buff, req_buff_size, &pos, MPI_COMM_WORLD);
-		
+
 		MPI_Isend(req_buff, pos, MPI_PACKED, worker_id, TAG, MPI_COMM_WORLD, &send_req);
 
 		// start receiving imediatelly
@@ -119,6 +119,10 @@ private:
 	size_t chunk_dim1, chunk_dim2, chunk_dim3;
 	// buffers - currently procesing matrices - loaded from files
 	matrix a, b;
+
+	// master working data
+	matrix my_res;
+
 	// result matrix contains collected data from all workers
 	matrix result;
 	// total number of workers
@@ -136,30 +140,34 @@ public:
 		matrix_read_size(file1, dim1, dim2);
 		matrix_read_size(file2, dim2, dim3);
 
-		std::cout << "total dimensions" << std::endl;
+		/*std::cout << "total dimensions" << std::endl;
 		std::cout << "m1 = [" << dim1 << ", " << dim2 << "]" << std::endl;
-		std::cout << "m2 = [" << dim2 << ", " << dim3 << "]" << std::endl;
+		std::cout << "m2 = [" << dim2 << ", " << dim3 << "]" << std::endl;*/
 
 		chunk_dim1 = 1;
 		chunk_dim2 = dim1; // or bigger if dim1 is too small
 		chunk_dim3 = dim3;
 
-		std::cout << "chunk dimensions" << std::endl;
+		/*std::cout << "chunk dimensions" << std::endl;
 		std::cout << "m1 = [" << chunk_dim1 << ", " << chunk_dim2 << "]" << std::endl;
-		std::cout << "m2 = [" << chunk_dim2 << ", " << chunk_dim3 << "]" << std::endl;
+		std::cout << "m2 = [" << chunk_dim2 << ", " << chunk_dim3 << "]" << std::endl;*/
 
 		a = matrix_alloc(chunk_dim1, chunk_dim2);
 		b = matrix_alloc(chunk_dim2, chunk_dim3);
 		result = matrix_alloc(dim1, dim3, 0.0);
+		my_res = matrix_alloc(chunk_dim1, chunk_dim3);
 
 		for (size_t i = 0; i < group_size; ++i)
 			workers.push_back(new worker_task(i, chunk_dim1, chunk_dim2, chunk_dim3));
 
 		// broadcast max size of chunk
 		int max_chunk[3];
-		max_chunk[0] = chunk_dim1;
+		/*max_chunk[0] = chunk_dim1;
 		max_chunk[1] = chunk_dim2;
-		max_chunk[2] = chunk_dim3;
+		max_chunk[2] = chunk_dim3;*/
+		max_chunk[0] = dim1;
+		max_chunk[1] = dim2;
+		max_chunk[2] = dim3;
 		MPI_Bcast(max_chunk, 3, MPI_INT, master_id, MPI_COMM_WORLD);
 	}
 	int get_idle_worker()
@@ -201,12 +209,27 @@ public:
 			check_workers_status();
 			id = get_idle_worker();
 
+			//if (id == master_id)
+			//{
+			//	for (size_t i = 0; i < chunk_dim1; ++i)
+			//	{
+			//		for (size_t j = 0; j < chunk_dim3; ++j)
+			//		{
+			//			int sum = 0;
+
+			//			for (size_t k = 0; k < chunk_dim2; ++k)
+			//			{
+			//				sum += (int)a[i * chunk_dim2 + k] * (int)b[k * chunk_dim3 + j];
+			//			}
+			//			result[(top + i) * dim3 + left + j] += sum;
+			//			//res[i * chunk_dim2 + j] = sum;
+			//		}
+			//	}
+			//}
+			//check_workers_status();
+
 			while (id == master_id)
 			{
-				// do peace of your own job
-				// ..
-				sleep(1);
-
 				check_workers_status();
 				id = get_idle_worker();
 			}
@@ -241,8 +264,7 @@ public:
 	}
 	void generate_tasks()
 	{
-		size_t ch2 = chunk_dim2;
-		size_t ch3 = chunk_dim3;
+		size_t backup2 = chunk_dim2;
 
 		for (size_t i = 0; i < dim1; i += chunk_dim1)
 		{
@@ -250,18 +272,18 @@ public:
 				chunk_dim1 = dim1 - i;
 
 			file2.seekg(2 * MATRIX_SIZE_TYPE_SIZE, file2.beg);
+			chunk_dim2 = backup2;
+
 			for (size_t j = 0; j < dim2; j += chunk_dim2)
 			{
 				if (j + chunk_dim2 > dim2)
 					chunk_dim2 = dim2 - j;
-				else
-					chunk_dim2 = ch2;
 
 				file1.read((char *)a, chunk_dim1 * chunk_dim2 * sizeof(float));
 
 				file2.read((char *)b, chunk_dim2 * chunk_dim3 * sizeof(float));
 
-				process_task(i, j, chunk_dim1, chunk_dim2, chunk_dim3);
+				process_task(i, 0, chunk_dim1, chunk_dim2, chunk_dim3);
 			}
 		}
 		
@@ -274,9 +296,9 @@ public:
 		init();
 
 		generate_tasks();
-
+		
 		kill_workers();
-
+		
 		finish();
 	}
 	void finish()
@@ -299,7 +321,7 @@ public:
 		output(output),
 		workers()
 	{
-
+		
 	}
 	~master()
 	{
