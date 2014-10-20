@@ -1,0 +1,86 @@
+program
+identifier
+;
+label
+unsigned integer
+;
+type
+identifier
+=
+Error: Unknown character '^'(0x5e) on the input
+identifier
+;
+identifier
+=
+(
+identifier
+,
+identifier
+,
+identifier
+)
+;
+var
+identifier
+,
+identifier
+,
+identifier
+:
+identifier
+;
+identifier
+:
+identifier
+;
+begin
+for
+identifier
+:=
+unsigned integer
+for direction
+unsigned integer
+do
+begin
+identifier
+:=
+identifier
+mul oper
+unsigned integer
+;
+identifier
+:=
+identifier
+mul oper
+(
+unsigned integer
+sign/add oper
+identifier
+)
+;
+if
+identifier
+rel oper
+unsigned integer
+then
+goto
+unsigned integer
+;
+end
+unsigned integer
+:
+identifier
+:=
+identifier
+mul oper
+real number
+;
+identifier
+:=
+identifier
+mul oper
+real number
+;
+end
+.
+There were some errors 1 and warnings 0

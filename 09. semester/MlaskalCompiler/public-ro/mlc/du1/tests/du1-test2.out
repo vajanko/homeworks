@@ -1,0 +1,30 @@
+program
+identifier
+;
+identifier
+unsigned integer
+;
+var
+identifier
+:
+identifier
+;
+identifier
+:
+Error: Unknown character '@'(0x40) on the input
+identifier
+;
+begin
+identifier
+:=
+real number
+.
+sign/add oper
+real number
+sign/add oper
+real number
+identifier
+;
+end
+.
+There were some errors 1 and warnings 0
