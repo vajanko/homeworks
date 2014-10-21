@@ -41,9 +41,7 @@ DUTOK_RECORD		record
 /* Literals */
 DIGIT				[0-9]
 LETTER				[a-zA-Z]
-DUTOK_IDENTIFIER	{LETTER}({DIGIT}|{LETTER})*
-UINT				{DIGIT}*
-DUTOK_REAL			({DUTOK_UINT}\.{DIGIT}*)?(e[+-]?{DUTOK_UINT})?
+UINT				{DIGIT}+
 
 /* Other */
 WHITESPACE		[ \r\n\t\f]
@@ -52,17 +50,52 @@ WHITESPACE		[ \r\n\t\f]
 
 {WHITESPACE}+		/* go out with whitespaces */
 
-program				return DUTOK_PROGRAM;
+([\<>][>=]?)	return DUTOK_OPER_REL;
+(down)?to		return DUTOK_FOR_DIRECTION;
+[+-]			return DUTOK_OPER_SIGNADD;
+([*/])|div|mod|and		return DUTOK_OPER_MUL;
+
+
+program			return DUTOK_PROGRAM;	/* Keywords */
+label			return DUTOK_LABEL;
+const			return DUTOK_CONST;
+type			return DUTOK_TYPE;
+var				return DUTOK_VAR;
+begin			return DUTOK_BEGIN;
+end				return DUTOK_END;
+procedure		return DUTOK_PROCEDURE;
+function		return DUTOK_FUNCTION;
+array			return DUTOK_ARRAY;
+of				return DUTOK_OF;
+goto			return DUTOK_GOTO;
+if				return DUTOK_IF;
+then			return DUTOK_THEN;
+else			return DUTOK_ELSE;
+while			return DUTOK_WHILE;
+do				return DUTOK_DO;
+repeat			return DUTOK_REPEAT;
+until			return DUTOK_UNTIL;
+for				return DUTOK_FOR;
+or				return DUTOK_OR;
+not				return DUTOK_NOT;
+record			return DUTOK_RECORD;
 
 {LETTER}({DIGIT}|{LETTER})*			return DUTOK_IDENTIFIER;
 {UINT}								return DUTOK_UINT;
-({UINT}\.{DIGIT}*)?(e[+-]?{UINT})?	return DUTOK_REAL;
+{UINT}(\.{DIGIT}*)?(e[+-]?{UINT})?	return DUTOK_REAL;
 
-;					return DUTOK_SEMICOLON;
-\.					return DUTOK_DOT;
+;	return DUTOK_SEMICOLON;		/* Delimiters */
+\.	return DUTOK_DOT;
+,	return DUTOK_COMMA;
+=	return DUTOK_EQ;
+:	return DUTOK_COLON;
+\(	return DUTOK_LPAR;
+\)	return DUTOK_RPAR;
+\.\.	return DUTOK_DOTDOT;
+\[	return DUTOK_LSBRA;
+\]	return DUTOK_RSBRA;
+:=	return DUTOK_ASSIGN;
 
 .			mlc::error(mlc::DUERR_UNKCHAR, 0, *yytext, *yytext);
 
 %%
-
-/* {DUTOK_IDENTIFIER}	return DUTOK_IDENTIFIER; */
