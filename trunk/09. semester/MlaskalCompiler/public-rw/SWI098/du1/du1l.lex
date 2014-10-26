@@ -50,10 +50,10 @@ WHITESPACE		[ \r\n\t\f]
 
 {WHITESPACE}+		/* go out with whitespaces */
 
-([\<>][>=]?)	return DUTOK_OPER_REL;
-(down)?to		return DUTOK_FOR_DIRECTION;
-[+-]			return DUTOK_OPER_SIGNADD;
-([*/])|div|mod|and		return DUTOK_OPER_MUL;
+(<[>=]?)|(>=?)	return DUTOK_OPER_REL;			/* '<', '<>', '<=' or '>', '>=' */
+(down)?to		return DUTOK_FOR_DIRECTION;		/* 'downto' or 'to' */
+[+-]			return DUTOK_OPER_SIGNADD;		/* '+' or '-' */
+([*/])|div|mod|and		return DUTOK_OPER_MUL;	/* '*', '/', div, mod, and */
 
 
 program			return DUTOK_PROGRAM;	/* Keywords */
