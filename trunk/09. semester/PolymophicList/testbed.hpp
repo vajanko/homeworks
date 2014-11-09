@@ -5,6 +5,10 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <algorithm>
+
+//#include "upp_mthr.hpp"
+//#include "upp_lexical_cast.hpp"
 
 namespace ulibpp {
 	typedef unsigned long long uUINT64;
@@ -46,9 +50,9 @@ namespace ulibpp {
 	inline uUINT64 system_info::get_relative_time()
 	{
 		::timeval tv;
-		timezone tz;
+		//struct timezone tz;
 
-		if(gettimeofday(&tv, &tz))
+		if(gettimeofday(&tv, 0))
 			return 0;
 
 		return ((uUINT64)tv.tv_sec*1000)+tv.tv_usec/1000;
@@ -109,7 +113,7 @@ public:
 	void run_row( logger & log, const SP & sp, const SQ & sq) const
 	{
 		log.os() << sp;
-		std::for_each( tv_.begin(), tv_.end(), [&]( const generator_ptr & p){ p->run< debug>( log, sp, sq); });
+		std::for_each( tv_.begin(), tv_.end(), [&]( const generator_ptr & p){ p->template run< debug>( log, sp, sq); });
 		log.os() << std::endl;
 	}
 
@@ -226,9 +230,9 @@ private:
 
 		generic_SQ sq;
 		sq.complexity = generator.complexity();
-		sq.iterations = std::max( time_complexity( 1), target_complexity / sq.complexity);	// !!!
+		sq.iterations = std::max( time_complexity( 1), target_complexity / sq.complexity);
 
-		ml_.run< debug>( log, generator.data(), generator.check(), sq);
+		ml_.template run< debug>( log, generator.data(), generator.check(), sq);
 	}
 
 	task_list< data_type, check_type, generic_SQ> ml_;
@@ -265,56 +269,48 @@ private:
 	template< bool debug>
 	void run_impl( logger & log, const D & data, const C & check, const generic_SQ & sq) const
 	{
+		/*
 		log.ss() << "START " << D::name() << " " << data.byte_size() << " " << M::name() << " " << sq.complexity << " " << sq.iterations << std::endl;
+		*/
 
-		try {
+		M::template initial_check< debug>( log, data, check);
 
-			M::initial_check< debug>( log, data, check);
+		// cold run
+		M::template run< true, debug>( data, check);
 
-			// cold run
-			M::run< true, debug>( data, check);
+		ulibpp::uUINT64 pre_mach = ulibpp::system_info::get_relative_time();
 
-			ulibpp::uUINT64 pre_mach = ulibpp::system_info::get_relative_time();
-
-			for ( std::size_t i = 0; i < sq.iterations; ++ i)
-			{
-				M::run< false, false>( data, check);
-			}
-
-			ulibpp::uUINT64 post_mach = ulibpp::system_info::get_relative_time();
-
-			double ns = (1000000.0 * (double)(post_mach - pre_mach) / ((double)sq.iterations * (double)sq.complexity));
-
-			M::final_check< debug>( log, data, check);
-
-			log.os() 
-				<< "\t"
-				<< ns
-				;
-
-			log.ss() 
-				<< "STOP " 
-				<< ((double)(post_mach - pre_mach))
-				<< " ms total," 
-				<< " "
-				<< (1000000.0 * (double)(post_mach - pre_mach) / sq.iterations)
-				<< " ns" 
-				<< " per iter,"
-				<< " "
-				<< ns
-				<< " ns" 
-				<< " per element"
-				<< std::endl
-				;
-		}
-		catch ( const std::exception & e)
+		for ( std::size_t i = 0; i < sq.iterations; ++ i)
 		{
-			log.os() << "\t"
-				<< "N.A."
-				;
-
-			log.ss() << "EXCEPTION " << e.what() << std::endl;
+			M::template run< false, false>( data, check);
 		}
+
+		ulibpp::uUINT64 post_mach = ulibpp::system_info::get_relative_time();
+
+		double ns = (1000000.0 * (double)(post_mach - pre_mach) / ((double)sq.iterations * (double)sq.complexity));
+
+		log.os() 
+			<< "\t"
+			<< ns
+			;
+
+		M::template final_check< debug>( log, data, check);
+		/*
+		log.ss() 
+			<< "STOP " 
+			<< ((double)(post_mach - pre_mach))
+			<< " ms total," 
+			<< " "
+			<< (1000000.0 * (double)(post_mach - pre_mach) / sq.iterations)
+			<< " ns" 
+			<< " per iter,"
+			<< " "
+			<< ns
+			<< " ns" 
+			<< " per element"
+			<< std::endl
+			;
+		*/
 	}
 };
 /*
