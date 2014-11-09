@@ -9,7 +9,7 @@
 
 #include "testbed.hpp"
 
-#define USE_VARIADIC
+//#define USE_VARIADIC
 #define STATIC_ITERATORS
 
 #ifdef USE_VARIADIC
@@ -209,6 +209,17 @@ struct identity
 	typedef T type;
 };
 
+template< std::size_t N>
+struct array_data_plain_row 
+	: public array_data_policy< N>::template muster< identity>
+{
+	array_data_plain_row()
+	{
+		array_data_policy< N>::ctor( * this);
+	}
+};
+
+/*
 template< typename D>
 class plain_row 
 : public D::template muster< identity>
@@ -225,6 +236,7 @@ public:
 		return v;
 	}
 };
+*/
 
 template< typename S>
 class abstract_item_factory {
@@ -243,7 +255,7 @@ template< typename S, typename my_data>
 class item_factory : public abstract_item_factory< S> {
 public:
 	item_factory( S & s)
-		: m_( s.register_type< my_data>())
+		: m_( s.template register_type< my_data>())
 	{
 	}
 
@@ -252,15 +264,18 @@ public:
 private:
 	virtual void make_( S & s) const
 	{
-		m_.push_back( plain_row< my_data>());
+//		m_.push_back( plain_row< my_data>());
+		m_.push_back( my_data());
 	}
 };
 
 template< typename S, std::size_t N>
-class array_item_factory : public item_factory< S, array_data_policy< N> > {
+//class array_item_factory : public item_factory< S, array_data_policy< N> > {
+class array_item_factory : public item_factory< S, array_data_plain_row< N> > {
 public:
 	array_item_factory( S & s)
-		: item_factory< S, array_data_policy< N> >( s)
+//		: item_factory< S, array_data_policy< N> >( s)
+		: item_factory< S, array_data_plain_row< N> >( s)
 	{
 	}
 };
@@ -292,7 +307,8 @@ struct f_ftor
 	struct ftor_rebind;
 
 	template< std::size_t N>
-	struct ftor_rebind< array_data_policy< N>>
+	//struct ftor_rebind< array_data_policy< N>>
+	struct ftor_rebind< array_data_plain_row< N>>
 	{
 		ftor_rebind()
 		: s_(0)
@@ -555,11 +571,32 @@ struct generator_1 {
 
 	struct data_type : public data_type_base
 	{
+		using data_type_base::m1;
+		using data_type_base::m2;
+		using data_type_base::m3;
+		using data_type_base::m4;
+		using data_type_base::m5;
+		using data_type_base::unordered_for_each;
+		using data_type_base::ordered_for_each;
+
 		data_type()
 		: dpf( * this)	
 		{
 			dpf << m1.m_ << m2.m_ << m3.m_ << m4.m_ << m5.m_;
 		}
+
+		template< typename A>
+		A unordered_for_each_static( A f) const
+		{
+			return unordered_for_each( dpf( f));
+		}
+
+		template< typename A>
+		A ordered_for_each_static( A f) const
+		{
+			return ordered_for_each( dpf( f));
+		}
+
 		typename S::template dynamic_polyfunctor< f_ftor> dpf;
 	};
 	typedef f_data check_type;
@@ -569,10 +606,12 @@ struct generator_1 {
 
 	static std::string name() { return S::name() + "_" + P::name(); }
 
+	/*
 	std::string param() const 
 	{ 
 		return ulibpp::lexical_cast< std::string>( ICOUNT);
 	}
+	*/
 
 	time_complexity complexity() const 
 	{ 
@@ -648,6 +687,11 @@ struct task_1 {
 
 	static std::string name() { return "unordered_for_each"; }
 
+	static time_complexity complexity() 
+	{ 
+		return 1;
+	}
+
 	template< bool cold, bool debug, typename D, typename C>
 	static void run( const D & data, const C & check)
 	{
@@ -672,6 +716,11 @@ struct task_1 {
 struct task_1O {
 
 	static std::string name() { return "ordered_for_each"; }
+
+	static time_complexity complexity() 
+	{ 
+		return 20;
+	}
 
 	template< bool cold, bool debug, typename D, typename C>
 	static void run( const D & data, const C & check)

@@ -18,7 +18,8 @@ public:
 	class magic
 	{
 	public:
-		void push_back( const plain_row< D> & v) const 
+		//void push_back( const plain_row< D> & v) const 
+		void push_back( const D & v) const 
 		{
 			//... append the data to the end of the polymorphic vector
 		}

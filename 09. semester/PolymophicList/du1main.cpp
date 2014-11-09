@@ -19,17 +19,17 @@ int main( int argc, char * * argv)
 	std::size_t min_elements = 64 * 1024;
 	std::size_t max_elements = min_elements;
 #else
-	time_complexity target_complexity = 500000000UL;
-//	std::size_t min_elements = 64;
-//	std::size_t max_elements = 64 * 1024UL * 1024UL;
-	std::size_t min_elements = 64 * 1024;
-	std::size_t max_elements = min_elements;
+	time_complexity target_complexity = 5000000000UL;
+	std::size_t min_elements = 1024L;
+	std::size_t max_elements = 64 * 1024UL * 1024UL;
+//	std::size_t min_elements = 64 * 1024;
+//	std::size_t max_elements = min_elements;
 #endif
 
 	gl.push_back( make_generic_generator_task< generator_1< du1container, policy_random>, task_1, std::size_t>());
 	gl.push_back( make_generic_generator_task< generator_1< du1container, policy_random>, task_1O, std::size_t>());
 
-	for ( std::size_t elements = min_elements; elements <= max_elements; elements <<= 1)
+	for ( std::size_t elements = min_elements; elements <= max_elements; elements <<= 3)
 	{
 		gl.push_back_size( elements, target_complexity);
 	}

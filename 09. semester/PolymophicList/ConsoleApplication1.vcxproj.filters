@@ -29,5 +29,8 @@
     <ClCompile Include="du1main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="du1container.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
