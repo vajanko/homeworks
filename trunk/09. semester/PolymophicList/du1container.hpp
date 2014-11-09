@@ -16,19 +16,12 @@ public:
 		return 0;
 	}
 
-	class magic_base
-	{
-	public:
-		
-	};
-
 	template< typename D>
-	class magic : public magic_base
+	class magic
 	{
 	private:
 		du1container &con;
-		// TODO: unique_ptr
-		std::vector<D> *data;
+		std::shared_ptr<std::vector<D>> data;
 	public:
 		//void push_back( const plain_row< D> & v) const 
 		void push_back( const D & v) const
@@ -38,7 +31,7 @@ public:
 			// TODO: notify container about this item
 		}
 		template< typename A>
-		void foreach(A &fctor)
+		void for_each(A &fctor)
 		{
 			for (auto b = data->begin(); b != data->end(); b++)
 				fctor.call(*b);
@@ -56,24 +49,38 @@ public:
 	template< typename A>
 	class dynamic_polyfunctor
 	{
-	public:
-		typedef void(*func_type)(A&);
-		func_type f1;
+	private:
+		struct magic_holder_base
+		{
+			virtual void for_each(A &fctor) = 0;
+		};
+		template<typename D>
+		struct magic_holder : public magic_holder_base
+		{
+			magic<D> m;
+			virtual void for_each(A &fctor)
+			{
+				m.for_each(fctor);
+			}
+			magic_holder(magic<D> m) : m(m) { }
+		};
+		std::vector<magic_holder_base *> magics;
 
 	public:
 		dynamic_polyfunctor( const du1container & d)
 		{
 			//...
 		}
+		~dynamic_polyfunctor()
+		{
+			for (auto magic : magics)
+				delete magic;
+		}
 
 		template< typename D>
 		dynamic_polyfunctor & operator<<( magic< D> m)
 		{
-			//typedef void(magic<D>::*func_t)(A&);
-			//... register a magic in this polyfunctor
-			//func_t fun = &magic<D>::foreach<A>;
-			//this->f1 = fun;
-			//void(magic<D>::foreach)(A)
+			magics.push_back(new magic_holder<D>(m));
 			return * this;
 		}
 
@@ -81,13 +88,22 @@ public:
 		{
 			return std::pair< const dynamic_polyfunctor< A> &, A>( * this, a);
 		}
+
+		void for_each(A &fctor) const
+		{
+			for (auto magic : magics)
+			{
+				magic->for_each(fctor);
+			}
+		}
+		
 	};
 
 	template< typename A>
 	A unordered_for_each( std::pair< const dynamic_polyfunctor< A> &, A> dpf) const
 	{
 		//... pass in any order
-		dpf.first.f1(dpf.second);
+		dpf.first.for_each(dpf.second);
 		return dpf.second;
 	}
 

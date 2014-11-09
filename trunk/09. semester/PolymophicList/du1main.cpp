@@ -96,6 +96,8 @@ void test()
 
 	c.unordered_for_each(dpf(fruit()));
 	c.ordered_for_each(dpf(fruit()));
+
+	system("pause");
 }
 
 int main( int argc, char * * argv)
