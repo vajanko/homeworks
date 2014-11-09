@@ -576,8 +576,8 @@ struct generator_1 {
 		using data_type_base::m3;
 		using data_type_base::m4;
 		using data_type_base::m5;
-		using data_type_base::unordered_for_each;
-		using data_type_base::ordered_for_each;
+		//using data_type_base::unordered_for_each;
+		//using data_type_base::ordered_for_each;
 
 		data_type()
 		: dpf( * this)	
