@@ -1,0 +1,6 @@
+#+jpf-core.classpath=${config_path}/build/tests
+jpf-core.classpath=${jpf-core.classpath};${config_path}/build/tests
+
+target = Racer
+
+#listener=gov.nasa.jpf.listener.MethodCallMonitor

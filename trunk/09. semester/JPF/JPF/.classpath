@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/annotations"/>
+	<classpathentry kind="src" path="src/classes"/>
+	<classpathentry kind="src" path="src/examples"/>
+	<classpathentry kind="src" path="src/main"/>
+	<classpathentry kind="src" path="src/peers"/>
+	<classpathentry kind="src" path="src/tests"/>
+	<classpathentry kind="src" path="src/custom"/>
+	<classpathentry kind="lib" path="build/classloader_specific_tests.jar"/>
+	<classpathentry kind="lib" path="build/jpf-annotations.jar"/>
+	<classpathentry kind="lib" path="build/jpf-classes.jar"/>
+	<classpathentry kind="lib" path="build/jpf.jar"/>
+	<classpathentry kind="lib" path="build/RunAnt.jar"/>
+	<classpathentry kind="lib" path="build/RunJPF.jar"/>
+	<classpathentry kind="lib" path="build/RunTest.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.10.jar"/>
+	<classpathentry kind="lib" path="tools/ant-junit.jar"/>
+	<classpathentry kind="lib" path="tools/ant-launcher.jar"/>
+	<classpathentry kind="lib" path="tools/ant.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="build/tests"/>
+</classpath>
