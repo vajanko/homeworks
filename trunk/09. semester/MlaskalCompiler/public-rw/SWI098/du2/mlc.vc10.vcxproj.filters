@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files - read only">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files - read only">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Generated Files - do not modify">
+      <UniqueIdentifier>{82aa7e16-389d-41c4-b758-de7d7d0f29af}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\public-ro\mlc\du2\src\du2.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\mlc\du2\src\du2baseerrtab.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\mlc\du2\src\du2tok.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\mlc\src\duerr.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\mlc\src\dusememptyerrtab.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="du2l.cpp">
+      <Filter>Generated Files - do not modify</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\public-ro\common\h\common_types.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\du2\h\du2.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\du2\h\du2tok.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\du2\h\dubaseerr.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\h\duerr.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\literal_storage.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\h\unistd.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
