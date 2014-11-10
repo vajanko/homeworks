@@ -19,7 +19,7 @@
 
 int main( int argc, char * * argv)
 {
-	generator_list< std::size_t, std::size_t> gl;
+	/*generator_list< std::size_t, std::size_t> gl;
 
 #ifdef _DEBUG
 	std::size_t min_elements = 128UL;	// one SSE group
@@ -47,7 +47,7 @@ int main( int argc, char * * argv)
 #else
 	gl.run< false>( log);
 #endif
-	return 0;
+	return 0;*/
 }
 
 ///////////////////////////////
