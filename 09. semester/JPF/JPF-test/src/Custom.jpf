@@ -1,0 +1,5 @@
++jpf-core.classpath=${config_path}\bin
+
+target = Main
+
++jpf-core.listener=MethodCallMonitor
