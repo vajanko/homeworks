@@ -19,12 +19,15 @@
 	using namespace std;
 	using namespace mlc;
 
-	// true if line number is initialized already
+	// 0 - if line number needs to be initialized
+	// 1 - if line number need to be incremented
+	// 2 - otherwise
 	unsigned int line_init = 0;
 	// increment current line number
 	#define INC_LINE { ++(*l); }
 	// return current line number
 	#define LINE_NUM (*l)
+	#define INC_LINE_NEXT { line_init = 1; }
 
 	unsigned int bracket_count = 0 ;	
 	#define INC_COMM { ++bracket_count; }
@@ -93,10 +96,15 @@ WHITESPACE		[ \r\t\f]
 %%
 
 %{
-     if (!line_init) 
+     if (line_init == 0)
 	 {
-		line_init = 1;
+		line_init = 2;
 		(*l) = 1;
+	 }
+	 else if (line_init == 1)
+	 {
+		INC_LINE;
+		line_init = 2;
 	 }
 
 	 std::string str_buff;
@@ -201,7 +209,7 @@ record			return DUTOK_RECORD;
 <INSTRING><<EOF>>	{ error(DUERR_EOFINSTRCHR, LINE_NUM); BEGIN(INITIAL); return DUTOK_STRING; }
 <INSTRING>\n		{ 
 	error(DUERR_EOLINSTRCHR, LINE_NUM); 
-	INC_LINE; 
+	INC_LINE_NEXT;
 	BEGIN(INITIAL);
 	lv->str_ci_ = ctx->tab->ls_str().add(str_buff);
 	return DUTOK_STRING; 
