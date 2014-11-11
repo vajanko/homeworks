@@ -35,7 +35,7 @@
 	{
 		int i = 0;
 		while (str[i] != 0) {
-			str[i] = toupper(str[i]);
+			str[i] = (char)toupper(str[i]);
 			++i;
 		}
 	}
@@ -146,12 +146,12 @@ record			return DUTOK_RECORD;
 {UINT}	{
 	int val;
 	if (!parse_int(yytext, val))
-		error(DUERR_INTOUTRANGE, LINE_NUM, *yytext, *yytext);
+		error(DUERR_INTOUTRANGE, LINE_NUM, yytext);
 
 	lv->int_ci_ = ctx->tab->ls_int().add(val); 
 	return DUTOK_UINT; 
 }
-{UINT}(\.{DIGIT}*)?(e[+-]?{UINT})?	{
+{UINT}(\.{DIGIT}+)?(e[+-]?{UINT})?	{
 	double val = atof(yytext);
 	if (val == HUGE_VAL)
 		error(DUERR_REALOUTRANGE, LINE_NUM, *yytext, *yytext);
@@ -181,10 +181,11 @@ record			return DUTOK_RECORD;
 <INCOMMENT><<EOF>>	{ error(DUERR_EOFINCMT, LINE_NUM); BEGIN(INITIAL); }
 <INCOMMENT>\{		{ INC_COMM; }
 <INCOMMENT>\}		{ DEC_COMM; if (ZERO_COMM) { BEGIN(INITIAL); } }
+\}					{ error(DUERR_UNEXPENDCMT, LINE_NUM); }
 
 \'					{ BEGIN(INSTRING); }
-<INSTRING><<EOF>>	error(DUERR_EOFINSTRCHR, LINE_NUM, *yytext, *yytext);
-<INSTRING>\n		error(DUERR_EOLINSTRCHR, LINE_NUM, *yytext, *yytext);
+<INSTRING><<EOF>>	{ error(DUERR_EOFINSTRCHR, LINE_NUM); BEGIN(INITIAL); }
+<INSTRING>\n		{ error(DUERR_EOLINSTRCHR, LINE_NUM); BEGIN(INITIAL); }
 <INSTRING>[^']		{ str_buff.append(yytext); }
 <INSTRING>\'\'		{ str_buff.append("'"); }
 <INSTRING>\'		{ BEGIN(INITIAL); lv->str_ci_ = ctx->tab->ls_str().add(str_buff); return DUTOK_STRING; }
