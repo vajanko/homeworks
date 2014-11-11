@@ -54,6 +54,21 @@
 		*out = (unsigned)lval;
 		return res;
 	}
+	int parse_double(char const *str, double *out) 
+	{
+		errno = 0;
+		int res = 0;
+		char *endptr;
+		double val = strtod(str, &endptr);
+
+		if (*str == '\0' || isalpha(*endptr))
+			res = 2;	// empty string of malformed
+		else if (errno == ERANGE && val == HUGE_VAL)
+			res = 1;	// overflow
+
+		*out = val;
+		return res;
+	}
 %}
 
 %option noyywrap
@@ -147,10 +162,13 @@ record			return DUTOK_RECORD;
 	lv->int_ci_ = ctx->tab->ls_int().add(val); 
 	return DUTOK_UINT; 
 }
-{UINT}(\.{DIGIT}+)?(e[+-]?{UINT})?	{
-	double val = atof(yytext);
-	if (val == HUGE_VAL)
-		error(DUERR_REALOUTRANGE, LINE_NUM, *yytext, *yytext);
+{UINT}(\.{DIGIT}+)?(e[+-]?{UINT})?{LETTER}*	{	/* Take also all imediatelly following letters (this will be malformed number) */
+	double val;
+	int res = parse_double(yytext, &val);	
+	if (res == 1)
+		error(DUERR_REALOUTRANGE, LINE_NUM, yytext);
+	else if (res == 2)
+		error(DUERR_BADREAL, LINE_NUM, yytext);
 
 	lv->real_ci_ = ctx->tab->ls_real().add(val); 
 	return DUTOK_REAL; 
@@ -180,12 +198,18 @@ record			return DUTOK_RECORD;
 \}					{ error(DUERR_UNEXPENDCMT, LINE_NUM); }
 
 \'					{ BEGIN(INSTRING); }
-<INSTRING><<EOF>>	{ error(DUERR_EOFINSTRCHR, LINE_NUM); BEGIN(INITIAL); }
-<INSTRING>\n		{ error(DUERR_EOLINSTRCHR, LINE_NUM); BEGIN(INITIAL); }
+<INSTRING><<EOF>>	{ error(DUERR_EOFINSTRCHR, LINE_NUM); BEGIN(INITIAL); return DUTOK_STRING; }
+<INSTRING>\n		{ 
+	error(DUERR_EOLINSTRCHR, LINE_NUM); 
+	INC_LINE; 
+	BEGIN(INITIAL);
+	lv->str_ci_ = ctx->tab->ls_str().add(str_buff);
+	return DUTOK_STRING; 
+}
 <INSTRING>[^']		{ str_buff.append(yytext); }
 <INSTRING>\'\'		{ str_buff.append("'"); }
 <INSTRING>\'		{ BEGIN(INITIAL); lv->str_ci_ = ctx->tab->ls_str().add(str_buff); return DUTOK_STRING; }
 
-.			error(DUERR_UNKCHAR, LINE_NUM, *yytext, *yytext);	/* -1 should be substituted by current line */
+.			error(DUERR_UNKCHAR, LINE_NUM, *yytext, *yytext);
 
 %%
