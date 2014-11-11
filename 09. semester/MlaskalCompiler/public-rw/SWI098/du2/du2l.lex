@@ -39,27 +39,20 @@
 			++i;
 		}
 	}
-	bool parse_int(const char *str, int &out)
+	int parse_int(const char *str, unsigned &out)
 	{
-		int len = strlen(str);
-		if (len > 10)
-		{
-			return false;
-		}
-		else if (len == 10)
-		{
-			const char *max_str = "2147483647";
-			for (int i = 0; i < len; ++i)
-			{
-				if (str[i] > max_str[i])
-					return false;
-				else if (str[i] < max_str[i])
-					break;
-			}
-		}
+		errno = 0;
+		int res = 0;
+		char *endptr;
+		UINT64 lval = STRTOULL(str, &endptr, 0);
 
-		out = atoi(str);
-		return true;
+		if ((errno == ERANGE && lval == LONG_MAX) || lval > INT_MAX)
+			res = 1;	// overflow
+		if (*str == '\0' || isalpha(*endptr))
+			res = 2;	// empty string or malformed
+
+		out = (unsigned)lval;
+		return res;
 	}
 %}
 
@@ -143,10 +136,13 @@ record			return DUTOK_RECORD;
 	lv->id_ci_ = ctx->tab->ls_id().add(yytext); 
 	return DUTOK_IDENTIFIER; 
 }
-{UINT}	{
-	int val;
-	if (!parse_int(yytext, val))
+{UINT}{LETTER}*	{		/* Take also all imediatelly following letters (this will be malformed number) */
+	unsigned val;
+	int res = parse_int(yytext, val);
+	if (res == 1)
 		error(DUERR_INTOUTRANGE, LINE_NUM, yytext);
+	else if (res == 2)
+		error(DUERR_BADINT, LINE_NUM, yytext);
 
 	lv->int_ci_ = ctx->tab->ls_int().add(val); 
 	return DUTOK_UINT; 
