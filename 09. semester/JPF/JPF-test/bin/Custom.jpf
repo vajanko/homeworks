@@ -1,5 +1,0 @@
-#+classpath=${config_path}\bin
-
-target = Main
-
-# listener+=MethodCallMonitor
