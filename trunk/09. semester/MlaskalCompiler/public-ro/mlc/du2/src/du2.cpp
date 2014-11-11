@@ -6,7 +6,7 @@
 
 	Main for DU2
 
-*/
+	*/
 
 #include <cstdio>
 #include <map>
@@ -54,6 +54,40 @@ namespace {
 	};
 
 }
+
+//bool parse_int(const char *str, int &out)
+//{
+//	int len = strlen(str);
+//	if (len > 10)
+//	{
+//		return false;
+//	}
+//	else if (len == 10)
+//	{
+//		const char *max_str = "2147483647";
+//		for (int i = 0; i < len; ++i)
+//		{
+//			if (str[i] > max_str[i])
+//				return false;
+//			else if (str[i] < max_str[i])
+//				break;
+//		}
+//	}
+//
+//	out = atoi(str);
+//	return true;
+//}
+
+//void test() {
+//	int val = 0;
+//	bool res;
+//	res = parse_int("2147483647", val);
+//	res = parse_int("2147482649", val);
+//	res = parse_int("147483647", val);
+//	res = parse_int("2147493647", val);
+//	
+//	//INT_MAX
+//}
 
 int main(int argc, char **argv)
 {
