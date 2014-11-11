@@ -39,7 +39,7 @@
 			++i;
 		}
 	}
-	int parse_int(const char *str, unsigned &out)
+	int parse_int(const char *str, unsigned *out)
 	{
 		errno = 0;
 		int res = 0;
@@ -51,7 +51,7 @@
 		if (*str == '\0' || isalpha(*endptr))
 			res = 2;	// empty string or malformed
 
-		out = (unsigned)lval;
+		*out = (unsigned)lval;
 		return res;
 	}
 %}
@@ -138,7 +138,7 @@ record			return DUTOK_RECORD;
 }
 {UINT}{LETTER}*	{		/* Take also all imediatelly following letters (this will be malformed number) */
 	unsigned val;
-	int res = parse_int(yytext, val);
+	int res = parse_int(yytext, &val);
 	if (res == 1)
 		error(DUERR_INTOUTRANGE, LINE_NUM, yytext);
 	else if (res == 2)
