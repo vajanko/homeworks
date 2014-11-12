@@ -5481,44 +5481,49 @@ char *yytext;
   // value indicating whether result given from parse_* function means malformed number
   #define IS_MALFORMED(res) ((res & MALFORMED_TAG) != 0) 
 
-	void toupper(char *str)
-	{
-		int i = 0;
-		while (str[i] != 0) {
-			str[i] = (char)toupper(str[i]);
-			++i;
-		}
+void toupper(char *str)
+{
+	int i = 0;
+	while (str[i] != 0) {
+		str[i] = (char)toupper(str[i]);
+		++i;
 	}
-	int parse_int(const char *str, unsigned *out)
+}
+int parse_int(const char *str, unsigned *out)
+{
+	int res = 0;
+	UINT64 lval = 0;
+	int i = 0;
+
+	while (str[i] != '\0' && !isalpha(str[i]))
 	{
-		errno = 0;
-		int res = 0;
-		char *endptr;
-		UINT64 lval = STRTOULL(str, &endptr, 0);
-
-    if ((errno == ERANGE && lval == LONG_MAX) || lval > INT_MAX)
-      res |= OVERFLOW_TAG;
-    if (isalpha( *endptr ))
-      res |= MALFORMED_TAG;
-
-		*out = (unsigned)lval;
-		return res;
+		lval = lval * 10 + (str[i] - '0');
+		if (lval > INT_MAX)
+			res = OVERFLOW_TAG;
+		lval &= 0x7fffffff;		// take only 31 bits
+		++i;
 	}
-	int parse_double(char const *str, double *out) 
-	{
-		errno = 0;
-		int res = 0;
-		char *endptr;
-		double val = strtod(str, &endptr);
+	if (isalpha(str[i]))
+		res |= MALFORMED_TAG;
 
-    if (errno == ERANGE && val == HUGE_VAL)
-      res |= OVERFLOW_TAG;
-		if (isalpha(*endptr))
-      res |= MALFORMED_TAG;
+	*out = (unsigned)lval;
+	return res;
+}
+int parse_double(char const *str, double *out) 
+{
+	errno = 0;
+	int res = 0;
+	char *endptr;
+	double val = strtod(str, &endptr);
 
-		*out = val;
-		return res;
-	}
+if (errno == ERANGE && val == HUGE_VAL)
+	res |= OVERFLOW_TAG;
+	if (isalpha(*endptr))
+	res |= MALFORMED_TAG;
+
+	*out = val;
+	return res;
+}
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_UNPUT 1
 /* Allow 'Program' as well as 'program' keywords */
@@ -5528,7 +5533,7 @@ char *yytext;
 
 #define INCOMMENT 2
 
-#line 5532 "du2l.cpp"
+#line 5537 "du2l.cpp"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -5679,7 +5684,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 107 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 112 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 
 
 
@@ -5697,7 +5702,7 @@ YY_DECL
 	 std::string str_buff;
 
 
-#line 5701 "du2l.cpp"
+#line 5706 "du2l.cpp"
 
 	if ( yy_init )
 		{
@@ -5770,197 +5775,197 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 124 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 129 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 /* go out with whitespaces */
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 126 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 131 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_LT; return DUTOK_OPER_REL; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 127 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 132 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_LE; return DUTOK_OPER_REL; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 128 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 133 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_NE; return DUTOK_OPER_REL; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 129 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 134 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_GE; return DUTOK_OPER_REL; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 130 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 135 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_GT; return DUTOK_OPER_REL; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 132 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 137 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_MINUS; return DUTOK_OPER_SIGNADD; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 133 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 138 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_PLUS; return DUTOK_OPER_SIGNADD; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 135 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 140 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_ASTERISK; return DUTOK_OPER_MUL; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 136 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 141 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_SOLIDUS; return DUTOK_OPER_MUL; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 137 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 142 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_DIV; return DUTOK_OPER_MUL; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 138 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 143 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_MOD; return DUTOK_OPER_MUL; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 139 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 144 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_AND; return DUTOK_OPER_MUL; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 141 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 146 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_TO; return DUTOKGE_FOR_DIRECTION; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 142 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 147 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { lv->dtge_ = DUTOKGE_DOWNTO; return DUTOKGE_FOR_DIRECTION; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 144 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 149 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_PROGRAM;	/* Keywords */
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 145 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 150 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_LABEL;
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 146 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 151 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_CONST;
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 147 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 152 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_TYPE;
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 148 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 153 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_VAR;
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 149 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 154 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_BEGIN;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 150 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 155 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_END;
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 151 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 156 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_PROCEDURE;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 152 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 157 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_FUNCTION;
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 153 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 158 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_ARRAY;
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 154 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 159 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_OF;
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 155 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 160 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_GOTO;
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 156 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 161 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_IF;
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 157 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 162 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_THEN;
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 158 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 163 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_ELSE;
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 159 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 164 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_WHILE;
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 160 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 165 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_DO;
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 161 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 166 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_REPEAT;
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 162 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 167 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_UNTIL;
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 163 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 168 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_FOR;
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 164 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 169 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_OR;
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 165 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 170 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_NOT;
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 166 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 171 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_RECORD;
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 168 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 173 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { 
 	toupper(yytext);
 	lv->id_ci_ = ctx->tab->ls_id().add(yytext); 
@@ -5969,7 +5974,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 173 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 178 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 {		/* Take also all imediatelly following letters (this will be malformed number) */
 	unsigned val;
 	int res = parse_int(yytext, &val);
@@ -5984,7 +5989,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 184 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 189 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 {	/* Take also all imediatelly following letters (this will be malformed number) */
 	double val;
 	int res = parse_double(yytext, &val);	
@@ -5999,110 +6004,110 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 196 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 201 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_SEMICOLON;		/* Delimiters */
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 197 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 202 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_DOT;
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 198 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 203 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_COMMA;
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 199 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 204 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_EQ;
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 200 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 205 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_COLON;
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 201 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 206 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_LPAR;
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 202 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 207 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_RPAR;
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 203 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 208 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_DOTDOT;
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 204 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 209 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_LSBRA;
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 205 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 210 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_RSBRA;
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 206 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 211 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 return DUTOK_ASSIGN;
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 208 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 213 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { INC_LINE; }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 211 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 216 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { INC_COMM; BEGIN(INCOMMENT); }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 212 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 217 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 213 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 218 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { INC_LINE; }
 	YY_BREAK
 case YY_STATE_EOF(INCOMMENT):
-#line 214 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 219 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { error(DUERR_EOFINCMT, LINE_NUM); BEGIN(INITIAL); }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 215 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 220 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { INC_COMM; }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 216 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 221 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { DEC_COMM; if (IS_OUT_COMM) { BEGIN(INITIAL); } }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 217 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 222 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { error(DUERR_UNEXPENDCMT, LINE_NUM); }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 219 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 224 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { BEGIN(INSTRING); }
 	YY_BREAK
 case YY_STATE_EOF(INSTRING):
-#line 220 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 225 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { error(DUERR_EOFINSTRCHR, LINE_NUM); BEGIN(INITIAL); return DUTOK_STRING; }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 221 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 226 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { 
 	error(DUERR_EOLINSTRCHR, LINE_NUM); 
 	INC_LINE_NEXT;
@@ -6113,30 +6118,30 @@ YY_RULE_SETUP
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 228 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 233 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { str_buff.append(yytext); }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 229 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 234 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { str_buff.append("'"); }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 230 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 235 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 { BEGIN(INITIAL); lv->str_ci_ = ctx->tab->ls_str().add(str_buff); return DUTOK_STRING; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 232 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 237 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 error(DUERR_UNKCHAR, LINE_NUM, *yytext, *yytext);
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 234 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 239 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 ECHO;
 	YY_BREAK
-#line 6140 "du2l.cpp"
+#line 6145 "du2l.cpp"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -7017,5 +7022,5 @@ int main()
 	return 0;
 	}
 #endif
-#line 234 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
+#line 239 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du2\\du2l.lex"
 

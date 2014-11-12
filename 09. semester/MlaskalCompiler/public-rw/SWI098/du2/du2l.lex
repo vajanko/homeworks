@@ -45,44 +45,49 @@
   // value indicating whether result given from parse_* function means malformed number
   #define IS_MALFORMED(res) ((res & MALFORMED_TAG) != 0) 
 
-	void toupper(char *str)
-	{
-		int i = 0;
-		while (str[i] != 0) {
-			str[i] = (char)toupper(str[i]);
-			++i;
-		}
+void toupper(char *str)
+{
+	int i = 0;
+	while (str[i] != 0) {
+		str[i] = (char)toupper(str[i]);
+		++i;
 	}
-	int parse_int(const char *str, unsigned *out)
+}
+int parse_int(const char *str, unsigned *out)
+{
+	int res = 0;
+	UINT64 lval = 0;
+	int i = 0;
+
+	while (str[i] != '\0' && !isalpha(str[i]))
 	{
-		errno = 0;
-		int res = 0;
-		char *endptr;
-		UINT64 lval = STRTOULL(str, &endptr, 0);
-
-    if ((errno == ERANGE && lval == LONG_MAX) || lval > INT_MAX)
-      res |= OVERFLOW_TAG;
-    if (isalpha( *endptr ))
-      res |= MALFORMED_TAG;
-
-		*out = (unsigned)lval;
-		return res;
+		lval = lval * 10 + (str[i] - '0');
+		if (lval > INT_MAX)
+			res = OVERFLOW_TAG;
+		lval &= 0x7fffffff;		// take only 31 bits
+		++i;
 	}
-	int parse_double(char const *str, double *out) 
-	{
-		errno = 0;
-		int res = 0;
-		char *endptr;
-		double val = strtod(str, &endptr);
+	if (isalpha(str[i]))
+		res |= MALFORMED_TAG;
 
-    if (errno == ERANGE && val == HUGE_VAL)
-      res |= OVERFLOW_TAG;
-		if (isalpha(*endptr))
-      res |= MALFORMED_TAG;
+	*out = (unsigned)lval;
+	return res;
+}
+int parse_double(char const *str, double *out) 
+{
+	errno = 0;
+	int res = 0;
+	char *endptr;
+	double val = strtod(str, &endptr);
 
-		*out = val;
-		return res;
-	}
+if (errno == ERANGE && val == HUGE_VAL)
+	res |= OVERFLOW_TAG;
+	if (isalpha(*endptr))
+	res |= MALFORMED_TAG;
+
+	*out = val;
+	return res;
+}
 %}
 
 %option noyywrap
