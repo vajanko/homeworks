@@ -27,12 +27,23 @@
 	#define INC_LINE { ++(*l); }
 	// return current line number
 	#define LINE_NUM (*l)
+	// increment line number in the next call of yytext function
 	#define INC_LINE_NEXT { line_init = 1; }
 
-	unsigned int bracket_count = 0 ;	
+	// number of { brackets minus number of } brackets
+	unsigned int bracket_count = 0;
+	// increment current comment nesting
 	#define INC_COMM { ++bracket_count; }
+	// decrement current comment nesting
 	#define DEC_COMM { --bracket_count; }
-	#define ZERO_COMM (bracket_count == 0)
+	// value indicating whether current current text position is outside comments
+	#define IS_OUT_COMM (bracket_count == 0)
+  #define OVERFLOW_TAG 1
+  #define MALFORMED_TAG 2
+  // value indicating whether result given from parse_* function means overflow
+  #define IS_OVERFLOW(res) ((res & OVERFLOW_TAG) != 0)
+  // value indicating whether result given from parse_* function means malformed number
+  #define IS_MALFORMED(res) ((res & MALFORMED_TAG) != 0) 
 
 	void toupper(char *str)
 	{
@@ -49,10 +60,10 @@
 		char *endptr;
 		UINT64 lval = STRTOULL(str, &endptr, 0);
 
-		if ((errno == ERANGE && lval == LONG_MAX) || lval > INT_MAX)
-			res = 1;	// overflow
-		if (*str == '\0' || isalpha(*endptr))
-			res = 2;	// empty string or malformed
+    if ((errno == ERANGE && lval == LONG_MAX) || lval > INT_MAX)
+      res |= OVERFLOW_TAG;
+    if (isalpha( *endptr ))
+      res |= MALFORMED_TAG;
 
 		*out = (unsigned)lval;
 		return res;
@@ -64,10 +75,10 @@
 		char *endptr;
 		double val = strtod(str, &endptr);
 
-		if (*str == '\0' || isalpha(*endptr))
-			res = 2;	// empty string of malformed
-		else if (errno == ERANGE && val == HUGE_VAL)
-			res = 1;	// overflow
+    if (errno == ERANGE && val == HUGE_VAL)
+      res |= OVERFLOW_TAG;
+		if (isalpha(*endptr))
+      res |= MALFORMED_TAG;
 
 		*out = val;
 		return res;
@@ -130,15 +141,15 @@ and	{ lv->dtge_ = DUTOKGE_AND; return DUTOK_OPER_MUL; }
 to		{ lv->dtge_ = DUTOKGE_TO; return DUTOKGE_FOR_DIRECTION; }
 downto	{ lv->dtge_ = DUTOKGE_DOWNTO; return DUTOKGE_FOR_DIRECTION; }
 
-program			return DUTOK_PROGRAM;	/* Keywords */
+program		return DUTOK_PROGRAM;	/* Keywords */
 label			return DUTOK_LABEL;
 const			return DUTOK_CONST;
 type			return DUTOK_TYPE;
 var				return DUTOK_VAR;
 begin			return DUTOK_BEGIN;
 end				return DUTOK_END;
-procedure		return DUTOK_PROCEDURE;
-function		return DUTOK_FUNCTION;
+procedure	return DUTOK_PROCEDURE;
+function	return DUTOK_FUNCTION;
 array			return DUTOK_ARRAY;
 of				return DUTOK_OF;
 goto			return DUTOK_GOTO;
@@ -147,12 +158,12 @@ then			return DUTOK_THEN;
 else			return DUTOK_ELSE;
 while			return DUTOK_WHILE;
 do				return DUTOK_DO;
-repeat			return DUTOK_REPEAT;
+repeat		return DUTOK_REPEAT;
 until			return DUTOK_UNTIL;
 for				return DUTOK_FOR;
 or				return DUTOK_OR;
 not				return DUTOK_NOT;
-record			return DUTOK_RECORD;
+record		return DUTOK_RECORD;
 
 {LETTER}({DIGIT}|{LETTER})*			{ 
 	toupper(yytext);
@@ -162,10 +173,10 @@ record			return DUTOK_RECORD;
 {UINT}{LETTER}*	{		/* Take also all imediatelly following letters (this will be malformed number) */
 	unsigned val;
 	int res = parse_int(yytext, &val);
-	if (res == 1)
-		error(DUERR_INTOUTRANGE, LINE_NUM, yytext);
-	else if (res == 2)
-		error(DUERR_BADINT, LINE_NUM, yytext);
+  if (IS_MALFORMED(res))
+    error( DUERR_BADINT, LINE_NUM, yytext );
+  if (IS_OVERFLOW(res))
+    error( DUERR_INTOUTRANGE, LINE_NUM, yytext );
 
 	lv->int_ci_ = ctx->tab->ls_int().add(val); 
 	return DUTOK_UINT; 
@@ -173,10 +184,10 @@ record			return DUTOK_RECORD;
 {UINT}(\.{DIGIT}+)?(e[+-]?{UINT})?{LETTER}*	{	/* Take also all imediatelly following letters (this will be malformed number) */
 	double val;
 	int res = parse_double(yytext, &val);	
-	if (res == 1)
+  if (IS_MALFORMED(res))
+    error( DUERR_BADREAL, LINE_NUM, yytext );
+	if (IS_OVERFLOW(res))
 		error(DUERR_REALOUTRANGE, LINE_NUM, yytext);
-	else if (res == 2)
-		error(DUERR_BADREAL, LINE_NUM, yytext);
 
 	lv->real_ci_ = ctx->tab->ls_real().add(val); 
 	return DUTOK_REAL; 
@@ -202,7 +213,7 @@ record			return DUTOK_RECORD;
 <INCOMMENT>\n		{ INC_LINE; }
 <INCOMMENT><<EOF>>	{ error(DUERR_EOFINCMT, LINE_NUM); BEGIN(INITIAL); }
 <INCOMMENT>\{		{ INC_COMM; }
-<INCOMMENT>\}		{ DEC_COMM; if (ZERO_COMM) { BEGIN(INITIAL); } }
+<INCOMMENT>\}		{ DEC_COMM; if (IS_OUT_COMM) { BEGIN(INITIAL); } }
 \}					{ error(DUERR_UNEXPENDCMT, LINE_NUM); }
 
 \'					{ BEGIN(INSTRING); }
@@ -216,7 +227,7 @@ record			return DUTOK_RECORD;
 }
 <INSTRING>[^']		{ str_buff.append(yytext); }
 <INSTRING>\'\'		{ str_buff.append("'"); }
-<INSTRING>\'		{ BEGIN(INITIAL); lv->str_ci_ = ctx->tab->ls_str().add(str_buff); return DUTOK_STRING; }
+<INSTRING>\'		  { BEGIN(INITIAL); lv->str_ci_ = ctx->tab->ls_str().add(str_buff); return DUTOK_STRING; }
 
 .			error(DUERR_UNKCHAR, LINE_NUM, *yytext, *yytext);
 
