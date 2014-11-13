@@ -203,15 +203,17 @@ struct array_data_policy
 	}
 };
 
-template< typename T> 
-struct identity
-{
-	typedef T type;
-};
+namespace du1{
+	template< typename T>
+	struct identity
+	{
+		typedef T type;
+	};
+}
 
 template< std::size_t N>
 struct array_data_plain_row 
-	: public array_data_policy< N>::template muster< identity>
+	: public array_data_policy< N>::template muster< std::identity>
 {
 	array_data_plain_row()
 	{
@@ -576,8 +578,8 @@ struct generator_1 {
 		using data_type_base::m3;
 		using data_type_base::m4;
 		using data_type_base::m5;
-		//using data_type_base::unordered_for_each;
-		//using data_type_base::ordered_for_each;
+		using data_type_base::unordered_for_each;
+		using data_type_base::ordered_for_each;
 
 		data_type()
 		: dpf( * this)	

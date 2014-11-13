@@ -89,20 +89,20 @@ void test()
 	apple_magic.push_back(apple('a', 3, 1.2));
 	orange_magic.push_back(orange(3, 1.5));
 	apple_magic.push_back(apple('c', 6, 1.9));
-
+	
 	//
 	du1container::dynamic_polyfunctor<fruit> dpf(c);
 	dpf << orange_magic << apple_magic;
 
+	cout << "unordered" << endl;
 	c.unordered_for_each(dpf(fruit()));
+	cout << "ordered" << endl;
 	c.ordered_for_each(dpf(fruit()));
-
-	system("pause");
 }
 
 int main( int argc, char * * argv)
 {
-	/*generator_list< std::size_t, time_complexity> gl;
+	generator_list< std::size_t, time_complexity> gl;
 
 #ifdef _DEBUG
 	time_complexity target_complexity = 500000UL;
@@ -130,9 +130,10 @@ int main( int argc, char * * argv)
 	gl.run< true>( log);
 #else
 	gl.run< false>( log);
-#endif*/
+#endif
 
-	test();
+	//test();
+	system("pause");
 
 	return 0;
 }
