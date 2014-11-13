@@ -73,14 +73,18 @@ public:
 		template< typename A>
 		void call(A &fctor)
 		{
-			/*fctor.call<D>(*it);
-			++it;*/
+			/*fctor.call<D>(*it);*/
+			// TODO: template foreach
+			++it;
 		}
 		template< typename A>
 		void call(std::size_t count, A &fctor)
 		{
-			/*for (std::size_t i = 0; i < count; ++i, ++it)
-				fctor.call<D>(*it);*/
+			std::size_t end = it + count;
+			for (; it < end; ++it)
+				;
+				// TODO: template foreach
+				//fctor.call<D>(*it);
 		}
 		template< typename A>
 		void vector_call(A &fctor)
@@ -88,9 +92,12 @@ public:
 			column_type obj[column_count];
 			std::size_t size = data->at(0).size();
 			for (std::size_t i = 0; i < size; ++i)
+			{
+				// TODO: template foreach
 				for (std::size_t c = 0; c < column_count; ++c)
 					obj[c] = data->at(c)[i];
 				fctor.call<D>(*((D *)obj));
+			}
 		}
 		magic(du1container &con, type_id id) : con(con), id(id), data(new table_type()) { }
 	};
