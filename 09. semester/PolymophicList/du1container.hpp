@@ -52,6 +52,20 @@ public:
 		typedef std::array<std::vector<column_type>, column_count> table_type;
 		table_type *data;
 
+    
+    struct column_access
+    {
+      static void set_value( table_type *data, D &val )
+      {
+
+      }
+      static D& get_value( table_type *data, std::size_t index )
+      {
+
+      }
+    };
+    
+
 	public:
 		//void push_back( const plain_row< D> & v) const 
 		void push_back( const D & v) const
