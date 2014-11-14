@@ -2,7 +2,7 @@
 #define _DU1CONTAINER_HPP
 
 #include "task1.hpp"
-#include<array>
+#include <array>
 
 typedef std::size_t type_id;
 struct Counter
@@ -48,7 +48,7 @@ public:
 	public:
 		static const std::size_t column_size = 4;
 		typedef std::array<byte, column_size> column_type;
-		static const std::size_t column_count = sizeof(D) / 4 + (sizeof(D) % 4 > 0 ? 1 : 0);
+		static const std::size_t column_count = sizeof(D) / column_size + (sizeof(D) % column_size > 0 ? 1 : 0);
 		typedef std::array<std::vector<column_type>, column_count> table_type;
 		table_type *data;
 
