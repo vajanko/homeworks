@@ -3,6 +3,7 @@
 
 #include "task1.hpp"
 #include <array>
+#include <xmmintrin.h>
 
 typedef std::size_t type_id;
 struct Counter
@@ -42,28 +43,55 @@ public:
 	{
 	private:
 		du1container &con;
-		type_id id;
+		//type_id id;
 		std::size_t it;
 
 	public:
-		static const std::size_t column_size = 4;
+		/*static const std::size_t column_size = 4;
 		typedef std::array<byte, column_size> column_type;
 		static const std::size_t column_count = sizeof(D) / column_size + (sizeof(D) % column_size > 0 ? 1 : 0);
 		typedef std::array<std::vector<column_type>, column_count> table_type;
-		table_type *data;
+		table_type *data;*/
+		typedef std::vector<D> data_t;
+		data_t *data;
 
     
-    struct column_access
-    {
-      static void set_value( table_type *data, D &val )
-      {
+		//struct column_access
+		//{
+		//	table_type &data;
+		//	typedef typename table_type::reference col_reference;
+		//	column_type current[column_count];
+		//	
+		//	template<std::size_t Index>inline void init_data(std::size_t index)
+		//	{
+		//		current[Index] = data.at(Index)[index];
+		//		init_data<Index - 1>(index);
+		//	}
+		//	template<>inline void init_data<0>(std::size_t index)
+		//	{
+		//		current[0] = data.at(0)[index];
+		//	}
 
-      }
-      static D& get_value( table_type *data, std::size_t index )
-      {
-
-      }
-    };
+		//	template<typename A>
+		//	void call_step(std::size_t index, A &fctor)
+		//	{
+		//		//init_data<column_count - 1>(index);
+		//		fctor.call<D>(*((D *)current));
+		//	}
+		//	template<typename A>
+		//	void vector_call(A &fctor)
+		//	{
+		//		std::size_t size = data.at(0).size();
+		//		column_type obj[column_count];
+		//		for (std::size_t i = 0; i < size; ++i)
+		//		{
+		//			for (std::size_t c = 0; c < column_count; ++c)
+		//				obj[c] = data.at(c)[i];
+		//			fctor.call<D>(*((D *)current));
+		//		}
+		//	}
+		//	column_access(table_type &data) : data(data) { }
+		//};
     
 
 	public:
@@ -72,13 +100,12 @@ public:
 		{
 			//... append the data to the end of the polymorphic vector
 			// TODO: template cycle
-			column_type *obj = (column_type *)&v;
+			/*column_type *obj = (column_type *)&v;
 			for (std::size_t i = 0; i < column_count; ++i)
-			{
-				data->at(i).push_back(*(obj + i));
-			}
+				data->at(i).push_back(*(obj + i));*/
+			data->push_back(v);
 			// save item order in the container
-			con.data_order.push_back(id);
+			con.data_order.push_back(TypeID<D>::value());
 		}
 		void begin()
 		{
@@ -89,38 +116,38 @@ public:
 		{
 			/*fctor.call<D>(*it);*/
 			// TODO: template foreach
+			/*column_type obj[column_count];
+			for (std::size_t c = 0; c < column_count; ++c)
+				obj[c] = data->at(c)[it];
+			fctor.call<D>(*((D *)obj));*/
+			fctor.call<D>(data->at(it));
 			++it;
 		}
 		template< typename A>
 		void call(std::size_t count, A &fctor)
 		{
-			std::size_t end = it + count;
+			/*std::size_t end = it + count;
 			for (; it < end; ++it)
-				;
+				;*/
 				// TODO: template foreach
 				//fctor.call<D>(*it);
 		}
 		template< typename A>
 		void vector_call(A &fctor)
 		{
-			column_type obj[column_count];
-			std::size_t size = data->at(0).size();
-			for (std::size_t i = 0; i < size; ++i)
-			{
-				// TODO: template foreach
-				for (std::size_t c = 0; c < column_count; ++c)
-					obj[c] = data->at(c)[i];
-				fctor.call<D>(*((D *)obj));
-			}
+			for (auto obj : *data)
+				fctor.call<D>(obj);
+			/*column_access col(*data);
+			col.vector_call<A>(fctor);*/
 		}
-		magic(du1container &con, type_id id) : con(con), id(id), data(new table_type()) { }
+		magic(du1container &con/*, type_id id*/) : con(con), /*id(id),*/ data(new data_t()) { }
 	};
 
 	template< typename D>
 	magic< D> register_type()
 	{
 		// ... create a magic for the type descriptor D
-		return magic< D>(*this, TypeID<D>::value());
+		return magic< D>(*this/*, TypeID<D>::value()*/);
 	}
 
 	template< typename A>
@@ -209,6 +236,10 @@ public:
 	{
 		//... pass in the original order
 		dpf.first.begin();
+		for (type_id id : data_order)
+			dpf.first.call(id, dpf.second);
+
+		/*dpf.first.begin();
 		type_id lastId = *data_order.begin();
 		size_t count = -1;
 		for (type_id id : data_order)
@@ -220,9 +251,9 @@ public:
 				count = 0;
 				lastId = id;
 			}
-			
+
 		}
-		dpf.first.call(lastId, count + 1, dpf.second);
+		dpf.first.call(lastId, count + 1, dpf.second);*/
 			
 		return dpf.second;
 	}
