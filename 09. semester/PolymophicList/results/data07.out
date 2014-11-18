@@ -1,0 +1,10 @@
+# iterating over vector data using SSE instructions
+# only used for load/store operations
+size	empty_random
+1024	1.3468
+8192	1.2804
+65536	1.39062
+524288	1.73654
+4194304	1.70193
+33554432	1.69293
+Press any key to continue . . . 

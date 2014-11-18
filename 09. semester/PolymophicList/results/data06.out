@@ -1,0 +1,9 @@
+# same as before but without vector alignment
+size	empty_random
+1024	2.2668
+8192	2.1826
+65536	2.12203
+524288	2.33438
+4194304	2.36798
+33554432	2.39059
+Press any key to continue . . . 

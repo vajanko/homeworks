@@ -23,6 +23,47 @@ struct TypeID : private Counter
 	}
 };
 
+template <typename T, size_t TALIGN = 16, size_t TBLOCK = 8>
+class aligned_allocator : public std::allocator<T>
+{
+public:
+	aligned_allocator() {}
+	aligned_allocator& operator=(const aligned_allocator &rhs){
+		std::allocator<T>::operator=(rhs);
+		return *this;
+	}
+
+	pointer allocate(size_type n, const void *hint){
+		pointer p = NULL;
+		size_t count = sizeof(T) * n;
+		size_t count_left = count % TBLOCK;
+		if (count_left != 0)
+		{
+			count += TBLOCK - count_left;
+		}
+		if (!hint)
+		{
+			p = reinterpret_cast<pointer>(aligned_malloc(count, TALIGN));
+		}
+		else{
+			p = reinterpret_cast<pointer>(aligned_realloc((void*)hint, count, TALIGN));
+		}
+		return p;
+	}
+
+	void deallocate(pointer p, size_type n){
+		aligned_free(p);
+	}
+
+	void construct(pointer p, const T &val){
+		new(p)T(val);
+	}
+
+	void destroy(pointer p){
+		p->~T();
+	}
+};
+
 
 
 class du1container {
@@ -162,15 +203,47 @@ public:
 		template< typename A>
 		void vector_call(A &fctor)
 		{
-			// column-base solution
-			column_type obj[column_count];
-			std::size_t rows = data[0].size();
+			// sse-based solution
+			int obj[column_count];
+			__m128i* its[column_count];		// iterators
+			for (std::size_t c = 0; c < column_count; ++c)
+				its[c] = (__m128i *)&data[c].front();
+
+			std::size_t rows = data[0].size() / 4;
 			for (std::size_t i = 0; i < rows; ++i)
 			{
-				for (std::size_t c = 0; c < column_count; ++c)
-					obj[c] = data[c][i];
-				fctor.call<D>(*((D *)obj));
+				for (std::size_t x = 0; x < 4; ++x)
+				{
+					for (std::size_t c = 0; c < column_count; ++c)
+						obj[c] = its[c][i].m128i_i32[x];
+					fctor.call<D>(*((D *)obj));
+				}
 			}
+			std::size_t tail = data[0].size() % 4;
+			if (tail > 0)
+			{
+				for (std::size_t x = 0; x < tail; ++x)
+				{
+					for (std::size_t c = 0; c < column_count; ++c)
+						obj[c] = its[c][rows].m128i_i32[x];
+					fctor.call<D>(*((D *)obj));
+				}
+			}
+
+			// column-base solution
+			//column_type obj[column_count];
+			//column_type* its[column_count];
+			//for (std::size_t c = 0; c < column_count; ++c)
+			//	its[c] = &data[c].front();
+
+			//std::size_t rows = data[0].size();
+			//for (std::size_t i = 0; i < rows; ++i)
+			//{
+			//	for (std::size_t c = 0; c < column_count; ++c)
+			//		obj[c] = its[c][i];
+			//		//data[c][i];
+			//	fctor.call<D>(*((D *)obj));
+			//}
 
 			// regular solution
 			/*for (auto obj : data)

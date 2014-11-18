@@ -1,0 +1,11 @@
+# using optimized vector foreach which does not use indexer
+# but directly iterates over pointer
+# vector's data is aligned
+size	empty_random
+1024	2.2456
+8192	2.1954
+65536	2.15223
+524288	2.38559
+4194304	2.31038
+33554432	2.39259
+Press any key to continue . . . 
