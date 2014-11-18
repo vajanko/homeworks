@@ -54,7 +54,8 @@ public:
 		typedef std::array<std::vector<column_type>, column_count> table_type;
 		table_type *data;*/
 		typedef std::vector<D> data_t;
-		data_t *data;
+		data_t *ptr;
+		data_t &data;
 
     
 		//struct column_access
@@ -104,7 +105,7 @@ public:
 			/*column_type *obj = (column_type *)&v;
 			for (std::size_t i = 0; i < column_count; ++i)
 				data->at(i).push_back(*(obj + i));*/
-			data->push_back(v);
+			data.push_back(v);
 			// save item order in the container
 			if (con.data_order.empty())
 				con.data_order.push_back(std::pair<type_id, std::size_t>(TypeID<D>::value(), 1));
@@ -114,7 +115,6 @@ public:
 					con.data_order.back().second++;
 				else
 					con.data_order.push_back(std::pair<type_id, std::size_t>(TypeID<D>::value(), 1));
-				//con.data_order.push_back(TypeID<D>::value());
 			}
 		}
 		void begin()
@@ -130,13 +130,13 @@ public:
 			for (std::size_t c = 0; c < column_count; ++c)
 				obj[c] = data->at(c)[it];
 			fctor.call<D>(*((D *)obj));*/
-			fctor.call<D>(data->at(it));
+			fctor.call<D>(data.at(it));
 			++it;
 		}
 		template< typename A>
 		void call(std::size_t count, A &fctor)
 		{
-			auto b = data->begin() + it;
+			auto b = data.begin() + it;
 			auto e = b + count;
 			for (auto i = b; i != e; ++i)
 				fctor.call<D>(*i);
@@ -144,12 +144,12 @@ public:
 		template< typename A>
 		void vector_call(A &fctor)
 		{
-			for (auto obj : *data)
+			for (auto obj : data)
 				fctor.call<D>(obj);
 			/*column_access col(*data);
 			col.vector_call<A>(fctor);*/
 		}
-		magic(du1container &con/*, type_id id*/) : con(con), data(new data_t()) { }
+		magic(du1container &con) : con(con), ptr(new data_t()), data(*ptr) { }
 	};
 
 	template< typename D>
@@ -183,7 +183,7 @@ public:
 			virtual void vector_call(A &fctor) { m.vector_call(fctor); }
 			magic_holder(magic<D> m) : m(m) { }
 
-			virtual ~magic_holder() { delete m.data; }
+			virtual ~magic_holder() { delete m.ptr; }
 		};
 		std::vector<magic_holder_base *> magics;
 

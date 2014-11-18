@@ -117,7 +117,9 @@ int main( int argc, char * * argv)
 #endif
 
 	gl.push_back( make_generic_generator_task< generator_1< du1container, policy_random>, task_1, std::size_t>());
+	//gl.push_back(make_generic_generator_task< generator_1< du1container, policy_grouped>, task_1O, std::size_t>());
 	gl.push_back( make_generic_generator_task< generator_1< du1container, policy_random>, task_1O, std::size_t>());
+	//gl.push_back(make_generic_generator_task< generator_1< du1container, policy_robin>, task_1O, std::size_t>());
 
 	for ( std::size_t elements = min_elements; elements <= max_elements; elements <<= 3)
 	{
