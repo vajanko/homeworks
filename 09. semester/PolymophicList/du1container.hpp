@@ -48,12 +48,15 @@ public:
 		std::size_t it;
 
 	public:
-		/*static const std::size_t column_size = 4;
+		/* Data stored in columns */
+		static const std::size_t column_size = 4;
 		typedef std::array<byte, column_size> column_type;
 		static const std::size_t column_count = sizeof(D) / column_size + (sizeof(D) % column_size > 0 ? 1 : 0);
-		typedef std::array<std::vector<column_type>, column_count> table_type;
-		table_type *data;*/
-		typedef std::vector<D> data_t;
+		typedef std::array<std::vector<column_type>, column_count> data_t;
+
+		/* Data stored as regular objects */
+		//typedef std::vector<D> data_t;
+
 		data_t *ptr;
 		data_t &data;
 
@@ -99,13 +102,16 @@ public:
 	public:
 		//void push_back( const plain_row< D> & v) const 
 		void push_back( const D & v) const
-		{
-			//... append the data to the end of the polymorphic vector
-			// TODO: template cycle
-			/*column_type *obj = (column_type *)&v;
+		{	//... append the data to the end of the polymorphic vector
+
+			// column-base solution
+			column_type *obj = (column_type *)&v;
 			for (std::size_t i = 0; i < column_count; ++i)
-				data->at(i).push_back(*(obj + i));*/
-			data.push_back(v);
+				data[i].push_back(*(obj + i));
+
+			// regular solution
+			//data.push_back(v);
+
 			// save item order in the container
 			if (con.data_order.empty())
 				con.data_order.push_back(std::pair<type_id, std::size_t>(TypeID<D>::value(), 1));
@@ -124,30 +130,51 @@ public:
 		template< typename A>
 		void call(A &fctor)
 		{
-			/*fctor.call<D>(*it);*/
-			// TODO: template foreach
-			/*column_type obj[column_count];
+			// column-base solution
+			column_type obj[column_count];
 			for (std::size_t c = 0; c < column_count; ++c)
-				obj[c] = data->at(c)[it];
-			fctor.call<D>(*((D *)obj));*/
-			fctor.call<D>(data.at(it));
+				obj[c] = data[c][it];
+			fctor.call<D>(*((D *)obj));
+
+			// regular solution
+			//fctor.call<D>(data.at(it));
+
 			++it;
 		}
 		template< typename A>
 		void call(std::size_t count, A &fctor)
 		{
-			auto b = data.begin() + it;
+			// column-base solution
+			column_type obj[column_count];
+			for (std::size_t end = it + count; it < end; ++it)
+			{
+				for (std::size_t c = 0; c < column_count; ++c)
+					obj[c] = data[c][it];
+				fctor.call<D>(*((D *)obj));
+			}
+
+			// regular solution
+			/*auto b = data.begin() + it;
 			auto e = b + count;
 			for (auto i = b; i != e; ++i)
-				fctor.call<D>(*i);
+				fctor.call<D>(*i);*/
 		}
 		template< typename A>
 		void vector_call(A &fctor)
 		{
-			for (auto obj : data)
-				fctor.call<D>(obj);
-			/*column_access col(*data);
-			col.vector_call<A>(fctor);*/
+			// column-base solution
+			column_type obj[column_count];
+			std::size_t rows = data[0].size();
+			for (std::size_t i = 0; i < rows; ++i)
+			{
+				for (std::size_t c = 0; c < column_count; ++c)
+					obj[c] = data[c][i];
+				fctor.call<D>(*((D *)obj));
+			}
+
+			// regular solution
+			/*for (auto obj : data)
+				fctor.call<D>(obj);*/
 		}
 		magic(du1container &con) : con(con), ptr(new data_t()), data(*ptr) { }
 	};
