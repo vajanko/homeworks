@@ -1,0 +1,11 @@
+# objects are stored in a vector directly
+# unordered - passing each magic
+# ordered - passing index and selecting from magic at particular position
+size	empty_random	empty_random
+1024	2.3692	12.5504
+8192	2.3264	12.8802
+65536	3.01804	13.8522
+524288	3.72149	14.3911
+4194304	3.62748	13.7873
+33554432	3.50147	13.7913
+Press any key to continue . . . 
