@@ -1,0 +1,169 @@
+Terminals unused in grammar
+
+   DUTOK_LABEL
+   DUTOK_CONST
+   DUTOK_TYPE
+   DUTOK_VAR
+   DUTOK_BEGIN
+   DUTOK_END
+   DUTOK_PROCEDURE
+   DUTOK_FUNCTION
+   DUTOK_ARRAY
+   DUTOK_OF
+   DUTOK_GOTO
+   DUTOK_IF
+   DUTOK_THEN
+   DUTOK_ELSE
+   DUTOK_WHILE
+   DUTOK_DO
+   DUTOK_REPEAT
+   DUTOK_UNTIL
+   DUTOK_FOR
+   DUTOK_OR
+   DUTOK_NOT
+   DUTOK_RECORD
+   DUTOK_UINT
+   DUTOK_REAL
+   DUTOK_STRING
+   DUTOK_COMMA
+   DUTOK_EQ
+   DUTOK_COLON
+   DUTOK_LPAR
+   DUTOK_RPAR
+   DUTOK_DOTDOT
+   DUTOK_LSBRA
+   DUTOK_RSBRA
+   DUTOK_ASSIGN
+   DUTOK_OPER_REL
+   DUTOK_OPER_SIGNADD
+   DUTOK_OPER_MUL
+   DUTOK_FOR_DIRECTION
+
+
+Grammar
+
+    0 $accept: mlaskal $end
+
+    1 mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
+
+    2 program_block: /* empty */
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+DUTOK_PROGRAM (258) 1
+DUTOK_LABEL (259)
+DUTOK_CONST (260)
+DUTOK_TYPE (261)
+DUTOK_VAR (262)
+DUTOK_BEGIN (263)
+DUTOK_END (264)
+DUTOK_PROCEDURE (265)
+DUTOK_FUNCTION (266)
+DUTOK_ARRAY (267)
+DUTOK_OF (268)
+DUTOK_GOTO (269)
+DUTOK_IF (270)
+DUTOK_THEN (271)
+DUTOK_ELSE (272)
+DUTOK_WHILE (273)
+DUTOK_DO (274)
+DUTOK_REPEAT (275)
+DUTOK_UNTIL (276)
+DUTOK_FOR (277)
+DUTOK_OR (278)
+DUTOK_NOT (279)
+DUTOK_RECORD (280)
+DUTOK_IDENTIFIER (281) 1
+DUTOK_UINT (282)
+DUTOK_REAL (283)
+DUTOK_STRING (284)
+DUTOK_SEMICOLON (285) 1
+DUTOK_DOT (286) 1
+DUTOK_COMMA (287)
+DUTOK_EQ (288)
+DUTOK_COLON (289)
+DUTOK_LPAR (290)
+DUTOK_RPAR (291)
+DUTOK_DOTDOT (292)
+DUTOK_LSBRA (293)
+DUTOK_RSBRA (294)
+DUTOK_ASSIGN (295)
+DUTOK_OPER_REL (296)
+DUTOK_OPER_SIGNADD (297)
+DUTOK_OPER_MUL (298)
+DUTOK_FOR_DIRECTION (299)
+
+
+Nonterminals, with rules where they appear
+
+$accept (45)
+    on left: 0
+mlaskal (46)
+    on left: 1, on right: 0
+program_block (47)
+    on left: 2, on right: 1
+
+
+state 0
+
+    0 $accept: . mlaskal $end
+    1 mlaskal: . DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
+
+    DUTOK_PROGRAM  shift, and go to state 1
+
+    mlaskal  go to state 2
+
+
+state 1
+
+    1 mlaskal: DUTOK_PROGRAM . DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
+
+    DUTOK_IDENTIFIER  shift, and go to state 3
+
+
+state 2
+
+    0 $accept: mlaskal . $end
+
+    $end  shift, and go to state 4
+
+
+state 3
+
+    1 mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER . DUTOK_SEMICOLON program_block DUTOK_DOT
+
+    DUTOK_SEMICOLON  shift, and go to state 5
+
+
+state 4
+
+    0 $accept: mlaskal $end .
+
+    $default  accept
+
+
+state 5
+
+    1 mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON . program_block DUTOK_DOT
+    2 program_block: .
+
+    $default  reduce using rule 2 (program_block)
+
+    program_block  go to state 6
+
+
+state 6
+
+    1 mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block . DUTOK_DOT
+
+    DUTOK_DOT  shift, and go to state 7
+
+
+state 7
+
+    1 mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT .
+
+    $default  reduce using rule 1 (mlaskal)
