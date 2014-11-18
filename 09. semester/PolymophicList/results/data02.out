@@ -1,0 +1,10 @@
+# Contrary to data01.out processing all same instances at once
+# when new items is inserted the total count is calculated
+size	empty_random	empty_random
+1024	2.3714	11.387
+8192	2.357	11.6882
+65536	3.54284	12.546
+524288	3.09404	12.3164
+4194304	3.10844	12.2836
+33554432	3.09744	12.2876
+Press any key to continue . . . 
