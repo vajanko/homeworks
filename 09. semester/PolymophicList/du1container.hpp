@@ -27,7 +27,9 @@ struct TypeID : private Counter
 
 class du1container {
 private:
-	std::vector<std::size_t> data_order;
+	//std::vector<std::size_t> data_order;
+	// type_id - count
+	std::vector<std::pair<type_id, std::size_t>> data_order;
 
 public:
 	static std::string name() { return "empty"; }
@@ -43,7 +45,6 @@ public:
 	{
 	private:
 		du1container &con;
-		//type_id id;
 		std::size_t it;
 
 	public:
@@ -105,7 +106,16 @@ public:
 				data->at(i).push_back(*(obj + i));*/
 			data->push_back(v);
 			// save item order in the container
-			con.data_order.push_back(TypeID<D>::value());
+			if (con.data_order.empty())
+				con.data_order.push_back(std::pair<type_id, std::size_t>(TypeID<D>::value(), 1));
+			else
+			{
+				if (con.data_order.back().first == TypeID<D>::value())
+					con.data_order.back().second++;
+				else
+					con.data_order.push_back(std::pair<type_id, std::size_t>(TypeID<D>::value(), 1));
+				//con.data_order.push_back(TypeID<D>::value());
+			}
 		}
 		void begin()
 		{
@@ -126,11 +136,10 @@ public:
 		template< typename A>
 		void call(std::size_t count, A &fctor)
 		{
-			/*std::size_t end = it + count;
-			for (; it < end; ++it)
-				;*/
-				// TODO: template foreach
-				//fctor.call<D>(*it);
+			auto b = data->begin() + it;
+			auto e = b + count;
+			for (auto i = b; i != e; ++i)
+				fctor.call<D>(*i);
 		}
 		template< typename A>
 		void vector_call(A &fctor)
@@ -140,14 +149,14 @@ public:
 			/*column_access col(*data);
 			col.vector_call<A>(fctor);*/
 		}
-		magic(du1container &con/*, type_id id*/) : con(con), /*id(id),*/ data(new data_t()) { }
+		magic(du1container &con/*, type_id id*/) : con(con), data(new data_t()) { }
 	};
 
 	template< typename D>
 	magic< D> register_type()
 	{
 		// ... create a magic for the type descriptor D
-		return magic< D>(*this/*, TypeID<D>::value()*/);
+		return magic< D>(*this);
 	}
 
 	template< typename A>
@@ -220,7 +229,6 @@ public:
 			for (auto magic : magics)
 				magic->vector_call(fctor);
 		}
-		
 	};
 
 	template< typename A>
@@ -235,25 +243,21 @@ public:
 	A ordered_for_each( std::pair< const dynamic_polyfunctor< A> &, A> dpf) const
 	{
 		//... pass in the original order
-		dpf.first.begin();
-		for (type_id id : data_order)
-			dpf.first.call(id, dpf.second);
 
+		// switching between magics as needed
 		/*dpf.first.begin();
-		type_id lastId = *data_order.begin();
-		size_t count = -1;
 		for (type_id id : data_order)
-		{
-			++count;
-			if (lastId != id)
-			{
-				dpf.first.call(lastId, count, dpf.second);
-				count = 0;
-				lastId = id;
-			}
+			dpf.first.call(id, dpf.second);*/
 
+		// processing all items of same type at once
+		dpf.first.begin();
+		for (auto ord : data_order)
+		{
+			if (ord.second <= 1)
+				dpf.first.call(ord.first, dpf.second);
+			else
+				dpf.first.call(ord.first, ord.second, dpf.second);
 		}
-		dpf.first.call(lastId, count + 1, dpf.second);*/
 			
 		return dpf.second;
 	}
