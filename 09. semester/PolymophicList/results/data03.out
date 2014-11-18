@@ -1,0 +1,9 @@
+# using reference instead of pointer to data vector
+size	empty_random	empty_random
+1024	2.3372	11.31
+8192	2.3164	11.5236
+65536	2.93424	12.2546
+524288	3.35266	12.4516
+4194304	3.47467	12.659
+33554432	3.13024	12.406
+Press any key to continue . . . 
