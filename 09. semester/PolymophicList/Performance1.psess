@@ -2,7 +2,7 @@
 <VSPerformanceSession Version="1.00">
   <Options>
     <Solution>PolymorphicList.sln</Solution>
-    <CollectionMethod>Instrumentation</CollectionMethod>
+    <CollectionMethod>Sampling</CollectionMethod>
     <AllocationMethod>None</AllocationMethod>
     <AddReport>true</AddReport>
     <ResourceBasedAnalysisSelected>true</ResourceBasedAnalysisSelected>
@@ -69,16 +69,19 @@
   </Binaries>
   <Reports>
     <Report>
-      <Path>PolymorphicList141118.vspx</Path>
+      <Path>1024_unordered.vspx</Path>
+    </Report>
+    <Report>
+      <Path>1024_unordered.vsp</Path>
+    </Report>
+    <Report>
+      <Path>1024_unordered_sse.vspx</Path>
     </Report>
     <Report>
       <Path>PolymorphicList141118(1).vspx</Path>
     </Report>
     <Report>
-      <Path>PolymorphicList141118(2).vspx</Path>
-    </Report>
-    <Report>
-      <Path>PolymorphicList141118.vsp</Path>
+      <Path>PolymorphicList141118.vspx</Path>
     </Report>
   </Reports>
   <Launches>

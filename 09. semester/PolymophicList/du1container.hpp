@@ -92,8 +92,9 @@ public:
 		/* Data stored in columns */
 		static const std::size_t column_size = 4;
 		typedef std::array<byte, column_size> column_type;
+		static const std::size_t step_size = sizeof(__m128i) / column_size;
 		static const std::size_t column_count = sizeof(D) / column_size + (sizeof(D) % column_size > 0 ? 1 : 0);
-		typedef std::array<std::vector<column_type>, column_count> data_t;
+		typedef std::array<std::vector<column_type, aligned_allocator<column_type, 16, 16>>, column_count> data_t;
 
 		/* Data stored as regular objects */
 		//typedef std::vector<D> data_t;
@@ -155,7 +156,9 @@ public:
 
 			// save item order in the container
 			if (con.data_order.empty())
+			{
 				con.data_order.push_back(std::pair<type_id, std::size_t>(TypeID<D>::value(), 1));
+			}
 			else
 			{
 				if (con.data_order.back().first == TypeID<D>::value())
@@ -203,23 +206,29 @@ public:
 		template< typename A>
 		void vector_call(A &fctor)
 		{
+			if (column_count == 1)
+			{
+				vector_call_1(fctor);
+				return;
+			}
+
 			// sse-based solution
 			int obj[column_count];
 			__m128i* its[column_count];		// iterators
 			for (std::size_t c = 0; c < column_count; ++c)
 				its[c] = (__m128i *)&data[c].front();
 
-			std::size_t rows = data[0].size() / 4;
+			std::size_t rows = data[0].size() / step_size;
 			for (std::size_t i = 0; i < rows; ++i)
 			{
-				for (std::size_t x = 0; x < 4; ++x)
+				for (std::size_t x = 0; x < step_size; ++x)
 				{
 					for (std::size_t c = 0; c < column_count; ++c)
 						obj[c] = its[c][i].m128i_i32[x];
 					fctor.call<D>(*((D *)obj));
 				}
 			}
-			std::size_t tail = data[0].size() % 4;
+			std::size_t tail = data[0].size() % step_size;
 			if (tail > 0)
 			{
 				for (std::size_t x = 0; x < tail; ++x)
@@ -248,6 +257,34 @@ public:
 			// regular solution
 			/*for (auto obj : data)
 				fctor.call<D>(obj);*/
+		}
+		template< typename A>
+		void vector_call_1(A &fctor)
+		{
+			// sse-based solution
+			int obj;		// there is only one column
+			__m128i* its;
+			its = (__m128i *)&data[0].front();
+
+			std::size_t rows = data[0].size() / step_size;
+			for (std::size_t i = 0; i < rows; ++i)
+			{
+				__m128i st = its[i];
+				for (std::size_t x = 0; x < step_size; ++x)
+				{
+					//obj = its[i].m128i_i32[x];
+					fctor.call<D>(*((D *)&st.m128i_i32[x]));
+				}
+			}
+			std::size_t tail = data[0].size() % step_size;
+			if (tail > 0)
+			{
+				for (std::size_t x = 0; x < tail; ++x)
+				{
+					obj = its[rows].m128i_i32[x];
+					fctor.call<D>(*((D *)&obj));
+				}
+			}
 		}
 		magic(du1container &con) : con(con), ptr(new data_t()), data(*ptr) { }
 	};

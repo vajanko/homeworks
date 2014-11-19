@@ -112,8 +112,6 @@ int main( int argc, char * * argv)
 	time_complexity target_complexity = 5000000000UL;
 	std::size_t min_elements = 1024L;
 	std::size_t max_elements = 64 * 1024UL * 1024UL;
-//	std::size_t min_elements = 64 * 1024;
-//	std::size_t max_elements = min_elements;
 #endif
 
 	gl.push_back( make_generic_generator_task< generator_1< du1container, policy_random>, task_1, std::size_t>());
@@ -135,7 +133,7 @@ int main( int argc, char * * argv)
 #endif
 
 	//test();
-	system("pause");
+	//system("pause");
 
 	return 0;
 }
