@@ -11,7 +11,8 @@ public class Verifier {
 			"+target=fse2006daisy.DaisyTest",
 			"+listener=fse2006daisy.verify.CreatPrecondition",
 			"+classpath=./bin",
-			"+report.console.property_violation=error,trace,all"
+			"+report.publisher=console",
+			"+report.console.property_violation=trace,error"
 		};
 		
 		Config conf = JPF.createConfig(arguments);
@@ -19,7 +20,7 @@ public class Verifier {
 		JPF jpf = new JPF(conf);
 		
 		jpf.addPropertyListener(new CreatPrecondition(conf));
-		//jpf.addPropertyListener(new LockOrderProperty(conf));
+		jpf.addPropertyListener(new LockOrderProperty(conf));
 
 		jpf.run();
 	}

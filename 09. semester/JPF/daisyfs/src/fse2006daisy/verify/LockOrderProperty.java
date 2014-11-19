@@ -28,12 +28,6 @@ public class LockOrderProperty extends PropertyAdapterBase {
 		mutexStates.put(lockno, nextState);
 		return true;
 	}
-//	private boolean try_acq(long lockno) {
-//		return try_acq_rel(lockno, State.locked);
-//	}
-//	private boolean try_rel(long lockno) {
-//		return try_acq_rel(lockno, State.unlocked);
-//	}
 	@Override
 	public void reset() {
 		super.reset();
@@ -47,7 +41,7 @@ public class LockOrderProperty extends PropertyAdapterBase {
 			long lockno = (long)args[0];
 			if (!try_acq_rel(lockno, nextState)) {
 				// error: locking and already locked or vice versa
-				reportError("Trying to " + method + " " + nextState + " mutex #" + lockno);
+				reportError("Trying to " + method + " " + nextState + " mutex #" + lockno + th.getStackTrace());
 			}
 		}
 	}

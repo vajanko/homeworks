@@ -5,8 +5,11 @@ import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.Heap;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
@@ -32,9 +35,9 @@ public class PropertyAdapterBase extends PropertyListenerAdapter {
 	}
 	protected void reportError(String msg) {
 		if (this.message == null)
-			this.message = msg;
+			this.message = msg + "\n";
 		else
-			this.message += msg;
+			this.message += msg + "\n";
 	}
 	protected void skipError(ThreadInfo th, Instruction ins) {
 		if (hasError()) {
@@ -58,4 +61,12 @@ public class PropertyAdapterBase extends PropertyListenerAdapter {
 		
 		return null;
 	}
+//	protected String getMethodCallStacktrace(VM vm, ThreadInfo th) {
+//		Heap heap = vm.getHeap();
+//		StackFrame frame = th.getTopFrame();
+//	    ElementInfo ei = heap.get(frame.peek());
+//	    
+//	    //int msgref = ei.get
+//	    		//.getReferenceField("detailMessage")
+//	}
 }
