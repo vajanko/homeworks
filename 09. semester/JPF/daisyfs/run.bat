@@ -1,0 +1,1 @@
+java -jar ..\JPF\build\RunJPF.jar src\Daisy.jpf
