@@ -19,6 +19,7 @@ public class Verifier {
 		JPF jpf = new JPF(conf);
 		
 		jpf.addPropertyListener(new CreatPrecondition(conf));
+		//jpf.addPropertyListener(new LockOrderProperty(conf));
 
 		jpf.run();
 	}
