@@ -17,7 +17,7 @@ public class PropertyAdapterBase extends PropertyListenerAdapter {
 	
 	@Override
 	public boolean check(Search search, VM vm) {
-		return hasError();
+		return !hasError();
 	}
 	@Override
 	public void reset() {

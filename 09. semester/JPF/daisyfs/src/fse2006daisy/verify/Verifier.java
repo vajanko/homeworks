@@ -11,7 +11,7 @@ public class Verifier {
 			"+target=fse2006daisy.DaisyTest",
 			"+listener=fse2006daisy.verify.CreatPrecondition",
 			"+classpath=./bin",
-			"+report.console.property_violation=error,trace"
+			"+report.console.property_violation=error,trace,all"
 		};
 		
 		Config conf = JPF.createConfig(arguments);

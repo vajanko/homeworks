@@ -16,7 +16,7 @@ import gov.nasa.jpf.vm.VM;
 public class CreatPrecondition extends PropertyAdapterBase {
 	
 	private String getPrecondMessage(String clazz, String method, String cond) {
-		return (clazz != null ? clazz + "." : "") + method + " precondition property " + cond + " violated";
+		return (clazz != null ? clazz + "." : "") + method + "() \"" + cond + "\" precondition violated";
 	}
 
 	@Override

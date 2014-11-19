@@ -27,7 +27,7 @@ public class DaisyTest {
 	public static void main(String[] args) {
         Attribute a = new Attribute();
         FileHandle root = new FileHandle();
-        FileHandle fh = root;//new FileHandle();
+        FileHandle fh = null;//new FileHandle();
 
 		// The inode number of the root directory is always 0.
         root.inodenum = 0;
