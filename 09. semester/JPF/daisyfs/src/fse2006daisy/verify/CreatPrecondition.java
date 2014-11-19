@@ -13,31 +13,19 @@ import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
-public class CreatPrecondition extends PropertyListenerAdapter {
+public class CreatPrecondition extends PropertyAdapterBase {
 	
-	private boolean propHolds = true;
-	
-	@Override
-	public boolean check(Search search, VM vm) {
-		return propHolds;
+	private String getPrecondMessage(String clazz, String method, String cond) {
+		return (clazz != null ? clazz + "." : "") + method + " precondition property " + cond + " violated";
 	}
-	@Override
-	public void reset() {
-		propHolds = true;
-	}
-// TODO: add some nice message telling the user what is going on
-//	public String getErrorMessage() {
-//		return "create pred";
-//	}
-
 
 	@Override
-	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
+	public void executeInstruction(VM vm, ThreadInfo th, Instruction ins) {
 
-		if (!(instructionToExecute instanceof InvokeInstruction))
+		if (!(ins instanceof InvokeInstruction))
 			return;
 		
-		InvokeInstruction call = (InvokeInstruction)instructionToExecute;
+		InvokeInstruction call = (InvokeInstruction)ins;
 		MethodInfo m = call.getInvokedMethod();
 		if (m == null)
 			return;
@@ -47,15 +35,19 @@ public class CreatPrecondition extends PropertyListenerAdapter {
 			return;
 		
 		// TODO: verify that it is a DaisyDir class
-		// ClassInfo ci = m.getClassInfo();
+		ClassInfo ci = m.getClassInfo();
 		
-		Object[] creatArgs = call.getArgumentValues(currentThread);
-		propHolds = !creatArgs[0].equals(creatArgs[2]) && creatArgs[0] != null && creatArgs[2] != null;
+		Object[] creatArgs = call.getArgumentValues(th);
 		
-		if (!propHolds) {
-			currentThread.skipInstruction(instructionToExecute);
-			currentThread.breakTransition();
-		}
+		if (creatArgs[0].equals(creatArgs[2]))
+			reportError(getPrecondMessage(ci.getName(), m.getName(), "dir != fh"));
+		if (creatArgs[0] == null)
+			reportError(getPrecondMessage(ci.getName(), m.getName(), "dir != null"));
+		if (creatArgs[2] == null)
+			reportError(getPrecondMessage(ci.getName(), m.getName(), "fh != null"));
+		
+		// if any
+		skipError(th, ins);
 	}
 	
 	public CreatPrecondition(Config config) {
