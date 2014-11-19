@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Containers", "Containers\Containers.vcxproj", "{E8648D37-26D5-4EEB-A6FE-731FFA1BDC48}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Containers.Phone", "Containers.Phone\Containers.Phone.vcxproj", "{BD23F231-8670-4D67-8540-FADB10F0281A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E8648D37-26D5-4EEB-A6FE-731FFA1BDC48}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8648D37-26D5-4EEB-A6FE-731FFA1BDC48}.Debug|Win32.Build.0 = Debug|Win32
+		{E8648D37-26D5-4EEB-A6FE-731FFA1BDC48}.Release|Win32.ActiveCfg = Release|Win32
+		{E8648D37-26D5-4EEB-A6FE-731FFA1BDC48}.Release|Win32.Build.0 = Release|Win32
+		{BD23F231-8670-4D67-8540-FADB10F0281A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BD23F231-8670-4D67-8540-FADB10F0281A}.Debug|Win32.Build.0 = Debug|Win32
+		{BD23F231-8670-4D67-8540-FADB10F0281A}.Release|Win32.ActiveCfg = Release|Win32
+		{BD23F231-8670-4D67-8540-FADB10F0281A}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
