@@ -54,17 +54,18 @@ class LockManager {
         }
     */
     public static void acq(long lockno) {
-	if (lockno >= plocks.size() || plocks.get((int)lockno) == null) {
-	    m.acq();	    
-	    if (lockno >= plocks.size()) {
-		plocks.setSize((int)lockno + 100);
-	    }
-	    if (plocks.get((int)lockno) == null) {
-		plocks.setElementAt(new Mutex((int)lockno), (int)lockno);
-	    }
-	    m.rel();
-	}
-	((Mutex)plocks.get((int)lockno)).acq();
+		if (lockno >= plocks.size() || plocks.get((int)lockno) == null) {
+			m.acq();
+		    if (lockno >= plocks.size()) {
+		    	plocks.setSize((int)lockno + 100);
+		    }
+		    if (plocks.get((int)lockno) == null) {
+		    	plocks.setElementAt(new Mutex((int)lockno), (int)lockno);
+		    }
+		    m.rel();
+		}
+		
+		((Mutex)plocks.get((int)lockno)).acq();
     }
 
     //@ requires 0 <= lockno && lockno < SIZE
@@ -74,7 +75,7 @@ class LockManager {
         }
     */
     public static void rel(long lockno) {
-	((Mutex)plocks.get((int)lockno)).rel();
+    	((Mutex)plocks.get((int)lockno)).rel();
     }
 }
 
@@ -385,18 +386,18 @@ public class Daisy {
       }
     */
     static long alloc() {
-	for(long i=0; i<MAXBLOCK; i++) {
-	    DaisyLock.acqb(i);
-	    if( DaisyDisk.readAllocBit(i) == false ) {
-		DaisyDisk.writeAllocBit( i, true );
-		DaisyLock.relb(i);
-		//@ set \witness = "act2"
-		return i; 
-	    }
-	    DaisyLock.relb(i);
-	}
-	//@ set \witness = "act1"
-	return -1;
+		for(long i=0; i<MAXBLOCK; i++) {
+		    DaisyLock.acqb(i);
+		    if( DaisyDisk.readAllocBit(i) == false ) {
+				DaisyDisk.writeAllocBit( i, true );
+				DaisyLock.relb(i);
+				//@ set \witness = "act2"
+				return i; 
+		    }
+		    DaisyLock.relb(i);
+		}
+		//@ set \witness = "act1"
+		return -1;
     }
 
     //@ helper
@@ -561,18 +562,18 @@ public class Daisy {
         }
     */
     public static int read(long inodenum, int offset, int size, byte b[]) {
-	if (inodenum < 0 || inodenum >= MAXINODE) {
-	    return DAISY_ERR_BADHANDLE;
-	}
-
-	Inode inode = iget( inodenum );
-	if (!inode.used) {
-	    DaisyLock.reli( inodenum );
-	    return DAISY_ERR_BADHANDLE;
-	}
+		if (inodenum < 0 || inodenum >= MAXINODE) {
+		    return DAISY_ERR_BADHANDLE;
+		}
+	
+		Inode inode = iget( inodenum );
+		if (!inode.used) {
+		    DaisyLock.reli( inodenum );
+		    return DAISY_ERR_BADHANDLE;
+		}
         read(inode, offset, size, b);
-	DaisyLock.reli( inode.inodenum );
-	return DAISY_ERR_OK;
+		DaisyLock.reli( inode.inodenum );
+		return DAISY_ERR_OK;
     }
     
     /* performs action "act" (inodeContents[inodenum]) {

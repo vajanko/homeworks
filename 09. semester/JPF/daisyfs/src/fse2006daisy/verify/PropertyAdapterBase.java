@@ -4,6 +4,7 @@ import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.report.Publisher;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Heap;
@@ -28,7 +29,7 @@ public class PropertyAdapterBase extends PropertyListenerAdapter {
 	@Override
 	public void reset() {
 		message = null;
-	}
+	}	
 	@Override
 	public String getErrorMessage() {
 		return message;
@@ -48,7 +49,7 @@ public class PropertyAdapterBase extends PropertyListenerAdapter {
 	protected InvokeInstruction getMethodCall(ThreadInfo th, Instruction ins, String clazz, String method) {
 
 		if (ins instanceof InvokeInstruction) {
-			if (/*ins.isCompleted(th) &&*/ !th.isInstructionSkipped()) {
+			if (ins.isCompleted(th) && !th.isInstructionSkipped()) {
 				InvokeInstruction call = (InvokeInstruction) ins;
 				MethodInfo mi = call.getInvokedMethod();
 				//Object[] args = call.getArgumentValues(th);

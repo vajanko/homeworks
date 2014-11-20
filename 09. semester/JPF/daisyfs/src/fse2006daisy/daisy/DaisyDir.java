@@ -82,29 +82,27 @@ public class DaisyDir {
       }
     */ 
     static int openDirectory(FileHandle dir, Directory d) {
-	Attribute a = new Attribute();
-	int res;
-	// Currently, we do not check that dir is indeed a directory.  We assume 
-	// that a client of the file system is well-behaved and does not attempt 
-	// to create a file in another file.
+		Attribute a = new Attribute();
+		int res;
+		// Currently, we do not check that dir is indeed a directory.  We assume 
+		// that a client of the file system is well-behaved and does not attempt 
+		// to create a file in another file.
         DaisyLock.lock_file(dir.inodenum);
         d.file = dir;
-	res = Daisy.get_attr(dir.inodenum, a);
-	if (res != Daisy.DAISY_ERR_OK) {
-	    DaisyLock.unlock_file(d.file.inodenum); 
-	    return res;
-	}
+		res = Daisy.get_attr(dir.inodenum, a);
+		if (res != Daisy.DAISY_ERR_OK) {
+		    DaisyLock.unlock_file(d.file.inodenum); 
+		    return res;
+		}
         d.size = a.size / DirectoryEntry.ENTRYSIZE;
-	System.out.println("Size of directory = " + d.size);
+        System.out.println("Size of directory = " + d.size);
         for (int i = 0; i < d.size; i++) {
             d.entries[i] = new DirectoryEntry();
-            d.entries[i].inodenum = 
-		DaisyDir.readLong(dir.inodenum, i * DirectoryEntry.ENTRYSIZE);
-	    // We know that we only need a byte to store the size of filename
-            int namesize = 
-		(int) DaisyDir.readLong(dir.inodenum, i * DirectoryEntry.ENTRYSIZE + 8);
-	    byte[] b = new byte[namesize];
-	    DaisyDir.read(dir, i * DirectoryEntry.ENTRYSIZE + 16, namesize, b); 
+            d.entries[i].inodenum = DaisyDir.readLong(dir.inodenum, i * DirectoryEntry.ENTRYSIZE);
+		    // We know that we only need a byte to store the size of filename
+	        int namesize = (int) DaisyDir.readLong(dir.inodenum, i * DirectoryEntry.ENTRYSIZE + 8);
+		    byte[] b = new byte[namesize];
+		    DaisyDir.read(dir, i * DirectoryEntry.ENTRYSIZE + 16, namesize, b); 
             d.entries[i].filename = b;
         }
          return Daisy.DAISY_ERR_OK;        
@@ -120,20 +118,13 @@ public class DaisyDir {
     */
     static int closeDirectory(Directory d) {
         for (int i = 0; i < d.size; i++) {
-            DaisyDir.writeLong(d.file.inodenum, 
-				i * DirectoryEntry.ENTRYSIZE, 
-				d.entries[i].inodenum);
-            DaisyDir.writeLong(d.file.inodenum, 
-			       i * DirectoryEntry.ENTRYSIZE + 8, 
-			       (long) d.entries[i].filename.length);
-	    byte[] b = new byte[DirectoryEntry.MAXNAMESIZE];
-	    System.arraycopy(d.entries[i].filename, 0, b, 0, d.entries[i].filename.length);
-	    DaisyDir.write(d.file, 
-			   i * DirectoryEntry.ENTRYSIZE + 16, 
-			   DirectoryEntry.MAXNAMESIZE,
-			   b);
+            DaisyDir.writeLong(d.file.inodenum, i * DirectoryEntry.ENTRYSIZE, d.entries[i].inodenum);
+            DaisyDir.writeLong(d.file.inodenum, i * DirectoryEntry.ENTRYSIZE + 8, (long) d.entries[i].filename.length);
+		    byte[] b = new byte[DirectoryEntry.MAXNAMESIZE];
+		    System.arraycopy(d.entries[i].filename, 0, b, 0, d.entries[i].filename.length);
+		    DaisyDir.write(d.file, i * DirectoryEntry.ENTRYSIZE + 16, DirectoryEntry.MAXNAMESIZE, b);
         }
-	DaisyLock.unlock_file(d.file.inodenum);
+        DaisyLock.unlock_file(d.file.inodenum);
         return Daisy.DAISY_ERR_OK;
     }
 
@@ -171,32 +162,34 @@ public class DaisyDir {
         int res = DaisyDir.openDirectory(dir, d); 
 
         if (res != Daisy.DAISY_ERR_OK) {
-	    //@ set \witness = "act1"
-	    return res;
+		    //@ set \witness = "act1"
+		    return res;
         }
 
-	int new_entry = (int)d.size;
+        int new_entry = (int)d.size;
         for (int i = 0; i < d.size; i++) {
             if (d.entries[i].inodenum != -1) {
-		if (names_equal(filename, d.entries[i].filename)) {
-		    DaisyDir.closeDirectory(d);
-		    //@ set \witness = "act1"
-		    return Daisy.DAISY_ERR_EXIST;
-		}
-	    } else {
-		new_entry = i;
+				if (names_equal(filename, d.entries[i].filename)) {
+				    DaisyDir.closeDirectory(d);
+				    //@ set \witness = "act1"
+				    return Daisy.DAISY_ERR_EXIST;
+				}
+		    } 
+            else 
+            {
+		    	new_entry = i;
+		    }
 	    }
-        }
 
         if (new_entry == Directory.DIRSIZE) {
-	    DaisyDir.closeDirectory(d);
-	    //@ set \witness = "act1"
+		    DaisyDir.closeDirectory(d);
+		    //@ set \witness = "act1"
             return Daisy.DAISY_ERR_NOSPC;
         }
         long inodenum = Daisy.creat();
         if (inodenum < 0) {
-	    DaisyDir.closeDirectory(d);
-	    //@ set \witness = "act1"
+        	DaisyDir.closeDirectory(d);
+	    	//@ set \witness = "act1"
             return (int)inodenum;
         }
 
@@ -206,11 +199,11 @@ public class DaisyDir {
 
         fh.inodenum = inodenum;
 
-	if (new_entry == d.size) {
-	    d.size++;        
-	}
-
-	//@ set \witness = "act2"
+		if (new_entry == d.size) {
+		    d.size++;        
+		}
+	
+		//@ set \witness = "act2"
         return DaisyDir.closeDirectory(d);
     }
 
