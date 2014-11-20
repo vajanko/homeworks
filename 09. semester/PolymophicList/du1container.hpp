@@ -4,6 +4,7 @@
 #include "task1.hpp"
 #include <array>
 #include <xmmintrin.h>
+#include <iostream>
 
 typedef std::size_t type_id;
 struct Counter
@@ -65,11 +66,8 @@ public:
 };
 
 
-
 class du1container {
 private:
-	//std::vector<std::size_t> data_order;
-	// type_id - count
 	std::vector<std::pair<type_id, std::size_t>> data_order;
 
 public:
@@ -101,45 +99,6 @@ public:
 
 		data_t *ptr;
 		data_t &data;
-
-    
-		//struct column_access
-		//{
-		//	table_type &data;
-		//	typedef typename table_type::reference col_reference;
-		//	column_type current[column_count];
-		//	
-		//	template<std::size_t Index>inline void init_data(std::size_t index)
-		//	{
-		//		current[Index] = data.at(Index)[index];
-		//		init_data<Index - 1>(index);
-		//	}
-		//	template<>inline void init_data<0>(std::size_t index)
-		//	{
-		//		current[0] = data.at(0)[index];
-		//	}
-
-		//	template<typename A>
-		//	void call_step(std::size_t index, A &fctor)
-		//	{
-		//		//init_data<column_count - 1>(index);
-		//		fctor.call<D>(*((D *)current));
-		//	}
-		//	template<typename A>
-		//	void vector_call(A &fctor)
-		//	{
-		//		std::size_t size = data.at(0).size();
-		//		column_type obj[column_count];
-		//		for (std::size_t i = 0; i < size; ++i)
-		//		{
-		//			for (std::size_t c = 0; c < column_count; ++c)
-		//				obj[c] = data.at(c)[i];
-		//			fctor.call<D>(*((D *)current));
-		//		}
-		//	}
-		//	column_access(table_type &data) : data(data) { }
-		//};
-    
 
 	public:
 		//void push_back( const plain_row< D> & v) const 
@@ -203,15 +162,49 @@ public:
 			for (auto i = b; i != e; ++i)
 				fctor.call<D>(*i);*/
 		}
+
+		//template<std::size_t Columns> void test();
+
+		/*template<> void test<1>() {
+			std::cout << 1 << std::endl;
+		}
+		template<std::size_t Columns> void test<Columns>() {
+			std::cout << Columns << std::endl;
+		}*/
+
+		//template< typename A, std::size_t Columns> void vector_call(A &fctor);
+
+		//template< typename A, std::size_t Columns> void vector_call<A, 1>(A &fctor)
+		//{
+		//	// sse-based solution
+		//	int obj;		// there is only one column
+		//	__m128i* its;
+		//	its = (__m128i *)&data[0].front();
+
+		//	std::size_t rows = data[0].size() / step_size;
+		//	for (std::size_t i = 0; i < rows; ++i)
+		//	{
+		//		__m128i st = its[i];
+		//		for (std::size_t x = 0; x < step_size; ++x)
+		//		{
+		//			//obj = its[i].m128i_i32[x];
+		//			fctor.call<D>(*((D *)&st.m128i_i32[x]));
+		//		}
+		//	}
+		//	std::size_t tail = data[0].size() % step_size;
+		//	if (tail > 0)
+		//	{
+		//		for (std::size_t x = 0; x < tail; ++x)
+		//		{
+		//			obj = its[rows].m128i_i32[x];
+		//			fctor.call<D>(*((D *)&obj));
+		//		}
+		//	}
+		//}
+
 		template< typename A>
 		void vector_call(A &fctor)
 		{
-			if (column_count == 1)
-			{
-				vector_call_1(fctor);
-				return;
-			}
-
 			// sse-based solution
 			int obj[column_count];
 			__m128i* its[column_count];		// iterators
@@ -258,34 +251,7 @@ public:
 			/*for (auto obj : data)
 				fctor.call<D>(obj);*/
 		}
-		template< typename A>
-		void vector_call_1(A &fctor)
-		{
-			// sse-based solution
-			int obj;		// there is only one column
-			__m128i* its;
-			its = (__m128i *)&data[0].front();
 
-			std::size_t rows = data[0].size() / step_size;
-			for (std::size_t i = 0; i < rows; ++i)
-			{
-				__m128i st = its[i];
-				for (std::size_t x = 0; x < step_size; ++x)
-				{
-					//obj = its[i].m128i_i32[x];
-					fctor.call<D>(*((D *)&st.m128i_i32[x]));
-				}
-			}
-			std::size_t tail = data[0].size() % step_size;
-			if (tail > 0)
-			{
-				for (std::size_t x = 0; x < tail; ++x)
-				{
-					obj = its[rows].m128i_i32[x];
-					fctor.call<D>(*((D *)&obj));
-				}
-			}
-		}
 		magic(du1container &con) : con(con), ptr(new data_t()), data(*ptr) { }
 	};
 
