@@ -4,7 +4,6 @@
 #include "task1.hpp"
 #include <array>
 #include <xmmintrin.h>
-#include <iostream>
 
 typedef std::size_t type_id;
 struct Counter
@@ -163,33 +162,19 @@ public:
 				fctor.call<D>(*i);*/
 		}
 
-		//template<std::size_t Columns> void test();
-
-		/*template<> void test<1>() {
-			std::cout << 1 << std::endl;
-		}
-		template<std::size_t Columns> void test<Columns>() {
-			std::cout << Columns << std::endl;
-		}*/
-
-		//template< typename A, std::size_t Columns> void vector_call(A &fctor);
-
-		//template< typename A, std::size_t Columns> void vector_call<A, 1>(A &fctor)
+		//template< typename A> 
+		//void vector_call1(A &fctor)
 		//{
 		//	// sse-based solution
 		//	int obj;		// there is only one column
 		//	__m128i* its;
 		//	its = (__m128i *)&data[0].front();
-
 		//	std::size_t rows = data[0].size() / step_size;
 		//	for (std::size_t i = 0; i < rows; ++i)
 		//	{
 		//		__m128i st = its[i];
 		//		for (std::size_t x = 0; x < step_size; ++x)
-		//		{
-		//			//obj = its[i].m128i_i32[x];
 		//			fctor.call<D>(*((D *)&st.m128i_i32[x]));
-		//		}
 		//	}
 		//	std::size_t tail = data[0].size() % step_size;
 		//	if (tail > 0)
@@ -283,7 +268,13 @@ public:
 			virtual void begin() { m.begin(); }
 			virtual void call(A &fctor) { m.call(fctor); }
 			virtual void call(std::size_t count, A &fctor) { m.call(count, fctor); }
-			virtual void vector_call(A &fctor) { m.vector_call(fctor); }
+			virtual void vector_call(A &fctor) 
+			{
+				/*if (magic<D>::column_count == 1)
+					m.vector_call1(fctor);
+				else*/
+					m.vector_call(fctor); 
+			}
 			magic_holder(magic<D> m) : m(m) { }
 
 			virtual ~magic_holder() { delete m.ptr; }
