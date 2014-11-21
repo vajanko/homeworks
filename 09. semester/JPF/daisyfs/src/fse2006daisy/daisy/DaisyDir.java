@@ -95,7 +95,7 @@ public class DaisyDir {
 		    return res;
 		}
         d.size = a.size / DirectoryEntry.ENTRYSIZE;
-        System.out.println("Size of directory = " + d.size);
+        //System.out.println("Size of directory = " + d.size);
         for (int i = 0; i < d.size; i++) {
             d.entries[i] = new DirectoryEntry();
             d.entries[i].inodenum = DaisyDir.readLong(dir.inodenum, i * DirectoryEntry.ENTRYSIZE);

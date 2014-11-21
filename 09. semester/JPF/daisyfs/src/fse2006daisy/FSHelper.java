@@ -6,8 +6,8 @@ import fse2006daisy.daisy.FileHandle;
 import fse2006daisy.daisy.Petal;
 
 public class FSHelper {
-	public static final FileHandle root;
-	static {
+	public static FileHandle root;
+	public static void init() {
 		root = new FileHandle();
 		root.inodenum = 0;
 		Petal.init(false);

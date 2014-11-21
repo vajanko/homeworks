@@ -25,9 +25,11 @@ public class Producer extends Thread {
 		
 //		Attribute a = new Attribute();
 //        FileHandle root = new FileHandle();
-        FileHandle fh = new FileHandle();
+        //FileHandle fh = new FileHandle();
 		
-		DaisyDir.creat(FSHelper.root, DaisyTest.stringToBytes(text), fh);
+		//DaisyDir.creat(FSHelper.root, DaisyTest.stringToBytes(text), fh);
+		FileHandle fh = FSHelper.createPath("/file" + text);
+		FSHelper.writeStr(fh, 0, text);
 	}
 	
 	public Producer(String text) {
