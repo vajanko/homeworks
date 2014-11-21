@@ -1,12 +1,9 @@
 package fse2006daisy.verify;
 
-import java.awt.Desktop.Action;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import fse2006daisy.util.Assert;
 
 public class ProcessStorage {
 	
@@ -14,7 +11,7 @@ public class ProcessStorage {
 	
 	private ThreadStorage getThreadStorage(int threadId) {
 		if (!threadStates.containsKey(threadId))
-			threadStates.put(threadId, new ThreadStorage());
+			threadStates.put(threadId, new ThreadStorage(threadId));
 		
 		return threadStates.get(threadId);
 	}

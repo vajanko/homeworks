@@ -5,7 +5,11 @@ import java.util.Map;
 
 class ThreadStorage
 {
-	private Map<Long, LockState> mutexStates;
+	private Map<Long, LockState> mutexStates = new HashMap<Long, LockState>();
+	private int threadId;
+	public int getThreadId() {
+		return threadId;
+	}
 	
 	public LockState getLockState(long lockno) {
 		if (!mutexStates.containsKey(lockno))
@@ -16,13 +20,8 @@ class ThreadStorage
 	public void setLockState(long lockno, LockState state) {
 		mutexStates.put(lockno, state);
 	}
-	
-//	public void clear() {
-//		mutexStates.clear();
-//	}
-	
-	public ThreadStorage() {
-		mutexStates = new HashMap<Long, LockState>();
+	public ThreadStorage(int threadId) {
+		this.threadId = threadId;
 	}
 	
 	@Override

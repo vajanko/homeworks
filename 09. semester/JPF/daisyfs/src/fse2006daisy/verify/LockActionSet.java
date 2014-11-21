@@ -10,6 +10,8 @@ public class LockActionSet {
 	// is this really necessary? isn't is enough to store threadId in the LockActionSet?
 	private Map<Integer, List<LockAction>> actions;
 	
+	ThreadStorage threadStorage;
+	
 	public Map<Integer, List<LockAction>> getActions() {
 		return actions;
 	}

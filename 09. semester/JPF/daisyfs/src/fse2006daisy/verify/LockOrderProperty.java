@@ -1,49 +1,31 @@
 package fse2006daisy.verify;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Stack;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.DynamicObjectArray;
-import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.Instruction;
-import gov.nasa.jpf.vm.SystemState;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
 public class LockOrderProperty extends PropertyAdapterBase {
 	
 	private DynamicObjectArray<LockActionSet> states;
+	
 	private ProcessStorage procStorage;
+	// lock actions (ACQ/REL) discovered in current state
 	private LockActionSet currentActionSet;
+	// unique identifier of currently searched state
 	private int stateId = 0;
 	private Stack<Integer> stateStack = new Stack<Integer>();
 	
-	private void writeState(String type, int depth, int stateId, int size) {
-		if (size == 0)
-			return;
-		
-		depth %= 60;
-		for (int i = 0; i < depth; i++)
-			System.out.print(" ");
-		System.out.println(type + stateId + " (" + size + ")");
-	}
-	
-	@Override
-	public void stateProcessed(Search search) {
-		//int stateId = search.getStateId() + 2;
-		//writeState("=", search.getDepth() + 1, stateId, 0);
-	}
 	@Override
 	public void stateAdvanced (Search search) {
-		stateId = search.getStateId() + 1;
+		stateId = search.getStateId();
 		stateStack.push(stateId);
-		
-		//writeState(">", search.getDepth(), stateId, 0);
-		
+			
 	    //if (!currentActionSet.empty()) {
 	    	states.set(stateId, currentActionSet);
 	    	currentActionSet = new LockActionSet();
@@ -51,59 +33,27 @@ public class LockOrderProperty extends PropertyAdapterBase {
 	}
 	@Override
 	public void stateBacktracked (Search search) {
-		//stateId = search.getStateId() + 2;
 		stateId = stateStack.pop();
-		
-		
 
 		LockActionSet sa = states.get(stateId);
-		//if (sa != null) {
+		//if (sa != null)
 			procStorage.restore(sa);
-			//currentActionSet = sa;
-		//}
 		//if (!currentActionSet.empty())
-			currentActionSet = new LockActionSet();
-			
-			//writeState("<", search.getDepth() + 1, stateId, sa.size());
-	}
-	@Override
-	public void stateRestored (Search search) {
-		stateId = search.getStateId() + 1;
- 
-		LockActionSet sa = states.get(stateId);
-		procStorage.restore(sa);
-		currentActionSet = new LockActionSet();
-
-	    SystemState ss = search.getVM().getSystemState();
-	    ChoiceGenerator<?> cgNext = ss.getNextChoiceGenerator();
-	    cgNext.reset();
-	}
-	@Override
-	public void reset() {
-		super.reset();
-		procStorage.clear();
-		System.out.println("Search reset");
-	}
-	@Override
-	public void searchFinished(Search search) {
-		//System.out.println("Search finished");
-	}
-	/* PropertyAdapterBase overrides */
-	
+		//	currentActionSet = new LockActionSet();
+	}	
 	
 	private boolean try_acq_rel(ThreadInfo th, long lockno, LockState nextState) {
 		int threadId = th.getId();
 		
 		LockState currentState = procStorage.getLockState(threadId, lockno);
 		if (currentState == nextState)
-		{
-//			System.out.println("thread#" + threadId + "\t" + nextState + "\t#" + lockno);
-//			System.out.println(th.getStackTrace());
-			return false;
-		}
-		currentActionSet.setLockState(threadId, lockno, currentState, nextState);
+			return false;	// trying to ACQ already locked or REL already unlocked mutex
 		
+		// remember this action in the state history ...
+		currentActionSet.setLockState(threadId, lockno, currentState, nextState);
+		// ... as well as in the current process state
 		procStorage.setLockState(threadId, lockno, nextState);
+		
 		return true;
 	}
 	
