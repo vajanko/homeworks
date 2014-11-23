@@ -28,6 +28,9 @@ public class FSHelper {
 		}
 		return b;
 	}
+	public static String getString(byte[] bytes) {
+		return new String(bytes);
+	}
 	
 	private static int createFile(FileHandle parent, byte[] name, FileHandle fh) {
 		if (DaisyDir.lookup(parent, name, fh) == DAISY_ERR_NOENT)
