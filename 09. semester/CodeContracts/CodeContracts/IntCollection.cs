@@ -15,8 +15,13 @@ namespace CodeContracts
             Contract.Invariant(data != null);
             Contract.Invariant(Size() >= 0);
         }
+        [ContractAbbreviator]
+        private void indexInBounds(int index)
+        {
+             Contract.Requires(index >= 0 && index < Size());
+        }
 
-        private List<int> data = new List<int>();
+        private readonly List<int> data = new List<int>();
 
         [Pure]
         public int Size()
@@ -33,7 +38,7 @@ namespace CodeContracts
         [Pure]
         public int Get(int index)
         {
-            Contract.Requires(index >= 0 && index < Size());
+            Contract.Requires(index >= 0 && index < Size(), "Index in bounds");
 
             return data[index];
         }
@@ -59,7 +64,7 @@ namespace CodeContracts
         }
         public void Sort()
         {
-            Contract.Ensures(data.All((i, v) => i == Size() || v < Get(i)));
+            Contract.Ensures( data.Where((i, v) => i < Size() - 1 && v < Get(i + 1)).Count() == 0 );
 
             data.Sort();
         }
