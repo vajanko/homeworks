@@ -1,0 +1,10 @@
+target = fse2006apps.Main
+target.args = 2,2,0.0,1.0,0.25
+
+classpath = ./bin
+
+listener = gov.nasa.jpf.listener.DeadlockAnalyzer
+
+#search.class = .search.heuristic.BFSHeuristic
+
+report.console.property_violation=error,trace
