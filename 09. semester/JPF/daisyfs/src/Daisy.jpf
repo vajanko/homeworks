@@ -1,11 +1,7 @@
-target = fse2006daisy.DaisyTest
+target = fse2006daisy.tests.ConcurrentCreat
 
 # search.class = .search.heuristic.BFSHeuristic
-classpath = C:/Projects/Homeworks/09. semester/JPF/daisyfs/bin
-native_classpath = C:/Projects/Homeworks/09. semester/JPF/daisyfs/bin
-
-#classpath=c:/Projects/Homeworks/09. semester/JPF/JPF/build/tests
-#native_classpath=c:/Projects/Homeworks/09. semester/JPF/JPF/build/tests
+classpath = ./bin
 
 listener = fse2006daisy.verify.CreatPrecondition
 #listener=gov.nasa.jpf.listener.PreciseRaceDetector

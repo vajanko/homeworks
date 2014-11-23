@@ -5,8 +5,8 @@ import fse2006daisy.daisy.Petal;
 public class DaisyConcurrentTest {
 
 	public static void main(String[] args) throws InterruptedException {
-		Producer pro1 = new Producer("a");
-		Producer pro2 = new Producer("b");
+		Application pro1 = new Application("aa");
+		Application pro2 = new Application("bb");
 		
 		FSHelper.init();
 		

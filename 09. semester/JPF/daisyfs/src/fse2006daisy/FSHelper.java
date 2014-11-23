@@ -4,6 +4,7 @@ import fse2006daisy.daisy.Attribute;
 import fse2006daisy.daisy.DaisyDir;
 import fse2006daisy.daisy.FileHandle;
 import fse2006daisy.daisy.Petal;
+import gov.nasa.jpf.vm.Verify;
 
 public class FSHelper {
 	public static FileHandle root;
@@ -20,7 +21,7 @@ public class FSHelper {
 	public static final int DAISY_ERR_FBIG = -27;
 	public static final int DAISY_ERR_NOSPC = -28;
 	
-	private static byte[] getBytes(String s) {
+	public static byte[] getBytes(String s) {
 		byte b[] = new byte[s.length()];
 		for (int i = 0; i < s.length(); i++) {
 			b[i] = (byte) s.charAt(i);

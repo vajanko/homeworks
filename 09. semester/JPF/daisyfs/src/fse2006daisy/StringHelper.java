@@ -4,9 +4,7 @@ import gov.nasa.jpf.vm.Verify;
 
 public class StringHelper {
 	
-	public static String randomStr(int size) {
-		Verify.ignoreIf(true);
-		
+	public static String randomStr(int size) {	
 		StringBuilder builder = new StringBuilder();
 		for (int i =0; i < size; i++)
 			builder.append('x');

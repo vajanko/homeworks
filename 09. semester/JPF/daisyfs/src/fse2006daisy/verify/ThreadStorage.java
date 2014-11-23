@@ -7,8 +7,14 @@ class ThreadStorage
 {
 	private Map<Long, LockState> mutexStates = new HashMap<Long, LockState>();
 	private int threadId;
-	public int getThreadId() {
-		return threadId;
+	public int getThreadId() { return threadId; }
+	public void setThreadId(int threadId) { this.threadId = threadId; }
+	
+	public Map<Long, LockState> getMutextStates() {
+		return mutexStates;
+	}
+	public boolean empty() {
+		return mutexStates.size() == 0;
 	}
 	
 	public LockState getLockState(long lockno) {
@@ -20,8 +26,14 @@ class ThreadStorage
 	public void setLockState(long lockno, LockState state) {
 		mutexStates.put(lockno, state);
 	}
-	public ThreadStorage(int threadId) {
-		this.threadId = threadId;
+	public void setLockStateOnce(int threadId, long lockno, LockState state) {
+		if (!mutexStates.containsKey(lockno)) {
+			this.threadId = threadId;
+			mutexStates.put(lockno, state);
+		}
+	}
+	public ThreadStorage() {
+		this.threadId = -1;
 	}
 	
 	@Override

@@ -10,20 +10,22 @@ public class Verifier {
 		String[] arguments = new String[] 
 		{ 
 			//"+target=fse2006daisy.DaisyTest",
-			"+target=fse2006daisy.DaisyConcurrentTest",
+			//"+target=fse2006daisy.tests.ConcurrentCreat",
+			"+target=fse2006daisy.tests.ConcurrentCreat",
 			//"+listener=fse2006daisy.verify.CreatPrecondition",
 			"+classpath=./bin",
 			"+report.publisher=console",
-			"+report.console.property_violation=error"
+			"+report.console.property_violation=error",
+			//"+search.class=gov.nasa.jpf.search.heuristic.BFSHeuristic"
 		};
 		
 		Config conf = JPF.createConfig(arguments);
 		
 		JPF jpf = new JPF(conf);
 		
-		jpf.addPropertyListener(new CreatPrecondition(conf));
-		jpf.addPropertyListener(new LockOrderProperty(conf));
-		//jpf.addPropertyListener(new PreciseRaceDetector(conf));
+		//jpf.addPropertyListener(new CreatPrecondition(conf));
+		//jpf.addPropertyListener(new LockOrderProperty(conf));
+		jpf.addPropertyListener(new PreciseRaceDetector(conf));
 
 		jpf.run();
 	}

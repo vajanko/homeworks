@@ -12,11 +12,12 @@ import gov.nasa.jpf.vm.VM;
 
 public class LockOrderProperty extends PropertyAdapterBase {
 	
-	private DynamicObjectArray<LockActionSet> states;
+	// for each state remember lock actions (ACQ/REL) made in one thread
+	private DynamicObjectArray<ThreadStorage> states;
 	
 	private ProcessStorage procStorage;
 	// lock actions (ACQ/REL) discovered in current state
-	private LockActionSet currentActionSet;
+	private ThreadStorage currentActionSet;
 	// unique identifier of currently searched state
 	private int stateId = 0;
 	private Stack<Integer> stateStack = new Stack<Integer>();
@@ -28,18 +29,18 @@ public class LockOrderProperty extends PropertyAdapterBase {
 			
 	    //if (!currentActionSet.empty()) {
 	    	states.set(stateId, currentActionSet);
-	    	currentActionSet = new LockActionSet();
+	    	currentActionSet = new ThreadStorage();
 	    //}
 	}
 	@Override
 	public void stateBacktracked (Search search) {
 		stateId = stateStack.pop();
 
-		LockActionSet sa = states.get(stateId);
-		//if (sa != null)
-			procStorage.restore(sa);
-		//if (!currentActionSet.empty())
-		//	currentActionSet = new LockActionSet();
+		ThreadStorage ts = states.get(stateId);
+		//if (ts != null)
+			procStorage.restore(ts);
+//		if (!currentActionSet.empty())
+//			currentActionSet = new ThreadStorage();
 	}	
 	
 	private boolean try_acq_rel(ThreadInfo th, long lockno, LockState nextState) {
@@ -50,7 +51,7 @@ public class LockOrderProperty extends PropertyAdapterBase {
 			return false;	// trying to ACQ already locked or REL already unlocked mutex
 		
 		// remember this action in the state history ...
-		currentActionSet.setLockState(threadId, lockno, currentState, nextState);
+		currentActionSet.setLockStateOnce(threadId, lockno, currentState);
 		// ... as well as in the current process state
 		procStorage.setLockState(threadId, lockno, nextState);
 		
@@ -82,8 +83,8 @@ public class LockOrderProperty extends PropertyAdapterBase {
 	
 	public LockOrderProperty(Config config) {
 		this.procStorage = new ProcessStorage();
-		this.states = new DynamicObjectArray<LockActionSet>();
-		this.currentActionSet = new LockActionSet();
+		this.states = new DynamicObjectArray<ThreadStorage>();
+		this.currentActionSet = new ThreadStorage();
 	}
 	
 	

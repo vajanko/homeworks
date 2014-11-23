@@ -1,0 +1,12 @@
+target = fse2006daisy.tests.ConcurrentCreat
+
+# search.class = .search.heuristic.BFSHeuristic
+classpath = ./bin
+native_classpath = ./bin
+
+#listener = fse2006daisy.verify.CreatPrecondition
+listener = gov.nasa.jpf.listener.PreciseRaceDetector;gov.nasa.jpf.listener.DeadlockAnalyzer;fse2006daisy.verify.LockOrderProperty
+
+report.console.property_violation=error,trace
+
+search.class=gov.nasa.jpf.search.heuristic.BFSHeuristic

@@ -1,0 +1,11 @@
+target = fse2006daisy.tests.FSBattle
+
+classpath = ./bin
+native_classpath = ./bin
+
+#listener = fse2006daisy.verify.CreatPrecondition
+listener = gov.nasa.jpf.listener.PreciseRaceDetector;gov.nasa.jpf.listener.DeadlockAnalyzer;
+
+report.console.property_violation=error,trace
+
+#search.class=gov.nasa.jpf.search.heuristic.BFSHeuristic
