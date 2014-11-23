@@ -2,8 +2,9 @@
 	#include <stdlib.h>
 	#include <string>
 	#include "duerr.h"
-	#include "du2.h"
-	#include "du2tok.h"
+	#include "du3.h"
+	#include "du3tok.h"
+	#include "du3g.hpp"
 	
 	/* portability stuff */
 	#if defined _MSC_VER	    /* M$ VS2003 does not recognize long long, VS2005 has long long but no strtoull */

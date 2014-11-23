@@ -1649,7 +1649,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 90 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du3\\du3g.y"
+#line 122 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du3\\du3g.y"
 
 
 static void yyerror(unsigned *line, MlaskalCtx *, const char *m)

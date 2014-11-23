@@ -1,3 +1,15 @@
+Nonterminals useless in grammar
+
+   label
+   expr
+   simple_expr
+   term
+   factor
+   const
+   literal
+   ord_const
+
+
 Terminals unused in grammar
 
    DUTOK_LABEL
@@ -38,6 +50,35 @@ Terminals unused in grammar
    DUTOK_OPER_SIGNADD
    DUTOK_OPER_MUL
    DUTOK_FOR_DIRECTION
+
+
+Rules useless in grammar
+
+    3 label: /* empty */
+
+    4 expr: /* empty */
+
+    5 simple_expr: /* empty */
+
+    6 term: /* empty */
+
+    7 factor: /* empty */
+
+    8 const: /* empty */
+    9      | literal
+   10      | DUTOK_OPER_SIGNADD DUTOK_UINT
+   11      | DUTOK_OPER_SIGNADD DUTOK_REAL
+
+   12 literal: /* empty */
+   13        | DUTOK_IDENTIFIER
+   14        | DUTOK_UINT
+   15        | DUTOK_REAL
+   16        | DUTOK_STRING
+
+   17 ord_const: /* empty */
+   18          | DUTOK_IDENTIFIER
+   19          | DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+   20          | DUTOK_OPER_SIGNADD DUTOK_UINT
 
 
 Grammar

@@ -85,8 +85,6 @@ mlaskal:	  DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DO
 		;
 
 program_block:
-	| DUTOK_LABEL DUTOK_UINT DUTOK_SEMICOLON
-	| DUTOK_CONST
 		;
 
 label:
