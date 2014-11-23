@@ -1,0 +1,8 @@
+target = fse2006daisy.tests.MultipleCreat
+
+classpath = ./bin
+native_classpath = ./bin
+
+listener = gov.nasa.jpf.listener.PreciseRaceDetector
+
+report.console.property_violation=error,trace
