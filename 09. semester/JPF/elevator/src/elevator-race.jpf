@@ -1,0 +1,9 @@
+target = elevator.Elevator
+
+classpath = ./bin
+
+listener = gov.nasa.jpf.listener.PreciseRaceDetector
+
+search.class = .search.heuristic.BFSHeuristic
+
+report.console.property_violation=error,trace
