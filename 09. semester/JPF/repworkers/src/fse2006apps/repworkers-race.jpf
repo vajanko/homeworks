@@ -1,10 +1,10 @@
 target = fse2006apps.Main
-target.args = 2,2,0.0,1.0,0.25
-
-classpath = ./bin
+#target.args = 2,2,0.0,1.0,0.25
 
 listener = gov.nasa.jpf.listener.PreciseRaceDetector
+#search.class = gov.nasa.jpf.search.heuristic.BFSHeuristic
+search.class = gov.nasa.jpf.search.heuristic.RandomHeuristic
 
-#search.class = .search.heuristic.BFSHeuristic
+classpath = ./bin
 
 report.console.property_violation=error,trace
