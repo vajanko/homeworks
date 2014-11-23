@@ -3,13 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics.Contracts;
 
 namespace CodeContracts
 {
     public class IntCollection
     {
+        [ContractInvariantMethod]
+        private void invariant()
+        {
+            Contract.Invariant(data != null);
+            Contract.Invariant(Size() >= 0);
+        }
+
         private List<int> data = new List<int>();
 
+        [Pure]
         public int Size()
         {
             return data.Count;
@@ -17,12 +26,18 @@ namespace CodeContracts
 
         public void Add(int val)
         {
+            Contract.Ensures(Contract.OldValue(Size()) + 1 == Size());
+
             data.Add(val);
         }
+        [Pure]
         public int Get(int index)
         {
+            Contract.Requires(index >= 0 && index < Size());
+
             return data[index];
         }
+        [Pure]
         public int GetHigher(int val)
         {
             if (data.All(i => i <= val))
@@ -32,6 +47,10 @@ namespace CodeContracts
         }
         public void Remove(int index)
         {
+            // this condition also cover the case when collection is empty
+            Contract.Requires(index >= 0 && index < Size());
+            Contract.Ensures(Contract.OldValue(Size()) + 1 == Size());
+
             data.RemoveAt(index);
         }
         public void RemoveAll(int val)
@@ -40,10 +59,14 @@ namespace CodeContracts
         }
         public void Sort()
         {
+            Contract.Ensures(data.All((i, v) => i == Size() || v < Get(i)));
+
             data.Sort();
         }
         public void Clear()
         {
+            Contract.Ensures(Size() == 0);
+
             data.Clear();
         }
         

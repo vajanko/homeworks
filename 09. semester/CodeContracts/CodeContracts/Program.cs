@@ -10,6 +10,9 @@ namespace CodeContracts
     {
         static void Main(string[] args)
         {
+            IntCollection col = new IntCollection();
+
+            int size = col.Size();
         }
     }
 }
