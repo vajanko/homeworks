@@ -85,7 +85,41 @@ mlaskal:	  DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DO
 		;
 
 program_block:
+	| DUTOK_LABEL DUTOK_UINT DUTOK_SEMICOLON
+	| DUTOK_CONST
 		;
+
+label:
+	;
+
+expr:
+	;
+simple_expr:
+	;
+term:
+	;
+factor:
+	;
+
+/* Constants */
+const:
+	| literal
+	| DUTOK_OPER_SIGNADD DUTOK_UINT
+	| DUTOK_OPER_SIGNADD DUTOK_REAL
+	;
+/* constant without sign */
+literal:
+	| DUTOK_IDENTIFIER
+	| DUTOK_UINT
+	| DUTOK_REAL
+	| DUTOK_STRING
+	;
+ord_const:
+	| DUTOK_IDENTIFIER	/* integer const identifier */
+	| DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER	/* integer const identifier */
+	| DUTOK_OPER_SIGNADD DUTOK_UINT
+	;
+/* End of constants */
 
 %%
 
