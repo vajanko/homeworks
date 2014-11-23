@@ -83,14 +83,14 @@ class Lift extends Thread {
         int targetFloor = -1;
     
         if (controls.claimUp(getName(), currentFloor)) {
-            System.out.println("Lift::doIdle - could claim upcall on current floor"); // CARE
+            //System.out.println("Lift::doIdle - could claim upcall on current floor"); // CARE
             foundFloor = true;
             targetFloor = currentFloor;
             travelDir = UP;
             addPeople(controls.getUpPeople(currentFloor));
         }
         else if (controls.claimDown(getName(), currentFloor)) {
-            System.out.println("Lift::doIdle - could claim downcall on current floor"); // CARE
+            //System.out.println("Lift::doIdle - could claim downcall on current floor"); // CARE
             foundFloor = true;
             targetFloor = currentFloor;
             travelDir = DOWN;
@@ -101,14 +101,14 @@ class Lift extends Thread {
         for (int floor = firstFloor; !foundFloor && floor <= lastFloor; floor++) {
             //System.out.println("Lift::doIdle - checking floor " + floor); // CARE
             if (controls.claimUp(getName(), floor)) {
-                System.out.println("Lift::doIdle - success with claimUp " + floor); // CARE
+                //System.out.println("Lift::doIdle - success with claimUp " + floor); // CARE
                 foundFloor = true;
                 targetFloor = floor;
                 pickupOn[floor] |= UP;
                 travelDir = (targetFloor > currentFloor) ? UP : DOWN;
             }
             else if (controls.claimDown(getName(), floor)) {
-                System.out.println("Lift::doIdle - success with claimDown " + floor); // CARE
+                //System.out.println("Lift::doIdle - success with claimDown " + floor); // CARE
                 foundFloor = true;
                 targetFloor = floor;
                 pickupOn[floor] |= DOWN;
@@ -116,10 +116,10 @@ class Lift extends Thread {
             }
         }
     
-        if (foundFloor) {
-            System.out.println(getName() + " is now moving " +
-                    ((travelDir==UP)?"UP":"DOWN"));
-        }
+//        if (foundFloor) {
+//            System.out.println(getName() + " is now moving " +
+//                    ((travelDir==UP)?"UP":"DOWN"));
+//        }
     }
 
     // MOVING
@@ -132,12 +132,12 @@ class Lift extends Thread {
 
         if (travelDir == UP && currentFloor == lastFloor) travelDir = DOWN;
         if (travelDir == DOWN && currentFloor == firstFloor) travelDir = UP;
-        System.out.println(getName() + " now on " + currentFloor);
+        //System.out.println(getName() + " now on " + currentFloor);
 
         if (peopleFor[currentFloor] > 0) {
-            System.out.println(getName() + " delivering " +
-                    peopleFor[currentFloor] + " passengers on " +
-                    currentFloor);
+//            System.out.println(getName() + " delivering " +
+//                    peopleFor[currentFloor] + " passengers on " +
+//                    currentFloor);
             peopleFor[currentFloor] = 0;
         }
 	
@@ -191,9 +191,9 @@ class Lift extends Thread {
         // Print out are new direction
         if (oldDir != travelDir) {
             System.out.print(getName());
-            if (travelDir == IDLE) System.out.println(" becoming IDLE");
-            else if (travelDir == UP) System.out.println(" changing to UP");
-            else if (travelDir == DOWN) System.out.println(" changing to DOWN");
+//            if (travelDir == IDLE) System.out.println(" becoming IDLE");
+//            else if (travelDir == UP) System.out.println(" changing to UP");
+//            else if (travelDir == DOWN) System.out.println(" changing to DOWN");
         }
     }
 
@@ -220,8 +220,8 @@ class Lift extends Thread {
     // Updates peopleFor based on the Vector of destination floors received
     // from the control object
     private void addPeople(List people) {
-        System.out.println(getName() + " picking up " + people.size() +
-                " passengers on " + currentFloor);
+//        System.out.println(getName() + " picking up " + people.size() +
+//                " passengers on " + currentFloor);
         for (Iterator it = people.iterator(); it.hasNext(); ) {
             int toFloor = ((Integer) it.next()).intValue();
             peopleFor[toFloor] += 1;

@@ -1,6 +1,5 @@
 package fse2006daisy.tests;
 
-import fse2006daisy.FSHelper;
 import fse2006daisy.daisy.DaisyDir;
 import fse2006daisy.daisy.FileHandle;
 import fse2006daisy.daisy.Petal;

@@ -24,8 +24,8 @@ class Controls {
     // onFloor
     public void pushDown(int onFloor, int toFloor) {
         synchronized (floors[onFloor]) {
-            System.out.println("*** Someone on floor " + onFloor +
-                    " wants to go to " + toFloor);
+//            System.out.println("*** Someone on floor " + onFloor +
+//                    " wants to go to " + toFloor);
             floors[onFloor].downPeople.add(new Integer(toFloor));
             if (floors[onFloor].downPeople.size() == 1)
                 floors[onFloor].downFlag = false;
@@ -37,8 +37,8 @@ class Controls {
     public void pushUp(int onFloor, int toFloor) {
 		// INJECTED ERROR
         //synchronized(floors[onFloor]) {
-            System.out.println("*** Someone on floor " + onFloor +
-                    " wants to go to " + toFloor);
+//            System.out.println("*** Someone on floor " + onFloor +
+//                    " wants to go to " + toFloor);
             floors[onFloor].upPeople.add(new Integer(toFloor));
             if(floors[onFloor].upPeople.size() == 1)
                 floors[onFloor].upFlag = false;

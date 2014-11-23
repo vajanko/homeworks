@@ -1,0 +1,14 @@
+target = elevator.Elevator
+
+classpath = ./bin
+
+listener = gov.nasa.jpf.listener.DeadlockAnalyzer
+#search.class = gov.nasa.jpf.search.heuristic.BFSHeuristic
+search.class = gov.nasa.jpf.search.heuristic.MostBlocked
+#search.class = gov.nasa.jpf.search.heuristic.RandomHeuristic
+#RandomHeuristic
+#DFSHeuristic
+#RandomHeuristic
+#MostBlocked
+
+report.console.property_violation=error,trace

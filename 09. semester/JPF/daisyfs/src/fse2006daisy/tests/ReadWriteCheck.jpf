@@ -4,8 +4,8 @@ classpath = ./bin
 native_classpath = ./bin
 
 #listener = fse2006daisy.verify.CreatPrecondition
-listener = fse2006daisy.verify.LockOrderProperty
+#listener = fse2006daisy.verify.LockOrderProperty
 
 report.console.property_violation=error,trace
 
-#search.class=gov.nasa.jpf.search.heuristic.BFSHeuristic
+search.class=gov.nasa.jpf.search.heuristic.BFSHeuristic

@@ -1,4 +1,4 @@
-package fse2006daisy;
+package fse2006daisy.tests;
 
 import fse2006daisy.daisy.Attribute;
 import fse2006daisy.daisy.DaisyDir;

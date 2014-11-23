@@ -1,4 +1,4 @@
-package fse2006daisy;
+package fse2006daisy.tests;
 
 import gov.nasa.jpf.vm.Verify;
 

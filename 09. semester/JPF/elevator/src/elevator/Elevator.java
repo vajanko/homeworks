@@ -79,7 +79,7 @@ public class Elevator {
             // if the current tick matches the time of th next event
             // push the correct buttton
             if (time == bp.time) {
-                System.out.println("Elevator::begin - its time to press a button");
+                //System.out.println("Elevator::begin - its time to press a button");
                 if (bp.onFloor > bp.toFloor)
                     controls.pushDown(bp.onFloor, bp.toFloor);
                 else
