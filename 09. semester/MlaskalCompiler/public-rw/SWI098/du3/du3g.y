@@ -84,11 +84,16 @@
 mlaskal:	  DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
 		;
 
-program_block:
+program_block: label DUTOK_SEMICOLON
 		;
 
-label:
+/* Label */
+label: DUTOK_LABEL uints		/* one obligatory uint possibly followed by multiple ", uint" */
 	;
+uints: DUTOK_UINT
+	| uints DUTOK_COMMA DUTOK_UINT
+	;
+/* End of label */
 
 expr:
 	;
