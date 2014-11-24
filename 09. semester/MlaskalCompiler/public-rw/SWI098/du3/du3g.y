@@ -104,6 +104,32 @@ term:
 factor:
 	;
 
+/* Procedure - function */
+/* procedure header */
+proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params
+	;
+/* function header */
+func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER /* --> scalar type identifier */
+	;
+/* procedure or function parameters possibly without parentesis and any parameters */
+params:	/* empty parameters without parentesis */
+	| DUTOK_LPAR DUTOK_RPAR	/* empty parameters wiht parentesis */
+	| DUTOK_LPAR formal_params DUTOK_RPAR
+	;
+/* non-empty list of parameter sections separated by semicolon */
+formal_params: params_section
+	| formal_params DUTOK_SEMICOLON params_section
+	;
+/* declaration of possibly multiple parameters for one single type,  */
+params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier */
+	| DUTOK_VAR identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier */
+	;
+/* non-empty list of identifiers separated by comma */
+identifiers: DUTOK_IDENTIFIER
+	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+	;
+/* End of procedure - function */
+
 /* Constants */
 const:
 	| literal
