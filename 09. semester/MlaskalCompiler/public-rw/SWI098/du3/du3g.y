@@ -93,6 +93,24 @@ program_block: label
 
 /* End of block */
 
+/* Statement */
+stmt: m_stmt
+	| u_stmt
+	;
+/* m_stmt only contains full conditions "if then else" */
+m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt	/* --> boolean expression */
+	| DUTOK_WHILE expr DUTOK_DO m_stmt						/* --> boolean expression */
+	;
+u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
+	| DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt		/* --> boolean expression */
+	| DUTOK_WHILE expr DUTOK_DO u_stmt						/* --> boolean expression */
+	;
+/* non-empty list of statements separated by a semicolon */
+stmts: stmt
+	| stmts DUTOK_SEMICOLON stmt
+	;
+/* End of statement */
+
 /* Variable */
 variable: DUTOK_IDENTIFIER /* --> variable identifier */
 	| 
