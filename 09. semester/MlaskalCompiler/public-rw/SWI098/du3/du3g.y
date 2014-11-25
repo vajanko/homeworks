@@ -90,6 +90,9 @@ program_block: label
 	;
 
 /* Block */
+block: label
+	| 
+	;
 
 /* End of block */
 
@@ -119,10 +122,6 @@ variable: DUTOK_IDENTIFIER /* --> variable identifier */
 
 /* Label */
 label: DUTOK_LABEL uints		/* one obligatory uint possibly followed by multiple ", uint" */
-	;
-/* non-empty list of uints separated by a comma */
-uints: DUTOK_UINT
-	| uints DUTOK_COMMA DUTOK_UINT
 	;
 /* End of label */
 
@@ -184,10 +183,6 @@ formal_params: params_section
 params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier */
 	| DUTOK_VAR identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier */
 	;
-/* non-empty list of identifiers separated by comma */
-identifiers: DUTOK_IDENTIFIER
-	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER
-	;
 /* End of procedure - function */
 
 /* Constants */
@@ -211,6 +206,25 @@ ord_const:
 	| DUTOK_OPER_SIGNADD DUTOK_UINT
 	;
 /* End of constants */
+
+/* Helpers */
+
+/* declaration */
+decl: identifiers DUTOK_COLON type
+	;
+/* non-empty list of decalrations separated by semicolon */
+decls: decl
+	| decls DUTOK_SEMICOLON decl
+	;
+/* non-empty list of identifiers separated by comma */
+identifiers: DUTOK_IDENTIFIER
+	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+	;
+/* non-empty list of uints separated by a comma */
+uints: DUTOK_UINT
+	| uints DUTOK_COMMA DUTOK_UINT
+	;
+/* End of helpers */
 
 %%
 
