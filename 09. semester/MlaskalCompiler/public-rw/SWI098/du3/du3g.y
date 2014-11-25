@@ -84,25 +84,67 @@
 mlaskal:	  DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
 		;
 
-program_block: label DUTOK_SEMICOLON
-		;
+program_block: label
+	| proc 
+	| func
+	;
+
+/* Block */
+
+/* End of block */
+
+/* Variable */
+variable: DUTOK_IDENTIFIER /* --> variable identifier */
+	| 
+	;
+/* End of variable */
 
 /* Label */
 label: DUTOK_LABEL uints		/* one obligatory uint possibly followed by multiple ", uint" */
 	;
+/* non-empty list of uints separated by a comma */
 uints: DUTOK_UINT
 	| uints DUTOK_COMMA DUTOK_UINT
 	;
 /* End of label */
 
-expr:
+expr: simple_expr DUTOK_OPER_REL simple_expr
+	| simple_expr DUTOK_EQ simple_expr
 	;
-simple_expr:
+simple_expr: terms 
+	| DUTOK_OPER_SIGNADD terms
 	;
-term:
+term: factors
 	;
-factor:
+/* non-empty list of terms sepatated by +,-,or */
+terms: term
+	| terms DUTOK_OPER_SIGNADD term
+	| terms DUTOK_OR term
 	;
+factor: uconst
+	| variable
+	| DUTOK_LPAR expr DUTOK_RPAR
+	;
+/* non-empty list of factors separated by *,/,div,mod,and */
+factors: factor
+	| factors DUTOK_OPER_MUL factor
+	;
+/* Type */
+type: DUTOK_IDENTIFIER	/* --> type identifier */
+	| ord_type
+	| struct_type
+	;
+ord_type: DUTOK_IDENTIFIER	/* --> ordinal type identifier */
+	| ord_const DUTOK_DOTDOT ord_const
+	;
+struct_type: DUTOK_IDENTIFIER /* --> stuctural type identifier */
+	| DUTOK_ARRAY DUTOK_LSBRA ord_types DUTOK_RSBRA DUTOK_OF type
+	;
+/* non-empty list of ordinal types separated by a comma */
+ord_types: ord_type
+	| ord_types DUTOK_COMMA ord_type
+	;
+/* End of type*/
 
 /* Procedure - function */
 /* procedure header */
@@ -132,11 +174,13 @@ identifiers: DUTOK_IDENTIFIER
 
 /* Constants */
 const:
-	| literal
+	| uconst
 	| DUTOK_OPER_SIGNADD DUTOK_UINT
 	| DUTOK_OPER_SIGNADD DUTOK_REAL
 	;
 /* constant without sign */
+uconst: literal
+	;
 literal:
 	| DUTOK_IDENTIFIER
 	| DUTOK_UINT
