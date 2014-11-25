@@ -87,32 +87,14 @@ mlaskal:	  DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DO
 program_block: label
 	| proc 
 	| func
-	;
+	; 
 
 /* Block */
 block: label
-	| 
+	| stmt
 	;
 
 /* End of block */
-
-/* Statement */
-stmt: m_stmt
-	| u_stmt
-	;
-/* m_stmt only contains full conditions "if then else" */
-m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt	/* --> boolean expression */
-	| DUTOK_WHILE expr DUTOK_DO m_stmt						/* --> boolean expression */
-	;
-u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
-	| DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt		/* --> boolean expression */
-	| DUTOK_WHILE expr DUTOK_DO u_stmt						/* --> boolean expression */
-	;
-/* non-empty list of statements separated by a semicolon */
-stmts: stmt
-	| stmts DUTOK_SEMICOLON stmt
-	;
-/* End of statement */
 
 /* Variable */
 variable: DUTOK_IDENTIFIER /* --> variable identifier */
@@ -125,6 +107,36 @@ label: DUTOK_LABEL uints		/* one obligatory uint possibly followed by multiple "
 	;
 /* End of label */
 
+/* Statement */
+stmt: m_stmt
+	| u_stmt
+	| DUTOK_UINT DUTOK_COLON stmt_rest	/* statement optionaly starts with 123: ... */
+	| stmt_rest
+	;
+/* m_stmt only contains full conditions "if then else" */
+m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt	/* --> boolean expression */
+	| DUTOK_WHILE expr DUTOK_DO m_stmt						/* --> boolean expression */
+	;
+u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
+	| DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt		/* --> boolean expression */
+	| DUTOK_WHILE expr DUTOK_DO u_stmt						/* --> boolean expression */
+	;
+/* the rest of statement definition except "if" and "while" without leading label */
+stmt_rest: DUTOK_IDENTIFIER DUTOK_ASSIGN stmt				/* --> variable, function identifier */
+	| DUTOK_IDENTIFIER										/* --> procedure identifier */
+	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	/* --> procedure identifier */
+	| DUTOK_BEGIN stmts DUTOK_END
+	| DUTOK_REPEAT stmts DUTOK_UNTIL expr					/* --> boolean expression */
+	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_TO expr DUTOK_DO stmt /* --> ordinal variable identifier, ordinal expression 2x */
+	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_DOWNTO expr DUTOK_DO stmt /* --> ordinal variable identifier, ordinal expression 2x */
+	;
+/* non-empty list of statements separated by a semicolon */
+stmts: stmt
+	| stmts DUTOK_SEMICOLON stmt
+	;
+/* End of statement */
+
+/* Expression */
 expr: simple_expr DUTOK_OPER_REL simple_expr
 	| simple_expr DUTOK_EQ simple_expr
 	;
@@ -138,14 +150,21 @@ terms: term
 	| terms DUTOK_OPER_SIGNADD term
 	| terms DUTOK_OR term
 	;
-factor: uconst
-	| variable
+factor: DUTOK_IDENTIFIER	/* --> unsigned constant, variable, function identifier */
+	| DUTOK_UINT			/* --> unsigned constant identifier */
+	| DUTOK_REAL			/* --> unsigned constant identifier */
+	| DUTOK_STRING			/* --> unsigned constant identifier */
+	| DUTOK_IDENTIFIER DUTOK_LSBRA stmts DUTOK_RSBRA /* --> array identifier, ordinal statements */
+	| DUTOK_IDENTIFIER DUTOK_LPAR expr DUTOK_RPAR /* --> function identifier */
 	| DUTOK_LPAR expr DUTOK_RPAR
+	| DUTOK_NOT factor
 	;
 /* non-empty list of factors separated by *,/,div,mod,and */
 factors: factor
 	| factors DUTOK_OPER_MUL factor
 	;
+/* End of expression */
+
 /* Type */
 type: DUTOK_IDENTIFIER	/* --> type identifier */
 	| ord_type
@@ -185,6 +204,8 @@ params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier 
 	;
 /* End of procedure - function */
 
+identifier: DUTOK_IDENTIFIER /* --> constant, function, procedure, variable identifier */
+
 /* Constants */
 const:
 	| uconst
@@ -220,9 +241,15 @@ decls: decl
 identifiers: DUTOK_IDENTIFIER
 	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER
 	;
+string: DUTOK_STRING
+	;
+real : DUTOK_REAL
+	;
+uint : DUTOK_UINT
+	;
 /* non-empty list of uints separated by a comma */
-uints: DUTOK_UINT
-	| uints DUTOK_COMMA DUTOK_UINT
+uints: uint
+	| uints DUTOK_COMMA uint
 	;
 /* End of helpers */
 
