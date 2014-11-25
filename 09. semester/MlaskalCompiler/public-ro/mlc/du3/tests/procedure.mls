@@ -1,0 +1,10 @@
+{
+    DU3
+    testovaci program 1
+}
+
+program du3test1;
+procedure p1;
+procedure p2 (var v1:real);
+function f1 (v1,v2:integer; var v3:real):real;
+.
