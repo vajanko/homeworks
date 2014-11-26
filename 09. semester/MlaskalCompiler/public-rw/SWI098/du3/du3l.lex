@@ -144,8 +144,8 @@ div	{ lv->dtge_ = DUTOKGE_DIV; return DUTOK_OPER_MUL; }
 mod	{ lv->dtge_ = DUTOKGE_MOD; return DUTOK_OPER_MUL; }
 and	{ lv->dtge_ = DUTOKGE_AND; return DUTOK_OPER_MUL; }
 
-to		{ lv->dtge_ = DUTOKGE_TO; return DUTOKGE_FOR_DIRECTION; }
-downto	{ lv->dtge_ = DUTOKGE_DOWNTO; return DUTOKGE_FOR_DIRECTION; }
+to		{ lv->dtge_ = DUTOKGE_TO; return DUTOK_FOR_DIRECTION; }
+downto	{ lv->dtge_ = DUTOKGE_DOWNTO; return DUTOK_FOR_DIRECTION; }
 
 program		return DUTOK_PROGRAM;	/* Keywords */
 label			return DUTOK_LABEL;
