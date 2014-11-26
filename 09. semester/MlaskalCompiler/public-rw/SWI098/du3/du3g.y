@@ -199,7 +199,14 @@ factor: DUTOK_IDENTIFIER	/* --> unsigned constant, variable, function identifier
 factors: factor
 	| factors DUTOK_OPER_MUL factor
 	;
-array_var: DUTOK_IDENTIFIER DUTOK_LSBRA exprs DUTOK_RSBRA		/* --> array identifier, ordinal expressions */
+array_var: DUTOK_IDENTIFIER idxs		/* --> array identifier, ordinal expressions */
+	;
+/* array indexer */
+idx: DUTOK_LSBRA exprs DUTOK_RSBRA		/* ordinal expressions */
+	;
+idxs: idx
+	| idxs idx
+	;
 /* End of expression */
 
 /* Type */
