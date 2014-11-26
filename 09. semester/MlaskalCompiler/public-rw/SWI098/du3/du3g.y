@@ -84,17 +84,51 @@
 mlaskal:	  DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
 		;
 
-program_block: block_label DUTOK_SEMICOLON
+/* Block P*/
+program_block: block_label block_const block_type block_var block_proc_func block_begin_end
 	;
+block_proc_func: 
+	| proc_func_defs DUTOK_SEMICOLON
+	;
+proc_func_def: proc DUTOK_SEMICOLON block
+	| func DUTOK_SEMICOLON block
+	;
+proc_func_defs: proc_func_def
+	| proc_func_defs DUTOK_SEMICOLON proc_func_def
+	;
+/* End of block P*/
 
 /* Block */
-block: block_label
+block: block_label block_const block_type block_var block_begin_end
 	;
-block_label: DUTOK_LABEL uints
+block_label: /* empty */
+	| DUTOK_LABEL uints DUTOK_SEMICOLON
 	;
-/*block_const: DUTOK_CONST 
+block_const: /* empty */
+	| DUTOK_CONST id_assigns DUTOK_SEMICOLON
 	;
-var_assign: DUTOK_IDENTIFIER DUTOK_ASSING const*/
+id_assign: DUTOK_IDENTIFIER DUTOK_EQ const
+	;
+id_assigns: id_assign
+	| id_assigns DUTOK_SEMICOLON id_assign
+	;
+block_type: /* empty */
+	| DUTOK_TYPE type_assigns DUTOK_SEMICOLON
+	;
+type_assign: DUTOK_IDENTIFIER DUTOK_EQ type
+	;
+type_assigns: type_assign
+	| type_assigns DUTOK_SEMICOLON type_assign
+	;
+block_var: /* empty */
+	| DUTOK_VAR var_defs DUTOK_SEMICOLON
+	;
+var_def: identifiers DUTOK_COLON type
+	;
+var_defs: var_def
+	| var_defs DUTOK_SEMICOLON var_def
+	;
+block_begin_end: DUTOK_BEGIN  DUTOK_END			/* !!!! TODO: add stmts here !!! */
 /* End of block */
 
 /* Statement */
@@ -201,18 +235,14 @@ params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier 
 
 /*identifier: DUTOK_IDENTIFIER /* --> constant, function, procedure, variable identifier */
 
-/* TODO: delete: Constants */
-const: DUTOK_UINT
+/* Constants */
+const: DUTOK_IDENTIFIER	/* --> constant identifier */
+	| DUTOK_UINT
 	| DUTOK_OPER_SIGNADD DUTOK_UINT
 	| DUTOK_REAL
 	| DUTOK_OPER_SIGNADD DUTOK_REAL
-	;
-/*literal:
-	| DUTOK_IDENTIFIER
-	| DUTOK_UINT
-	| DUTOK_REAL
 	| DUTOK_STRING
-	;*/
+	;
 ord_const:
 	| DUTOK_IDENTIFIER	
 	| DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
@@ -234,15 +264,9 @@ decls: decl
 identifiers: DUTOK_IDENTIFIER
 	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER
 	;
-string: DUTOK_STRING
-	;
-real : DUTOK_REAL
-	;
-uint : DUTOK_UINT
-	;
 /* non-empty list of uints separated by a comma */
-uints: uint
-	| uints DUTOK_COMMA uint
+uints: DUTOK_UINT
+	| uints DUTOK_COMMA DUTOK_UINT
 	;
 /* End of helpers */
 
