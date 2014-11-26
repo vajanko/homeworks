@@ -147,7 +147,8 @@ u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
 	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
 	;
 /* the rest of statement definition except "if" and "while" without leading label */
-stmt_rest: DUTOK_IDENTIFIER DUTOK_ASSIGN m_stmt				/* --> variable, function identifier */
+stmt_rest: /* empty */
+	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr					/* --> variable, function identifier */
 	| DUTOK_IDENTIFIER										/* --> procedure identifier */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	/* --> procedure identifier */
 	| DUTOK_GOTO DUTOK_UINT
@@ -185,7 +186,7 @@ factor: DUTOK_IDENTIFIER	/* --> unsigned constant, variable, function identifier
 	| DUTOK_REAL			/* --> unsigned constant identifier */
 	| DUTOK_STRING			/* --> unsigned constant identifier */
 	| DUTOK_IDENTIFIER DUTOK_LSBRA stmts DUTOK_RSBRA /* --> array identifier, ordinal statements */
-	| DUTOK_IDENTIFIER DUTOK_LPAR expr DUTOK_RPAR /* --> function identifier */
+	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR /* --> function identifier */
 	| DUTOK_LPAR expr DUTOK_RPAR
 	| DUTOK_NOT factor
 	;
@@ -201,7 +202,10 @@ type: DUTOK_IDENTIFIER	/* --> type, ordinal type, structural type, integer const
 	| DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
 	;
 ord_type: DUTOK_IDENTIFIER	/* --> ordinal type identifier */
-	| ord_const DUTOK_DOTDOT ord_const
+	| ord_range
+	;
+ord_range: ord_const DUTOK_DOTDOT ord_const
+	| ord_range DUTOK_COMMA ord_const DUTOK_DOTDOT ord_const
 	;
 /* End of type*/
 
