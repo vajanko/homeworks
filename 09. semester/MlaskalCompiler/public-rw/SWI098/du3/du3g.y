@@ -203,13 +203,6 @@ type: DUTOK_IDENTIFIER	/* --> type, ordinal type, structural type, integer const
 ord_type: DUTOK_IDENTIFIER	/* --> ordinal type identifier */
 	| ord_const DUTOK_DOTDOT ord_const
 	;
-struct_type: DUTOK_IDENTIFIER /* --> stuctural type identifier */
-	| DUTOK_ARRAY DUTOK_LSBRA ord_types DUTOK_RSBRA DUTOK_OF type
-	;
-/* non-empty list of ordinal types separated by a comma */
-ord_types: ord_type
-	| ord_types DUTOK_COMMA ord_type
-	;
 /* End of type*/
 
 /* Procedure - function */
@@ -234,8 +227,6 @@ params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier 
 	;
 /* End of procedure - function */
 
-/*identifier: DUTOK_IDENTIFIER /* --> constant, function, procedure, variable identifier */
-
 /* Constants */
 const: DUTOK_IDENTIFIER	/* --> constant identifier */
 	| DUTOK_UINT
@@ -252,8 +243,6 @@ ord_const:
 	;
 /* End of constants */
 
-/* Helpers */
-
 /* non-empty list of identifiers separated by comma */
 identifiers: DUTOK_IDENTIFIER
 	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER
@@ -262,8 +251,6 @@ identifiers: DUTOK_IDENTIFIER
 uints: DUTOK_UINT
 	| uints DUTOK_COMMA DUTOK_UINT
 	;
-
-/* End of helpers */
 
 %%
 
