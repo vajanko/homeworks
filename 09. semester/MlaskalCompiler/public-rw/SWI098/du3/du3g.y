@@ -213,6 +213,7 @@ idxs: idx
 type: DUTOK_IDENTIFIER	/* --> type, ordinal type, structural type, integer constant identifier */
 	| ord_const DUTOK_DOTDOT ord_const
 	| DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
+	| record
 	;
 ord_type: DUTOK_IDENTIFIER	/* --> ordinal type identifier */
 	| ord_range
@@ -221,6 +222,16 @@ ord_range: ord_const DUTOK_DOTDOT ord_const
 	| ord_range DUTOK_COMMA ord_const DUTOK_DOTDOT ord_const
 	;
 /* End of type*/
+
+/* Record */
+record: DUTOK_RECORD DUTOK_END
+	| DUTOK_RECORD record_items DUTOK_END
+	| DUTOK_RECORD record_items DUTOK_SEMICOLON DUTOK_END
+	;
+record_items: identifiers DUTOK_COLON type
+	| record_items DUTOK_SEMICOLON identifiers DUTOK_COLON type
+	;
+/* End of record */
 
 /* Procedure - function */
 /* procedure header */
