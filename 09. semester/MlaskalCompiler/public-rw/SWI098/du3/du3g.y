@@ -110,12 +110,12 @@ label: DUTOK_LABEL uints		/* one obligatory uint possibly followed by multiple "
 /* Statement */
 stmt: m_stmt
 	| u_stmt
-	| DUTOK_UINT DUTOK_COLON stmt_rest	/* statement optionaly starts with 123: ... */
-	| stmt_rest
 	;
 /* m_stmt only contains full conditions "if then else" */
 m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt	/* --> boolean expression */
 	| DUTOK_WHILE expr DUTOK_DO m_stmt						/* --> boolean expression */
+	| DUTOK_UINT DUTOK_COLON stmt_rest						/* statement optionaly starts with 123: ... */
+	| stmt_rest
 	;
 u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
 	| DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt		/* --> boolean expression */
@@ -127,12 +127,16 @@ stmt_rest: DUTOK_IDENTIFIER DUTOK_ASSIGN stmt				/* --> variable, function ident
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	/* --> procedure identifier */
 	| DUTOK_BEGIN stmts DUTOK_END
 	| DUTOK_REPEAT stmts DUTOK_UNTIL expr					/* --> boolean expression */
-	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_TO expr DUTOK_DO stmt /* --> ordinal variable identifier, ordinal expression 2x */
-	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_DOWNTO expr DUTOK_DO stmt /* --> ordinal variable identifier, ordinal expression 2x */
+	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_TO expr DUTOK_DO stmt		/* --> ordinal variable identifier, ordinal expression 2x */
+	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_DOWNTO expr DUTOK_DO stmt	/* --> ordinal variable identifier, ordinal expression 2x */
 	;
 /* non-empty list of statements separated by a semicolon */
 stmts: stmt
 	| stmts DUTOK_SEMICOLON stmt
+	;
+/* non-empty list of expressions separated by a comma */
+real_params: expr
+	| real_params DUTOK_COMMA expr
 	;
 /* End of statement */
 
