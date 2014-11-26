@@ -5958,12 +5958,12 @@ YY_RULE_SETUP
 case 14:
 YY_RULE_SETUP
 #line 147 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du3\\du3l.lex"
-{ lv->dtge_ = DUTOKGE_TO; return DUTOKGE_FOR_DIRECTION; }
+{ lv->dtge_ = DUTOKGE_TO; return DUTOK_FOR_DIRECTION; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 148 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du3\\du3l.lex"
-{ lv->dtge_ = DUTOKGE_DOWNTO; return DUTOKGE_FOR_DIRECTION; }
+{ lv->dtge_ = DUTOKGE_DOWNTO; return DUTOK_FOR_DIRECTION; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
