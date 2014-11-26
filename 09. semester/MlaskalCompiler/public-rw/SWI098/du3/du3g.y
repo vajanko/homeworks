@@ -171,6 +171,9 @@ expr: simple_expr
 	| simple_expr DUTOK_OPER_REL simple_expr
 	| simple_expr DUTOK_EQ simple_expr
 	;
+exprs: expr
+	| exprs DUTOK_COMMA expr
+	;
 simple_expr: terms 
 	| DUTOK_OPER_SIGNADD terms
 	;
@@ -185,7 +188,7 @@ factor: DUTOK_IDENTIFIER	/* --> unsigned constant, variable, function identifier
 	| DUTOK_UINT			/* --> unsigned constant identifier */
 	| DUTOK_REAL			/* --> unsigned constant identifier */
 	| DUTOK_STRING			/* --> unsigned constant identifier */
-	| DUTOK_IDENTIFIER DUTOK_LSBRA stmts DUTOK_RSBRA /* --> array identifier, ordinal statements */
+	| DUTOK_IDENTIFIER DUTOK_LSBRA exprs DUTOK_RSBRA /* --> array identifier, ordinal expressions */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR /* --> function identifier */
 	| DUTOK_LPAR expr DUTOK_RPAR
 	| DUTOK_NOT factor
