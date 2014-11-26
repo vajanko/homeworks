@@ -128,7 +128,7 @@ var_def: identifiers DUTOK_COLON type
 var_defs: var_def
 	| var_defs DUTOK_SEMICOLON var_def
 	;
-block_begin_end: DUTOK_BEGIN  DUTOK_END			/* !!!! TODO: add stmts here !!! */
+block_begin_end: DUTOK_BEGIN stmts DUTOK_END
 /* End of block */
 
 /* Statement */
@@ -144,15 +144,16 @@ m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt	/* --> boolean express
 u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
 	| DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt		/* --> boolean expression */
 	| DUTOK_WHILE expr DUTOK_DO u_stmt						/* --> boolean expression */
+	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
 	;
 /* the rest of statement definition except "if" and "while" without leading label */
-stmt_rest: DUTOK_IDENTIFIER DUTOK_ASSIGN stmt				/* --> variable, function identifier */
+stmt_rest: DUTOK_IDENTIFIER DUTOK_ASSIGN m_stmt				/* --> variable, function identifier */
 	| DUTOK_IDENTIFIER										/* --> procedure identifier */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	/* --> procedure identifier */
 	| DUTOK_GOTO DUTOK_UINT
 	| DUTOK_BEGIN stmts DUTOK_END
 	| DUTOK_REPEAT stmts DUTOK_UNTIL expr					/* --> boolean expression */
-	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO stmt		/* --> ordinal variable identifier, ordinal expression 2x */
+	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt		/* --> ordinal variable identifier, ordinal expression 2x */
 	;
 /* non-empty list of statements separated by a semicolon */
 stmts: stmt
@@ -253,13 +254,6 @@ ord_const:
 
 /* Helpers */
 
-/* declaration */
-decl: identifiers DUTOK_COLON type
-	;
-/* non-empty list of decalrations separated by semicolon */
-decls: decl
-	| decls DUTOK_SEMICOLON decl
-	;
 /* non-empty list of identifiers separated by comma */
 identifiers: DUTOK_IDENTIFIER
 	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER
@@ -268,6 +262,7 @@ identifiers: DUTOK_IDENTIFIER
 uints: DUTOK_UINT
 	| uints DUTOK_COMMA DUTOK_UINT
 	;
+
 /* End of helpers */
 
 %%
