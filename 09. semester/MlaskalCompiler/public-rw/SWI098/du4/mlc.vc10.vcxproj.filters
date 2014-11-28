@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files - read only">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files - read only">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Generated Files - do not modify">
+      <UniqueIdentifier>{977eac24-7a56-4237-a6aa-a04085162488}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files - students">
+      <UniqueIdentifier>{abe2efec-2aa7-40f7-ae1f-c358ccf13a6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files - students">
+      <UniqueIdentifier>{9d4cbfd7-5153-49cd-970d-ab033cc68478}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\public-ro\common\src\abstract_ic.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\mlc\du4\src\du4.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\mlc\du4\src\du4baseerrtab.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\mlc\src\duerr.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\mlc\src\dusememptyerrtab.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\mlc\src\dutables.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\common\src\flat_icblock.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\common\src\ic_instr.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\common\src\labeled_icblock.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\public-ro\common\src\uid_gen.cpp">
+      <Filter>Source Files - read only</Filter>
+    </ClCompile>
+    <ClCompile Include="du4g.cpp">
+      <Filter>Generated Files - do not modify</Filter>
+    </ClCompile>
+    <ClCompile Include="du4l.cpp">
+      <Filter>Generated Files - do not modify</Filter>
+    </ClCompile>
+    <ClCompile Include="gen_aifactory.cpp">
+      <Filter>Generated Files - do not modify</Filter>
+    </ClCompile>
+    <ClCompile Include="gen_icfactory.cpp">
+      <Filter>Generated Files - do not modify</Filter>
+    </ClCompile>
+    <ClCompile Include="gen_icinstrtab.cpp">
+      <Filter>Generated Files - do not modify</Filter>
+    </ClCompile>
+    <ClCompile Include="du4sem.cpp">
+      <Filter>Source Files - students</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\public-ro\common\h\abstract_ic.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\abstract_instr.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\carray.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\common_types.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\du4\h\du4.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\du4\h\du4tok.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\du4\h\dubaseerr.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\h\duerr.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\h\dusemerr.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\h\dutables.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\el_shr_ptr.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\file_seq.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\flat_icblock.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\ic_factory.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\ic_instr.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\ic_instrtab.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\ic_opcodes.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\labeled_icblock.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\literal_storage.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\plain_icblock.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\common\h\uid_gen.hpp">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public-ro\mlc\h\unistd.h">
+      <Filter>Header Files - read only</Filter>
+    </ClInclude>
+    <ClInclude Include="du4g.hpp">
+      <Filter>Generated Files - do not modify</Filter>
+    </ClInclude>
+    <ClInclude Include="gen_ainstr.hpp">
+      <Filter>Generated Files - do not modify</Filter>
+    </ClInclude>
+    <ClInclude Include="gen_icinstr.hpp">
+      <Filter>Generated Files - do not modify</Filter>
+    </ClInclude>
+    <ClInclude Include="gen_icopcodes.hpp">
+      <Filter>Generated Files - do not modify</Filter>
+    </ClInclude>
+    <ClInclude Include="du4lval.hpp">
+      <Filter>Header Files - students</Filter>
+    </ClInclude>
+    <ClInclude Include="du4sem.h">
+      <Filter>Header Files - students</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

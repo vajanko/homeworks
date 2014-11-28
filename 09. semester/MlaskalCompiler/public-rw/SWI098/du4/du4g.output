@@ -1,0 +1,3624 @@
+Grammar
+
+    0 $accept: mlaskal $end
+
+    1 mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
+
+    2 program_block: block_label block_const block_type block_var block_proc_func block_begin_end
+
+    3 block_proc_func: /* empty */
+    4                | proc_func_defs DUTOK_SEMICOLON
+
+    5 proc_func_def: proc DUTOK_SEMICOLON block
+    6              | func DUTOK_SEMICOLON block
+
+    7 proc_func_defs: proc_func_def
+    8               | proc_func_defs DUTOK_SEMICOLON proc_func_def
+
+    9 block: block_label block_const block_type block_var block_begin_end
+
+   10 block_label: /* empty */
+   11            | DUTOK_LABEL uints DUTOK_SEMICOLON
+
+   12 block_const: /* empty */
+   13            | DUTOK_CONST id_assigns DUTOK_SEMICOLON
+
+   14 id_assign: DUTOK_IDENTIFIER DUTOK_EQ const
+
+   15 id_assigns: id_assign
+   16           | id_assigns DUTOK_SEMICOLON id_assign
+
+   17 block_type: /* empty */
+   18           | DUTOK_TYPE type_assigns DUTOK_SEMICOLON
+
+   19 type_assign: DUTOK_IDENTIFIER DUTOK_EQ type
+
+   20 type_assigns: type_assign
+   21             | type_assigns DUTOK_SEMICOLON type_assign
+
+   22 block_var: /* empty */
+   23          | DUTOK_VAR var_defs DUTOK_SEMICOLON
+
+   24 var_def: identifiers DUTOK_COLON type
+
+   25 var_defs: var_def
+   26         | var_defs DUTOK_SEMICOLON var_def
+
+   27 block_begin_end: DUTOK_BEGIN stmts DUTOK_END
+
+   28 stmt: m_stmt
+   29     | u_stmt
+
+   30 m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   31       | DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | stmt_rest
+
+   34 u_stmt: DUTOK_IF expr DUTOK_THEN stmt
+   35       | DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+   36       | DUTOK_WHILE expr DUTOK_DO u_stmt
+   37       | DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+
+   38 stmt_rest: /* empty */
+   39          | DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | array_var DUTOK_ASSIGN expr
+   41          | DUTOK_IDENTIFIER
+   42          | DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | DUTOK_GOTO DUTOK_UINT
+   44          | DUTOK_BEGIN stmts DUTOK_END
+   45          | DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+
+   47 stmts: stmt
+   48      | stmts DUTOK_SEMICOLON stmt
+
+   49 real_params: expr
+   50            | real_params DUTOK_COMMA expr
+
+   51 expr: simple_expr
+   52     | simple_expr DUTOK_OPER_REL simple_expr
+   53     | simple_expr DUTOK_EQ simple_expr
+
+   54 exprs: expr
+   55      | exprs DUTOK_COMMA expr
+
+   56 simple_expr: terms
+   57            | DUTOK_OPER_SIGNADD terms
+
+   58 term: factors
+
+   59 terms: term
+   60      | terms DUTOK_OPER_SIGNADD term
+   61      | terms DUTOK_OR term
+
+   62 factor: DUTOK_IDENTIFIER
+   63       | DUTOK_UINT
+   64       | DUTOK_REAL
+   65       | DUTOK_STRING
+   66       | array_var
+   67       | DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | DUTOK_LPAR expr DUTOK_RPAR
+   69       | DUTOK_NOT factor
+
+   70 factors: factor
+   71        | factors DUTOK_OPER_MUL factor
+
+   72 array_var: DUTOK_IDENTIFIER idxs
+
+   73 idx: DUTOK_LSBRA exprs DUTOK_RSBRA
+
+   74 idxs: idx
+   75     | idxs idx
+
+   76 type: DUTOK_IDENTIFIER
+   77     | ord_const DUTOK_DOTDOT ord_const
+   78     | DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
+   79     | record
+
+   80 ord_type: DUTOK_IDENTIFIER
+   81         | ord_range
+
+   82 ord_range: ord_const DUTOK_DOTDOT ord_const
+   83          | ord_range DUTOK_COMMA ord_const DUTOK_DOTDOT ord_const
+
+   84 record: DUTOK_RECORD DUTOK_END
+   85       | DUTOK_RECORD record_items DUTOK_END
+   86       | DUTOK_RECORD record_items DUTOK_SEMICOLON DUTOK_END
+
+   87 record_items: identifiers DUTOK_COLON type
+   88             | record_items DUTOK_SEMICOLON identifiers DUTOK_COLON type
+
+   89 proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params
+
+   90 func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER
+
+   91 params: /* empty */
+   92       | DUTOK_LPAR DUTOK_RPAR
+   93       | DUTOK_LPAR formal_params DUTOK_RPAR
+
+   94 formal_params: params_section
+   95              | formal_params DUTOK_SEMICOLON params_section
+
+   96 params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER
+   97               | DUTOK_VAR identifiers DUTOK_COLON DUTOK_IDENTIFIER
+
+   98 const: DUTOK_IDENTIFIER
+   99      | DUTOK_UINT
+  100      | DUTOK_OPER_SIGNADD DUTOK_UINT
+  101      | DUTOK_REAL
+  102      | DUTOK_OPER_SIGNADD DUTOK_REAL
+  103      | DUTOK_STRING
+
+  104 ord_const: /* empty */
+  105          | DUTOK_IDENTIFIER
+  106          | DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | DUTOK_UINT
+  108          | DUTOK_OPER_SIGNADD DUTOK_UINT
+
+  109 identifiers: DUTOK_IDENTIFIER
+  110            | identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+
+  111 uints: DUTOK_UINT
+  112      | uints DUTOK_COMMA DUTOK_UINT
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+DUTOK_PROGRAM (258) 1
+DUTOK_LABEL (259) 11
+DUTOK_CONST (260) 13
+DUTOK_TYPE (261) 18
+DUTOK_VAR (262) 23 97
+DUTOK_BEGIN (263) 27 44
+DUTOK_END (264) 27 44 84 85 86
+DUTOK_PROCEDURE (265) 89
+DUTOK_FUNCTION (266) 90
+DUTOK_ARRAY (267) 78
+DUTOK_OF (268) 78
+DUTOK_GOTO (269) 43
+DUTOK_IF (270) 30 34 35
+DUTOK_THEN (271) 30 34 35
+DUTOK_ELSE (272) 30 35
+DUTOK_WHILE (273) 31 36
+DUTOK_DO (274) 31 36 37 46
+DUTOK_REPEAT (275) 45
+DUTOK_UNTIL (276) 45
+DUTOK_FOR (277) 37 46
+DUTOK_OR (278) 61
+DUTOK_NOT (279) 69
+DUTOK_RECORD (280) 84 85 86
+DUTOK_IDENTIFIER (281) 1 14 19 37 39 41 42 46 62 67 72 76 80 89 90
+    96 97 98 105 106 109 110
+DUTOK_UINT (282) 32 43 63 99 100 107 108 111 112
+DUTOK_REAL (283) 64 101 102
+DUTOK_STRING (284) 65 103
+DUTOK_SEMICOLON (285) 1 4 5 6 8 11 13 16 18 21 23 26 48 86 88 95
+DUTOK_DOT (286) 1
+DUTOK_COMMA (287) 50 55 83 110 112
+DUTOK_EQ (288) 14 19 53
+DUTOK_COLON (289) 24 32 87 88 90 96 97
+DUTOK_LPAR (290) 42 67 68 92 93
+DUTOK_RPAR (291) 42 67 68 92 93
+DUTOK_DOTDOT (292) 77 82 83
+DUTOK_LSBRA (293) 73 78
+DUTOK_RSBRA (294) 73 78
+DUTOK_ASSIGN (295) 37 39 40 46
+DUTOK_OPER_REL (296) 52
+DUTOK_OPER_SIGNADD (297) 57 60 100 102 106 108
+DUTOK_OPER_MUL (298) 71
+DUTOK_FOR_DIRECTION (299) 37 46
+
+
+Nonterminals, with rules where they appear
+
+$accept (45)
+    on left: 0
+mlaskal (46)
+    on left: 1, on right: 0
+program_block (47)
+    on left: 2, on right: 1
+block_proc_func (48)
+    on left: 3 4, on right: 2
+proc_func_def (49)
+    on left: 5 6, on right: 7 8
+proc_func_defs (50)
+    on left: 7 8, on right: 4 8
+block (51)
+    on left: 9, on right: 5 6
+block_label (52)
+    on left: 10 11, on right: 2 9
+block_const (53)
+    on left: 12 13, on right: 2 9
+id_assign (54)
+    on left: 14, on right: 15 16
+id_assigns (55)
+    on left: 15 16, on right: 13 16
+block_type (56)
+    on left: 17 18, on right: 2 9
+type_assign (57)
+    on left: 19, on right: 20 21
+type_assigns (58)
+    on left: 20 21, on right: 18 21
+block_var (59)
+    on left: 22 23, on right: 2 9
+var_def (60)
+    on left: 24, on right: 25 26
+var_defs (61)
+    on left: 25 26, on right: 23 26
+block_begin_end (62)
+    on left: 27, on right: 2 9
+stmt (63)
+    on left: 28 29, on right: 34 47 48
+m_stmt (64)
+    on left: 30 31 32 33, on right: 28 30 31 35 46
+u_stmt (65)
+    on left: 34 35 36 37, on right: 29 35 36 37
+stmt_rest (66)
+    on left: 38 39 40 41 42 43 44 45 46, on right: 32 33
+stmts (67)
+    on left: 47 48, on right: 27 44 45 48
+real_params (68)
+    on left: 49 50, on right: 42 50 67
+expr (69)
+    on left: 51 52 53, on right: 30 31 34 35 36 37 39 40 45 46 49 50
+    54 55 68
+exprs (70)
+    on left: 54 55, on right: 55 73
+simple_expr (71)
+    on left: 56 57, on right: 51 52 53
+term (72)
+    on left: 58, on right: 59 60 61
+terms (73)
+    on left: 59 60 61, on right: 56 57 60 61
+factor (74)
+    on left: 62 63 64 65 66 67 68 69, on right: 69 70 71
+factors (75)
+    on left: 70 71, on right: 58 71
+array_var (76)
+    on left: 72, on right: 40 66
+idx (77)
+    on left: 73, on right: 74 75
+idxs (78)
+    on left: 74 75, on right: 72 75
+type (79)
+    on left: 76 77 78 79, on right: 19 24 78 87 88
+ord_type (80)
+    on left: 80 81, on right: 78
+ord_range (81)
+    on left: 82 83, on right: 81 83
+record (82)
+    on left: 84 85 86, on right: 79
+record_items (83)
+    on left: 87 88, on right: 85 86 88
+proc (84)
+    on left: 89, on right: 5
+func (85)
+    on left: 90, on right: 6
+params (86)
+    on left: 91 92 93, on right: 89 90
+formal_params (87)
+    on left: 94 95, on right: 93 95
+params_section (88)
+    on left: 96 97, on right: 94 95
+const (89)
+    on left: 98 99 100 101 102 103, on right: 14
+ord_const (90)
+    on left: 104 105 106 107 108, on right: 77 82 83
+identifiers (91)
+    on left: 109 110, on right: 24 87 88 96 97 110
+uints (92)
+    on left: 111 112, on right: 11 112
+
+
+state 0
+
+    0 $accept: . mlaskal $end
+    1 mlaskal: . DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
+
+    DUTOK_PROGRAM  shift, and go to state 1
+
+    mlaskal  go to state 2
+
+
+state 1
+
+    1 mlaskal: DUTOK_PROGRAM . DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
+
+    DUTOK_IDENTIFIER  shift, and go to state 3
+
+
+state 2
+
+    0 $accept: mlaskal . $end
+
+    $end  shift, and go to state 4
+
+
+state 3
+
+    1 mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER . DUTOK_SEMICOLON program_block DUTOK_DOT
+
+    DUTOK_SEMICOLON  shift, and go to state 5
+
+
+state 4
+
+    0 $accept: mlaskal $end .
+
+    $default  accept
+
+
+state 5
+
+    1 mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON . program_block DUTOK_DOT
+    2 program_block: . block_label block_const block_type block_var block_proc_func block_begin_end
+   10 block_label: .  [DUTOK_CONST, DUTOK_TYPE, DUTOK_VAR, DUTOK_BEGIN, DUTOK_PROCEDURE, DUTOK_FUNCTION]
+   11            | . DUTOK_LABEL uints DUTOK_SEMICOLON
+
+    DUTOK_LABEL  shift, and go to state 6
+
+    $default  reduce using rule 10 (block_label)
+
+    program_block  go to state 7
+    block_label    go to state 8
+
+
+state 6
+
+   11 block_label: DUTOK_LABEL . uints DUTOK_SEMICOLON
+  111 uints: . DUTOK_UINT
+  112      | . uints DUTOK_COMMA DUTOK_UINT
+
+    DUTOK_UINT  shift, and go to state 9
+
+    uints  go to state 10
+
+
+state 7
+
+    1 mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block . DUTOK_DOT
+
+    DUTOK_DOT  shift, and go to state 11
+
+
+state 8
+
+    2 program_block: block_label . block_const block_type block_var block_proc_func block_begin_end
+   12 block_const: .  [DUTOK_TYPE, DUTOK_VAR, DUTOK_BEGIN, DUTOK_PROCEDURE, DUTOK_FUNCTION]
+   13            | . DUTOK_CONST id_assigns DUTOK_SEMICOLON
+
+    DUTOK_CONST  shift, and go to state 12
+
+    $default  reduce using rule 12 (block_const)
+
+    block_const  go to state 13
+
+
+state 9
+
+  111 uints: DUTOK_UINT .
+
+    $default  reduce using rule 111 (uints)
+
+
+state 10
+
+   11 block_label: DUTOK_LABEL uints . DUTOK_SEMICOLON
+  112 uints: uints . DUTOK_COMMA DUTOK_UINT
+
+    DUTOK_SEMICOLON  shift, and go to state 14
+    DUTOK_COMMA      shift, and go to state 15
+
+
+state 11
+
+    1 mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT .
+
+    $default  reduce using rule 1 (mlaskal)
+
+
+state 12
+
+   13 block_const: DUTOK_CONST . id_assigns DUTOK_SEMICOLON
+   14 id_assign: . DUTOK_IDENTIFIER DUTOK_EQ const
+   15 id_assigns: . id_assign
+   16           | . id_assigns DUTOK_SEMICOLON id_assign
+
+    DUTOK_IDENTIFIER  shift, and go to state 16
+
+    id_assign   go to state 17
+    id_assigns  go to state 18
+
+
+state 13
+
+    2 program_block: block_label block_const . block_type block_var block_proc_func block_begin_end
+   17 block_type: .  [DUTOK_VAR, DUTOK_BEGIN, DUTOK_PROCEDURE, DUTOK_FUNCTION]
+   18           | . DUTOK_TYPE type_assigns DUTOK_SEMICOLON
+
+    DUTOK_TYPE  shift, and go to state 19
+
+    $default  reduce using rule 17 (block_type)
+
+    block_type  go to state 20
+
+
+state 14
+
+   11 block_label: DUTOK_LABEL uints DUTOK_SEMICOLON .
+
+    $default  reduce using rule 11 (block_label)
+
+
+state 15
+
+  112 uints: uints DUTOK_COMMA . DUTOK_UINT
+
+    DUTOK_UINT  shift, and go to state 21
+
+
+state 16
+
+   14 id_assign: DUTOK_IDENTIFIER . DUTOK_EQ const
+
+    DUTOK_EQ  shift, and go to state 22
+
+
+state 17
+
+   15 id_assigns: id_assign .
+
+    $default  reduce using rule 15 (id_assigns)
+
+
+state 18
+
+   13 block_const: DUTOK_CONST id_assigns . DUTOK_SEMICOLON
+   16 id_assigns: id_assigns . DUTOK_SEMICOLON id_assign
+
+    DUTOK_SEMICOLON  shift, and go to state 23
+
+
+state 19
+
+   18 block_type: DUTOK_TYPE . type_assigns DUTOK_SEMICOLON
+   19 type_assign: . DUTOK_IDENTIFIER DUTOK_EQ type
+   20 type_assigns: . type_assign
+   21             | . type_assigns DUTOK_SEMICOLON type_assign
+
+    DUTOK_IDENTIFIER  shift, and go to state 24
+
+    type_assign   go to state 25
+    type_assigns  go to state 26
+
+
+state 20
+
+    2 program_block: block_label block_const block_type . block_var block_proc_func block_begin_end
+   22 block_var: .  [DUTOK_BEGIN, DUTOK_PROCEDURE, DUTOK_FUNCTION]
+   23          | . DUTOK_VAR var_defs DUTOK_SEMICOLON
+
+    DUTOK_VAR  shift, and go to state 27
+
+    $default  reduce using rule 22 (block_var)
+
+    block_var  go to state 28
+
+
+state 21
+
+  112 uints: uints DUTOK_COMMA DUTOK_UINT .
+
+    $default  reduce using rule 112 (uints)
+
+
+state 22
+
+   14 id_assign: DUTOK_IDENTIFIER DUTOK_EQ . const
+   98 const: . DUTOK_IDENTIFIER
+   99      | . DUTOK_UINT
+  100      | . DUTOK_OPER_SIGNADD DUTOK_UINT
+  101      | . DUTOK_REAL
+  102      | . DUTOK_OPER_SIGNADD DUTOK_REAL
+  103      | . DUTOK_STRING
+
+    DUTOK_IDENTIFIER    shift, and go to state 29
+    DUTOK_UINT          shift, and go to state 30
+    DUTOK_REAL          shift, and go to state 31
+    DUTOK_STRING        shift, and go to state 32
+    DUTOK_OPER_SIGNADD  shift, and go to state 33
+
+    const  go to state 34
+
+
+state 23
+
+   13 block_const: DUTOK_CONST id_assigns DUTOK_SEMICOLON .  [DUTOK_TYPE, DUTOK_VAR, DUTOK_BEGIN, DUTOK_PROCEDURE, DUTOK_FUNCTION]
+   14 id_assign: . DUTOK_IDENTIFIER DUTOK_EQ const
+   16 id_assigns: id_assigns DUTOK_SEMICOLON . id_assign
+
+    DUTOK_IDENTIFIER  shift, and go to state 16
+
+    $default  reduce using rule 13 (block_const)
+
+    id_assign  go to state 35
+
+
+state 24
+
+   19 type_assign: DUTOK_IDENTIFIER . DUTOK_EQ type
+
+    DUTOK_EQ  shift, and go to state 36
+
+
+state 25
+
+   20 type_assigns: type_assign .
+
+    $default  reduce using rule 20 (type_assigns)
+
+
+state 26
+
+   18 block_type: DUTOK_TYPE type_assigns . DUTOK_SEMICOLON
+   21 type_assigns: type_assigns . DUTOK_SEMICOLON type_assign
+
+    DUTOK_SEMICOLON  shift, and go to state 37
+
+
+state 27
+
+   23 block_var: DUTOK_VAR . var_defs DUTOK_SEMICOLON
+   24 var_def: . identifiers DUTOK_COLON type
+   25 var_defs: . var_def
+   26         | . var_defs DUTOK_SEMICOLON var_def
+  109 identifiers: . DUTOK_IDENTIFIER
+  110            | . identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_IDENTIFIER  shift, and go to state 38
+
+    var_def      go to state 39
+    var_defs     go to state 40
+    identifiers  go to state 41
+
+
+state 28
+
+    2 program_block: block_label block_const block_type block_var . block_proc_func block_begin_end
+    3 block_proc_func: .  [DUTOK_BEGIN]
+    4                | . proc_func_defs DUTOK_SEMICOLON
+    5 proc_func_def: . proc DUTOK_SEMICOLON block
+    6              | . func DUTOK_SEMICOLON block
+    7 proc_func_defs: . proc_func_def
+    8               | . proc_func_defs DUTOK_SEMICOLON proc_func_def
+   89 proc: . DUTOK_PROCEDURE DUTOK_IDENTIFIER params
+   90 func: . DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER
+
+    DUTOK_PROCEDURE  shift, and go to state 42
+    DUTOK_FUNCTION   shift, and go to state 43
+
+    $default  reduce using rule 3 (block_proc_func)
+
+    block_proc_func  go to state 44
+    proc_func_def    go to state 45
+    proc_func_defs   go to state 46
+    proc             go to state 47
+    func             go to state 48
+
+
+state 29
+
+   98 const: DUTOK_IDENTIFIER .
+
+    $default  reduce using rule 98 (const)
+
+
+state 30
+
+   99 const: DUTOK_UINT .
+
+    $default  reduce using rule 99 (const)
+
+
+state 31
+
+  101 const: DUTOK_REAL .
+
+    $default  reduce using rule 101 (const)
+
+
+state 32
+
+  103 const: DUTOK_STRING .
+
+    $default  reduce using rule 103 (const)
+
+
+state 33
+
+  100 const: DUTOK_OPER_SIGNADD . DUTOK_UINT
+  102      | DUTOK_OPER_SIGNADD . DUTOK_REAL
+
+    DUTOK_UINT  shift, and go to state 49
+    DUTOK_REAL  shift, and go to state 50
+
+
+state 34
+
+   14 id_assign: DUTOK_IDENTIFIER DUTOK_EQ const .
+
+    $default  reduce using rule 14 (id_assign)
+
+
+state 35
+
+   16 id_assigns: id_assigns DUTOK_SEMICOLON id_assign .
+
+    $default  reduce using rule 16 (id_assigns)
+
+
+state 36
+
+   19 type_assign: DUTOK_IDENTIFIER DUTOK_EQ . type
+   76 type: . DUTOK_IDENTIFIER
+   77     | . ord_const DUTOK_DOTDOT ord_const
+   78     | . DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
+   79     | . record
+   84 record: . DUTOK_RECORD DUTOK_END
+   85       | . DUTOK_RECORD record_items DUTOK_END
+   86       | . DUTOK_RECORD record_items DUTOK_SEMICOLON DUTOK_END
+  104 ord_const: .  [DUTOK_DOTDOT]
+  105          | . DUTOK_IDENTIFIER
+  106          | . DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | . DUTOK_UINT
+  108          | . DUTOK_OPER_SIGNADD DUTOK_UINT
+
+    DUTOK_ARRAY         shift, and go to state 51
+    DUTOK_RECORD        shift, and go to state 52
+    DUTOK_IDENTIFIER    shift, and go to state 53
+    DUTOK_UINT          shift, and go to state 54
+    DUTOK_OPER_SIGNADD  shift, and go to state 55
+
+    $default  reduce using rule 104 (ord_const)
+
+    type       go to state 56
+    record     go to state 57
+    ord_const  go to state 58
+
+
+state 37
+
+   18 block_type: DUTOK_TYPE type_assigns DUTOK_SEMICOLON .  [DUTOK_VAR, DUTOK_BEGIN, DUTOK_PROCEDURE, DUTOK_FUNCTION]
+   19 type_assign: . DUTOK_IDENTIFIER DUTOK_EQ type
+   21 type_assigns: type_assigns DUTOK_SEMICOLON . type_assign
+
+    DUTOK_IDENTIFIER  shift, and go to state 24
+
+    $default  reduce using rule 18 (block_type)
+
+    type_assign  go to state 59
+
+
+state 38
+
+  109 identifiers: DUTOK_IDENTIFIER .
+
+    $default  reduce using rule 109 (identifiers)
+
+
+state 39
+
+   25 var_defs: var_def .
+
+    $default  reduce using rule 25 (var_defs)
+
+
+state 40
+
+   23 block_var: DUTOK_VAR var_defs . DUTOK_SEMICOLON
+   26 var_defs: var_defs . DUTOK_SEMICOLON var_def
+
+    DUTOK_SEMICOLON  shift, and go to state 60
+
+
+state 41
+
+   24 var_def: identifiers . DUTOK_COLON type
+  110 identifiers: identifiers . DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_COMMA  shift, and go to state 61
+    DUTOK_COLON  shift, and go to state 62
+
+
+state 42
+
+   89 proc: DUTOK_PROCEDURE . DUTOK_IDENTIFIER params
+
+    DUTOK_IDENTIFIER  shift, and go to state 63
+
+
+state 43
+
+   90 func: DUTOK_FUNCTION . DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER
+
+    DUTOK_IDENTIFIER  shift, and go to state 64
+
+
+state 44
+
+    2 program_block: block_label block_const block_type block_var block_proc_func . block_begin_end
+   27 block_begin_end: . DUTOK_BEGIN stmts DUTOK_END
+
+    DUTOK_BEGIN  shift, and go to state 65
+
+    block_begin_end  go to state 66
+
+
+state 45
+
+    7 proc_func_defs: proc_func_def .
+
+    $default  reduce using rule 7 (proc_func_defs)
+
+
+state 46
+
+    4 block_proc_func: proc_func_defs . DUTOK_SEMICOLON
+    8 proc_func_defs: proc_func_defs . DUTOK_SEMICOLON proc_func_def
+
+    DUTOK_SEMICOLON  shift, and go to state 67
+
+
+state 47
+
+    5 proc_func_def: proc . DUTOK_SEMICOLON block
+
+    DUTOK_SEMICOLON  shift, and go to state 68
+
+
+state 48
+
+    6 proc_func_def: func . DUTOK_SEMICOLON block
+
+    DUTOK_SEMICOLON  shift, and go to state 69
+
+
+state 49
+
+  100 const: DUTOK_OPER_SIGNADD DUTOK_UINT .
+
+    $default  reduce using rule 100 (const)
+
+
+state 50
+
+  102 const: DUTOK_OPER_SIGNADD DUTOK_REAL .
+
+    $default  reduce using rule 102 (const)
+
+
+state 51
+
+   78 type: DUTOK_ARRAY . DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
+
+    DUTOK_LSBRA  shift, and go to state 70
+
+
+state 52
+
+   84 record: DUTOK_RECORD . DUTOK_END
+   85       | DUTOK_RECORD . record_items DUTOK_END
+   86       | DUTOK_RECORD . record_items DUTOK_SEMICOLON DUTOK_END
+   87 record_items: . identifiers DUTOK_COLON type
+   88             | . record_items DUTOK_SEMICOLON identifiers DUTOK_COLON type
+  109 identifiers: . DUTOK_IDENTIFIER
+  110            | . identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_END         shift, and go to state 71
+    DUTOK_IDENTIFIER  shift, and go to state 38
+
+    record_items  go to state 72
+    identifiers   go to state 73
+
+
+state 53
+
+   76 type: DUTOK_IDENTIFIER .  [DUTOK_END, DUTOK_SEMICOLON]
+  105 ord_const: DUTOK_IDENTIFIER .  [DUTOK_DOTDOT]
+
+    DUTOK_DOTDOT  reduce using rule 105 (ord_const)
+    $default      reduce using rule 76 (type)
+
+
+state 54
+
+  107 ord_const: DUTOK_UINT .
+
+    $default  reduce using rule 107 (ord_const)
+
+
+state 55
+
+  106 ord_const: DUTOK_OPER_SIGNADD . DUTOK_IDENTIFIER
+  108          | DUTOK_OPER_SIGNADD . DUTOK_UINT
+
+    DUTOK_IDENTIFIER  shift, and go to state 74
+    DUTOK_UINT        shift, and go to state 75
+
+
+state 56
+
+   19 type_assign: DUTOK_IDENTIFIER DUTOK_EQ type .
+
+    $default  reduce using rule 19 (type_assign)
+
+
+state 57
+
+   79 type: record .
+
+    $default  reduce using rule 79 (type)
+
+
+state 58
+
+   77 type: ord_const . DUTOK_DOTDOT ord_const
+
+    DUTOK_DOTDOT  shift, and go to state 76
+
+
+state 59
+
+   21 type_assigns: type_assigns DUTOK_SEMICOLON type_assign .
+
+    $default  reduce using rule 21 (type_assigns)
+
+
+state 60
+
+   23 block_var: DUTOK_VAR var_defs DUTOK_SEMICOLON .  [DUTOK_BEGIN, DUTOK_PROCEDURE, DUTOK_FUNCTION]
+   24 var_def: . identifiers DUTOK_COLON type
+   26 var_defs: var_defs DUTOK_SEMICOLON . var_def
+  109 identifiers: . DUTOK_IDENTIFIER
+  110            | . identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_IDENTIFIER  shift, and go to state 38
+
+    $default  reduce using rule 23 (block_var)
+
+    var_def      go to state 77
+    identifiers  go to state 41
+
+
+state 61
+
+  110 identifiers: identifiers DUTOK_COMMA . DUTOK_IDENTIFIER
+
+    DUTOK_IDENTIFIER  shift, and go to state 78
+
+
+state 62
+
+   24 var_def: identifiers DUTOK_COLON . type
+   76 type: . DUTOK_IDENTIFIER
+   77     | . ord_const DUTOK_DOTDOT ord_const
+   78     | . DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
+   79     | . record
+   84 record: . DUTOK_RECORD DUTOK_END
+   85       | . DUTOK_RECORD record_items DUTOK_END
+   86       | . DUTOK_RECORD record_items DUTOK_SEMICOLON DUTOK_END
+  104 ord_const: .  [DUTOK_DOTDOT]
+  105          | . DUTOK_IDENTIFIER
+  106          | . DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | . DUTOK_UINT
+  108          | . DUTOK_OPER_SIGNADD DUTOK_UINT
+
+    DUTOK_ARRAY         shift, and go to state 51
+    DUTOK_RECORD        shift, and go to state 52
+    DUTOK_IDENTIFIER    shift, and go to state 53
+    DUTOK_UINT          shift, and go to state 54
+    DUTOK_OPER_SIGNADD  shift, and go to state 55
+
+    $default  reduce using rule 104 (ord_const)
+
+    type       go to state 79
+    record     go to state 57
+    ord_const  go to state 58
+
+
+state 63
+
+   89 proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER . params
+   91 params: .  [DUTOK_SEMICOLON]
+   92       | . DUTOK_LPAR DUTOK_RPAR
+   93       | . DUTOK_LPAR formal_params DUTOK_RPAR
+
+    DUTOK_LPAR  shift, and go to state 80
+
+    $default  reduce using rule 91 (params)
+
+    params  go to state 81
+
+
+state 64
+
+   90 func: DUTOK_FUNCTION DUTOK_IDENTIFIER . params DUTOK_COLON DUTOK_IDENTIFIER
+   91 params: .  [DUTOK_COLON]
+   92       | . DUTOK_LPAR DUTOK_RPAR
+   93       | . DUTOK_LPAR formal_params DUTOK_RPAR
+
+    DUTOK_LPAR  shift, and go to state 80
+
+    $default  reduce using rule 91 (params)
+
+    params  go to state 82
+
+
+state 65
+
+   27 block_begin_end: DUTOK_BEGIN . stmts DUTOK_END
+   28 stmt: . m_stmt
+   29     | . u_stmt
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   34 u_stmt: . DUTOK_IF expr DUTOK_THEN stmt
+   35       | . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+   36       | . DUTOK_WHILE expr DUTOK_DO u_stmt
+   37       | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   38 stmt_rest: .  [DUTOK_END, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   47 stmts: . stmt
+   48      | . stmts DUTOK_SEMICOLON stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 85
+    DUTOK_WHILE       shift, and go to state 86
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 88
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    stmt       go to state 91
+    m_stmt     go to state 92
+    u_stmt     go to state 93
+    stmt_rest  go to state 94
+    stmts      go to state 95
+    array_var  go to state 96
+
+
+state 66
+
+    2 program_block: block_label block_const block_type block_var block_proc_func block_begin_end .
+
+    $default  reduce using rule 2 (program_block)
+
+
+state 67
+
+    4 block_proc_func: proc_func_defs DUTOK_SEMICOLON .  [DUTOK_BEGIN]
+    5 proc_func_def: . proc DUTOK_SEMICOLON block
+    6              | . func DUTOK_SEMICOLON block
+    8 proc_func_defs: proc_func_defs DUTOK_SEMICOLON . proc_func_def
+   89 proc: . DUTOK_PROCEDURE DUTOK_IDENTIFIER params
+   90 func: . DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER
+
+    DUTOK_PROCEDURE  shift, and go to state 42
+    DUTOK_FUNCTION   shift, and go to state 43
+
+    $default  reduce using rule 4 (block_proc_func)
+
+    proc_func_def  go to state 97
+    proc           go to state 47
+    func           go to state 48
+
+
+state 68
+
+    5 proc_func_def: proc DUTOK_SEMICOLON . block
+    9 block: . block_label block_const block_type block_var block_begin_end
+   10 block_label: .  [DUTOK_CONST, DUTOK_TYPE, DUTOK_VAR, DUTOK_BEGIN]
+   11            | . DUTOK_LABEL uints DUTOK_SEMICOLON
+
+    DUTOK_LABEL  shift, and go to state 6
+
+    $default  reduce using rule 10 (block_label)
+
+    block        go to state 98
+    block_label  go to state 99
+
+
+state 69
+
+    6 proc_func_def: func DUTOK_SEMICOLON . block
+    9 block: . block_label block_const block_type block_var block_begin_end
+   10 block_label: .  [DUTOK_CONST, DUTOK_TYPE, DUTOK_VAR, DUTOK_BEGIN]
+   11            | . DUTOK_LABEL uints DUTOK_SEMICOLON
+
+    DUTOK_LABEL  shift, and go to state 6
+
+    $default  reduce using rule 10 (block_label)
+
+    block        go to state 100
+    block_label  go to state 99
+
+
+state 70
+
+   78 type: DUTOK_ARRAY DUTOK_LSBRA . ord_type DUTOK_RSBRA DUTOK_OF type
+   80 ord_type: . DUTOK_IDENTIFIER
+   81         | . ord_range
+   82 ord_range: . ord_const DUTOK_DOTDOT ord_const
+   83          | . ord_range DUTOK_COMMA ord_const DUTOK_DOTDOT ord_const
+  104 ord_const: .  [DUTOK_DOTDOT]
+  105          | . DUTOK_IDENTIFIER
+  106          | . DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | . DUTOK_UINT
+  108          | . DUTOK_OPER_SIGNADD DUTOK_UINT
+
+    DUTOK_IDENTIFIER    shift, and go to state 101
+    DUTOK_UINT          shift, and go to state 54
+    DUTOK_OPER_SIGNADD  shift, and go to state 55
+
+    $default  reduce using rule 104 (ord_const)
+
+    ord_type   go to state 102
+    ord_range  go to state 103
+    ord_const  go to state 104
+
+
+state 71
+
+   84 record: DUTOK_RECORD DUTOK_END .
+
+    $default  reduce using rule 84 (record)
+
+
+state 72
+
+   85 record: DUTOK_RECORD record_items . DUTOK_END
+   86       | DUTOK_RECORD record_items . DUTOK_SEMICOLON DUTOK_END
+   88 record_items: record_items . DUTOK_SEMICOLON identifiers DUTOK_COLON type
+
+    DUTOK_END        shift, and go to state 105
+    DUTOK_SEMICOLON  shift, and go to state 106
+
+
+state 73
+
+   87 record_items: identifiers . DUTOK_COLON type
+  110 identifiers: identifiers . DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_COMMA  shift, and go to state 61
+    DUTOK_COLON  shift, and go to state 107
+
+
+state 74
+
+  106 ord_const: DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER .
+
+    $default  reduce using rule 106 (ord_const)
+
+
+state 75
+
+  108 ord_const: DUTOK_OPER_SIGNADD DUTOK_UINT .
+
+    $default  reduce using rule 108 (ord_const)
+
+
+state 76
+
+   77 type: ord_const DUTOK_DOTDOT . ord_const
+  104 ord_const: .  [DUTOK_END, DUTOK_SEMICOLON]
+  105          | . DUTOK_IDENTIFIER
+  106          | . DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | . DUTOK_UINT
+  108          | . DUTOK_OPER_SIGNADD DUTOK_UINT
+
+    DUTOK_IDENTIFIER    shift, and go to state 108
+    DUTOK_UINT          shift, and go to state 54
+    DUTOK_OPER_SIGNADD  shift, and go to state 55
+
+    $default  reduce using rule 104 (ord_const)
+
+    ord_const  go to state 109
+
+
+state 77
+
+   26 var_defs: var_defs DUTOK_SEMICOLON var_def .
+
+    $default  reduce using rule 26 (var_defs)
+
+
+state 78
+
+  110 identifiers: identifiers DUTOK_COMMA DUTOK_IDENTIFIER .
+
+    $default  reduce using rule 110 (identifiers)
+
+
+state 79
+
+   24 var_def: identifiers DUTOK_COLON type .
+
+    $default  reduce using rule 24 (var_def)
+
+
+state 80
+
+   92 params: DUTOK_LPAR . DUTOK_RPAR
+   93       | DUTOK_LPAR . formal_params DUTOK_RPAR
+   94 formal_params: . params_section
+   95              | . formal_params DUTOK_SEMICOLON params_section
+   96 params_section: . identifiers DUTOK_COLON DUTOK_IDENTIFIER
+   97               | . DUTOK_VAR identifiers DUTOK_COLON DUTOK_IDENTIFIER
+  109 identifiers: . DUTOK_IDENTIFIER
+  110            | . identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_VAR         shift, and go to state 110
+    DUTOK_IDENTIFIER  shift, and go to state 38
+    DUTOK_RPAR        shift, and go to state 111
+
+    formal_params   go to state 112
+    params_section  go to state 113
+    identifiers     go to state 114
+
+
+state 81
+
+   89 proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params .
+
+    $default  reduce using rule 89 (proc)
+
+
+state 82
+
+   90 func: DUTOK_FUNCTION DUTOK_IDENTIFIER params . DUTOK_COLON DUTOK_IDENTIFIER
+
+    DUTOK_COLON  shift, and go to state 115
+
+
+state 83
+
+   28 stmt: . m_stmt
+   29     | . u_stmt
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   34 u_stmt: . DUTOK_IF expr DUTOK_THEN stmt
+   35       | . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+   36       | . DUTOK_WHILE expr DUTOK_DO u_stmt
+   37       | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   38 stmt_rest: .  [DUTOK_END, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   44          | DUTOK_BEGIN . stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   47 stmts: . stmt
+   48      | . stmts DUTOK_SEMICOLON stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 85
+    DUTOK_WHILE       shift, and go to state 86
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 88
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    stmt       go to state 91
+    m_stmt     go to state 92
+    u_stmt     go to state 93
+    stmt_rest  go to state 94
+    stmts      go to state 116
+    array_var  go to state 96
+
+
+state 84
+
+   43 stmt_rest: DUTOK_GOTO . DUTOK_UINT
+
+    DUTOK_UINT  shift, and go to state 117
+
+
+state 85
+
+   30 m_stmt: DUTOK_IF . expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   34 u_stmt: DUTOK_IF . expr DUTOK_THEN stmt
+   35       | DUTOK_IF . expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 125
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 86
+
+   31 m_stmt: DUTOK_WHILE . expr DUTOK_DO m_stmt
+   36 u_stmt: DUTOK_WHILE . expr DUTOK_DO u_stmt
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 132
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 87
+
+   28 stmt: . m_stmt
+   29     | . u_stmt
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   34 u_stmt: . DUTOK_IF expr DUTOK_THEN stmt
+   35       | . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+   36       | . DUTOK_WHILE expr DUTOK_DO u_stmt
+   37       | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   38 stmt_rest: .  [DUTOK_UNTIL, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   45          | DUTOK_REPEAT . stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   47 stmts: . stmt
+   48      | . stmts DUTOK_SEMICOLON stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 85
+    DUTOK_WHILE       shift, and go to state 86
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 88
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    stmt       go to state 91
+    m_stmt     go to state 92
+    u_stmt     go to state 93
+    stmt_rest  go to state 94
+    stmts      go to state 133
+    array_var  go to state 96
+
+
+state 88
+
+   37 u_stmt: DUTOK_FOR . DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   46 stmt_rest: DUTOK_FOR . DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+
+    DUTOK_IDENTIFIER  shift, and go to state 134
+
+
+state 89
+
+   39 stmt_rest: DUTOK_IDENTIFIER . DUTOK_ASSIGN expr
+   41          | DUTOK_IDENTIFIER .  [DUTOK_END, DUTOK_ELSE, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   42          | DUTOK_IDENTIFIER . DUTOK_LPAR real_params DUTOK_RPAR
+   72 array_var: DUTOK_IDENTIFIER . idxs
+   73 idx: . DUTOK_LSBRA exprs DUTOK_RSBRA
+   74 idxs: . idx
+   75     | . idxs idx
+
+    DUTOK_LPAR    shift, and go to state 135
+    DUTOK_LSBRA   shift, and go to state 136
+    DUTOK_ASSIGN  shift, and go to state 137
+
+    $default  reduce using rule 41 (stmt_rest)
+
+    idx   go to state 138
+    idxs  go to state 139
+
+
+state 90
+
+   32 m_stmt: DUTOK_UINT . DUTOK_COLON stmt_rest
+
+    DUTOK_COLON  shift, and go to state 140
+
+
+state 91
+
+   47 stmts: stmt .
+
+    $default  reduce using rule 47 (stmts)
+
+
+state 92
+
+   28 stmt: m_stmt .
+
+    $default  reduce using rule 28 (stmt)
+
+
+state 93
+
+   29 stmt: u_stmt .
+
+    $default  reduce using rule 29 (stmt)
+
+
+state 94
+
+   33 m_stmt: stmt_rest .
+
+    $default  reduce using rule 33 (m_stmt)
+
+
+state 95
+
+   27 block_begin_end: DUTOK_BEGIN stmts . DUTOK_END
+   48 stmts: stmts . DUTOK_SEMICOLON stmt
+
+    DUTOK_END        shift, and go to state 141
+    DUTOK_SEMICOLON  shift, and go to state 142
+
+
+state 96
+
+   40 stmt_rest: array_var . DUTOK_ASSIGN expr
+
+    DUTOK_ASSIGN  shift, and go to state 143
+
+
+state 97
+
+    8 proc_func_defs: proc_func_defs DUTOK_SEMICOLON proc_func_def .
+
+    $default  reduce using rule 8 (proc_func_defs)
+
+
+state 98
+
+    5 proc_func_def: proc DUTOK_SEMICOLON block .
+
+    $default  reduce using rule 5 (proc_func_def)
+
+
+state 99
+
+    9 block: block_label . block_const block_type block_var block_begin_end
+   12 block_const: .  [DUTOK_TYPE, DUTOK_VAR, DUTOK_BEGIN]
+   13            | . DUTOK_CONST id_assigns DUTOK_SEMICOLON
+
+    DUTOK_CONST  shift, and go to state 12
+
+    $default  reduce using rule 12 (block_const)
+
+    block_const  go to state 144
+
+
+state 100
+
+    6 proc_func_def: func DUTOK_SEMICOLON block .
+
+    $default  reduce using rule 6 (proc_func_def)
+
+
+state 101
+
+   80 ord_type: DUTOK_IDENTIFIER .  [DUTOK_RSBRA]
+  105 ord_const: DUTOK_IDENTIFIER .  [DUTOK_DOTDOT]
+
+    DUTOK_DOTDOT  reduce using rule 105 (ord_const)
+    $default      reduce using rule 80 (ord_type)
+
+
+state 102
+
+   78 type: DUTOK_ARRAY DUTOK_LSBRA ord_type . DUTOK_RSBRA DUTOK_OF type
+
+    DUTOK_RSBRA  shift, and go to state 145
+
+
+state 103
+
+   81 ord_type: ord_range .  [DUTOK_RSBRA]
+   83 ord_range: ord_range . DUTOK_COMMA ord_const DUTOK_DOTDOT ord_const
+
+    DUTOK_COMMA  shift, and go to state 146
+
+    $default  reduce using rule 81 (ord_type)
+
+
+state 104
+
+   82 ord_range: ord_const . DUTOK_DOTDOT ord_const
+
+    DUTOK_DOTDOT  shift, and go to state 147
+
+
+state 105
+
+   85 record: DUTOK_RECORD record_items DUTOK_END .
+
+    $default  reduce using rule 85 (record)
+
+
+state 106
+
+   86 record: DUTOK_RECORD record_items DUTOK_SEMICOLON . DUTOK_END
+   88 record_items: record_items DUTOK_SEMICOLON . identifiers DUTOK_COLON type
+  109 identifiers: . DUTOK_IDENTIFIER
+  110            | . identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_END         shift, and go to state 148
+    DUTOK_IDENTIFIER  shift, and go to state 38
+
+    identifiers  go to state 149
+
+
+state 107
+
+   76 type: . DUTOK_IDENTIFIER
+   77     | . ord_const DUTOK_DOTDOT ord_const
+   78     | . DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
+   79     | . record
+   84 record: . DUTOK_RECORD DUTOK_END
+   85       | . DUTOK_RECORD record_items DUTOK_END
+   86       | . DUTOK_RECORD record_items DUTOK_SEMICOLON DUTOK_END
+   87 record_items: identifiers DUTOK_COLON . type
+  104 ord_const: .  [DUTOK_DOTDOT]
+  105          | . DUTOK_IDENTIFIER
+  106          | . DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | . DUTOK_UINT
+  108          | . DUTOK_OPER_SIGNADD DUTOK_UINT
+
+    DUTOK_ARRAY         shift, and go to state 51
+    DUTOK_RECORD        shift, and go to state 52
+    DUTOK_IDENTIFIER    shift, and go to state 53
+    DUTOK_UINT          shift, and go to state 54
+    DUTOK_OPER_SIGNADD  shift, and go to state 55
+
+    $default  reduce using rule 104 (ord_const)
+
+    type       go to state 150
+    record     go to state 57
+    ord_const  go to state 58
+
+
+state 108
+
+  105 ord_const: DUTOK_IDENTIFIER .
+
+    $default  reduce using rule 105 (ord_const)
+
+
+state 109
+
+   77 type: ord_const DUTOK_DOTDOT ord_const .
+
+    $default  reduce using rule 77 (type)
+
+
+state 110
+
+   97 params_section: DUTOK_VAR . identifiers DUTOK_COLON DUTOK_IDENTIFIER
+  109 identifiers: . DUTOK_IDENTIFIER
+  110            | . identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_IDENTIFIER  shift, and go to state 38
+
+    identifiers  go to state 151
+
+
+state 111
+
+   92 params: DUTOK_LPAR DUTOK_RPAR .
+
+    $default  reduce using rule 92 (params)
+
+
+state 112
+
+   93 params: DUTOK_LPAR formal_params . DUTOK_RPAR
+   95 formal_params: formal_params . DUTOK_SEMICOLON params_section
+
+    DUTOK_SEMICOLON  shift, and go to state 152
+    DUTOK_RPAR       shift, and go to state 153
+
+
+state 113
+
+   94 formal_params: params_section .
+
+    $default  reduce using rule 94 (formal_params)
+
+
+state 114
+
+   96 params_section: identifiers . DUTOK_COLON DUTOK_IDENTIFIER
+  110 identifiers: identifiers . DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_COMMA  shift, and go to state 61
+    DUTOK_COLON  shift, and go to state 154
+
+
+state 115
+
+   90 func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON . DUTOK_IDENTIFIER
+
+    DUTOK_IDENTIFIER  shift, and go to state 155
+
+
+state 116
+
+   44 stmt_rest: DUTOK_BEGIN stmts . DUTOK_END
+   48 stmts: stmts . DUTOK_SEMICOLON stmt
+
+    DUTOK_END        shift, and go to state 156
+    DUTOK_SEMICOLON  shift, and go to state 142
+
+
+state 117
+
+   43 stmt_rest: DUTOK_GOTO DUTOK_UINT .
+
+    $default  reduce using rule 43 (stmt_rest)
+
+
+state 118
+
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   69       | DUTOK_NOT . factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT         shift, and go to state 118
+    DUTOK_IDENTIFIER  shift, and go to state 119
+    DUTOK_UINT        shift, and go to state 120
+    DUTOK_REAL        shift, and go to state 121
+    DUTOK_STRING      shift, and go to state 122
+    DUTOK_LPAR        shift, and go to state 123
+
+    factor     go to state 157
+    array_var  go to state 131
+
+
+state 119
+
+   62 factor: DUTOK_IDENTIFIER .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_OR, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_OPER_SIGNADD, DUTOK_OPER_MUL, DUTOK_FOR_DIRECTION]
+   67       | DUTOK_IDENTIFIER . DUTOK_LPAR real_params DUTOK_RPAR
+   72 array_var: DUTOK_IDENTIFIER . idxs
+   73 idx: . DUTOK_LSBRA exprs DUTOK_RSBRA
+   74 idxs: . idx
+   75     | . idxs idx
+
+    DUTOK_LPAR   shift, and go to state 158
+    DUTOK_LSBRA  shift, and go to state 136
+
+    $default  reduce using rule 62 (factor)
+
+    idx   go to state 138
+    idxs  go to state 139
+
+
+state 120
+
+   63 factor: DUTOK_UINT .
+
+    $default  reduce using rule 63 (factor)
+
+
+state 121
+
+   64 factor: DUTOK_REAL .
+
+    $default  reduce using rule 64 (factor)
+
+
+state 122
+
+   65 factor: DUTOK_STRING .
+
+    $default  reduce using rule 65 (factor)
+
+
+state 123
+
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   68       | DUTOK_LPAR . expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 159
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 124
+
+   57 simple_expr: DUTOK_OPER_SIGNADD . terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT         shift, and go to state 118
+    DUTOK_IDENTIFIER  shift, and go to state 119
+    DUTOK_UINT        shift, and go to state 120
+    DUTOK_REAL        shift, and go to state 121
+    DUTOK_STRING      shift, and go to state 122
+    DUTOK_LPAR        shift, and go to state 123
+
+    term       go to state 127
+    terms      go to state 160
+    factor     go to state 129
+    factors    go to state 130
+    array_var  go to state 131
+
+
+state 125
+
+   30 m_stmt: DUTOK_IF expr . DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   34 u_stmt: DUTOK_IF expr . DUTOK_THEN stmt
+   35       | DUTOK_IF expr . DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+
+    DUTOK_THEN  shift, and go to state 161
+
+
+state 126
+
+   51 expr: simple_expr .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_FOR_DIRECTION]
+   52     | simple_expr . DUTOK_OPER_REL simple_expr
+   53     | simple_expr . DUTOK_EQ simple_expr
+
+    DUTOK_EQ        shift, and go to state 162
+    DUTOK_OPER_REL  shift, and go to state 163
+
+    $default  reduce using rule 51 (expr)
+
+
+state 127
+
+   59 terms: term .
+
+    $default  reduce using rule 59 (terms)
+
+
+state 128
+
+   56 simple_expr: terms .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_FOR_DIRECTION]
+   60 terms: terms . DUTOK_OPER_SIGNADD term
+   61      | terms . DUTOK_OR term
+
+    DUTOK_OR            shift, and go to state 164
+    DUTOK_OPER_SIGNADD  shift, and go to state 165
+
+    $default  reduce using rule 56 (simple_expr)
+
+
+state 129
+
+   70 factors: factor .
+
+    $default  reduce using rule 70 (factors)
+
+
+state 130
+
+   58 term: factors .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_OR, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_OPER_SIGNADD, DUTOK_FOR_DIRECTION]
+   71 factors: factors . DUTOK_OPER_MUL factor
+
+    DUTOK_OPER_MUL  shift, and go to state 166
+
+    $default  reduce using rule 58 (term)
+
+
+state 131
+
+   66 factor: array_var .
+
+    $default  reduce using rule 66 (factor)
+
+
+state 132
+
+   31 m_stmt: DUTOK_WHILE expr . DUTOK_DO m_stmt
+   36 u_stmt: DUTOK_WHILE expr . DUTOK_DO u_stmt
+
+    DUTOK_DO  shift, and go to state 167
+
+
+state 133
+
+   45 stmt_rest: DUTOK_REPEAT stmts . DUTOK_UNTIL expr
+   48 stmts: stmts . DUTOK_SEMICOLON stmt
+
+    DUTOK_UNTIL      shift, and go to state 168
+    DUTOK_SEMICOLON  shift, and go to state 142
+
+
+state 134
+
+   37 u_stmt: DUTOK_FOR DUTOK_IDENTIFIER . DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER . DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+
+    DUTOK_ASSIGN  shift, and go to state 169
+
+
+state 135
+
+   42 stmt_rest: DUTOK_IDENTIFIER DUTOK_LPAR . real_params DUTOK_RPAR
+   49 real_params: . expr
+   50            | . real_params DUTOK_COMMA expr
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    real_params  go to state 170
+    expr         go to state 171
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 136
+
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   54 exprs: . expr
+   55      | . exprs DUTOK_COMMA expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+   73 idx: DUTOK_LSBRA . exprs DUTOK_RSBRA
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 172
+    exprs        go to state 173
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 137
+
+   39 stmt_rest: DUTOK_IDENTIFIER DUTOK_ASSIGN . expr
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 174
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 138
+
+   74 idxs: idx .
+
+    $default  reduce using rule 74 (idxs)
+
+
+state 139
+
+   72 array_var: DUTOK_IDENTIFIER idxs .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_OR, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_ASSIGN, DUTOK_OPER_REL, DUTOK_OPER_SIGNADD, DUTOK_OPER_MUL, DUTOK_FOR_DIRECTION]
+   73 idx: . DUTOK_LSBRA exprs DUTOK_RSBRA
+   75 idxs: idxs . idx
+
+    DUTOK_LSBRA  shift, and go to state 136
+
+    $default  reduce using rule 72 (array_var)
+
+    idx  go to state 175
+
+
+state 140
+
+   32 m_stmt: DUTOK_UINT DUTOK_COLON . stmt_rest
+   38 stmt_rest: .  [DUTOK_END, DUTOK_ELSE, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 176
+    DUTOK_IDENTIFIER  shift, and go to state 89
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    stmt_rest  go to state 177
+    array_var  go to state 96
+
+
+state 141
+
+   27 block_begin_end: DUTOK_BEGIN stmts DUTOK_END .
+
+    $default  reduce using rule 27 (block_begin_end)
+
+
+state 142
+
+   28 stmt: . m_stmt
+   29     | . u_stmt
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   34 u_stmt: . DUTOK_IF expr DUTOK_THEN stmt
+   35       | . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+   36       | . DUTOK_WHILE expr DUTOK_DO u_stmt
+   37       | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   38 stmt_rest: .  [DUTOK_END, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   48 stmts: stmts DUTOK_SEMICOLON . stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 85
+    DUTOK_WHILE       shift, and go to state 86
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 88
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    stmt       go to state 178
+    m_stmt     go to state 92
+    u_stmt     go to state 93
+    stmt_rest  go to state 94
+    array_var  go to state 96
+
+
+state 143
+
+   40 stmt_rest: array_var DUTOK_ASSIGN . expr
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 179
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 144
+
+    9 block: block_label block_const . block_type block_var block_begin_end
+   17 block_type: .  [DUTOK_VAR, DUTOK_BEGIN]
+   18           | . DUTOK_TYPE type_assigns DUTOK_SEMICOLON
+
+    DUTOK_TYPE  shift, and go to state 19
+
+    $default  reduce using rule 17 (block_type)
+
+    block_type  go to state 180
+
+
+state 145
+
+   78 type: DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA . DUTOK_OF type
+
+    DUTOK_OF  shift, and go to state 181
+
+
+state 146
+
+   83 ord_range: ord_range DUTOK_COMMA . ord_const DUTOK_DOTDOT ord_const
+  104 ord_const: .  [DUTOK_DOTDOT]
+  105          | . DUTOK_IDENTIFIER
+  106          | . DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | . DUTOK_UINT
+  108          | . DUTOK_OPER_SIGNADD DUTOK_UINT
+
+    DUTOK_IDENTIFIER    shift, and go to state 108
+    DUTOK_UINT          shift, and go to state 54
+    DUTOK_OPER_SIGNADD  shift, and go to state 55
+
+    $default  reduce using rule 104 (ord_const)
+
+    ord_const  go to state 182
+
+
+state 147
+
+   82 ord_range: ord_const DUTOK_DOTDOT . ord_const
+  104 ord_const: .  [DUTOK_COMMA, DUTOK_RSBRA]
+  105          | . DUTOK_IDENTIFIER
+  106          | . DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | . DUTOK_UINT
+  108          | . DUTOK_OPER_SIGNADD DUTOK_UINT
+
+    DUTOK_IDENTIFIER    shift, and go to state 108
+    DUTOK_UINT          shift, and go to state 54
+    DUTOK_OPER_SIGNADD  shift, and go to state 55
+
+    $default  reduce using rule 104 (ord_const)
+
+    ord_const  go to state 183
+
+
+state 148
+
+   86 record: DUTOK_RECORD record_items DUTOK_SEMICOLON DUTOK_END .
+
+    $default  reduce using rule 86 (record)
+
+
+state 149
+
+   88 record_items: record_items DUTOK_SEMICOLON identifiers . DUTOK_COLON type
+  110 identifiers: identifiers . DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_COMMA  shift, and go to state 61
+    DUTOK_COLON  shift, and go to state 184
+
+
+state 150
+
+   87 record_items: identifiers DUTOK_COLON type .
+
+    $default  reduce using rule 87 (record_items)
+
+
+state 151
+
+   97 params_section: DUTOK_VAR identifiers . DUTOK_COLON DUTOK_IDENTIFIER
+  110 identifiers: identifiers . DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_COMMA  shift, and go to state 61
+    DUTOK_COLON  shift, and go to state 185
+
+
+state 152
+
+   95 formal_params: formal_params DUTOK_SEMICOLON . params_section
+   96 params_section: . identifiers DUTOK_COLON DUTOK_IDENTIFIER
+   97               | . DUTOK_VAR identifiers DUTOK_COLON DUTOK_IDENTIFIER
+  109 identifiers: . DUTOK_IDENTIFIER
+  110            | . identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+
+    DUTOK_VAR         shift, and go to state 110
+    DUTOK_IDENTIFIER  shift, and go to state 38
+
+    params_section  go to state 186
+    identifiers     go to state 114
+
+
+state 153
+
+   93 params: DUTOK_LPAR formal_params DUTOK_RPAR .
+
+    $default  reduce using rule 93 (params)
+
+
+state 154
+
+   96 params_section: identifiers DUTOK_COLON . DUTOK_IDENTIFIER
+
+    DUTOK_IDENTIFIER  shift, and go to state 187
+
+
+state 155
+
+   90 func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER .
+
+    $default  reduce using rule 90 (func)
+
+
+state 156
+
+   44 stmt_rest: DUTOK_BEGIN stmts DUTOK_END .
+
+    $default  reduce using rule 44 (stmt_rest)
+
+
+state 157
+
+   69 factor: DUTOK_NOT factor .
+
+    $default  reduce using rule 69 (factor)
+
+
+state 158
+
+   49 real_params: . expr
+   50            | . real_params DUTOK_COMMA expr
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   67       | DUTOK_IDENTIFIER DUTOK_LPAR . real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    real_params  go to state 188
+    expr         go to state 171
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 159
+
+   68 factor: DUTOK_LPAR expr . DUTOK_RPAR
+
+    DUTOK_RPAR  shift, and go to state 189
+
+
+state 160
+
+   57 simple_expr: DUTOK_OPER_SIGNADD terms .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_FOR_DIRECTION]
+   60 terms: terms . DUTOK_OPER_SIGNADD term
+   61      | terms . DUTOK_OR term
+
+    DUTOK_OR            shift, and go to state 164
+    DUTOK_OPER_SIGNADD  shift, and go to state 165
+
+    $default  reduce using rule 57 (simple_expr)
+
+
+state 161
+
+   28 stmt: . m_stmt
+   29     | . u_stmt
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   30       | DUTOK_IF expr DUTOK_THEN . m_stmt DUTOK_ELSE m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   34 u_stmt: . DUTOK_IF expr DUTOK_THEN stmt
+   34       | DUTOK_IF expr DUTOK_THEN . stmt
+   35       | . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+   35       | DUTOK_IF expr DUTOK_THEN . m_stmt DUTOK_ELSE u_stmt
+   36       | . DUTOK_WHILE expr DUTOK_DO u_stmt
+   37       | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   38 stmt_rest: .  [DUTOK_END, DUTOK_ELSE, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 85
+    DUTOK_WHILE       shift, and go to state 86
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 88
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    stmt       go to state 190
+    m_stmt     go to state 191
+    u_stmt     go to state 93
+    stmt_rest  go to state 94
+    array_var  go to state 96
+
+
+state 162
+
+   53 expr: simple_expr DUTOK_EQ . simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    simple_expr  go to state 192
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 163
+
+   52 expr: simple_expr DUTOK_OPER_REL . simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    simple_expr  go to state 193
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 164
+
+   58 term: . factors
+   61 terms: terms DUTOK_OR . term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT         shift, and go to state 118
+    DUTOK_IDENTIFIER  shift, and go to state 119
+    DUTOK_UINT        shift, and go to state 120
+    DUTOK_REAL        shift, and go to state 121
+    DUTOK_STRING      shift, and go to state 122
+    DUTOK_LPAR        shift, and go to state 123
+
+    term       go to state 194
+    factor     go to state 129
+    factors    go to state 130
+    array_var  go to state 131
+
+
+state 165
+
+   58 term: . factors
+   60 terms: terms DUTOK_OPER_SIGNADD . term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT         shift, and go to state 118
+    DUTOK_IDENTIFIER  shift, and go to state 119
+    DUTOK_UINT        shift, and go to state 120
+    DUTOK_REAL        shift, and go to state 121
+    DUTOK_STRING      shift, and go to state 122
+    DUTOK_LPAR        shift, and go to state 123
+
+    term       go to state 195
+    factor     go to state 129
+    factors    go to state 130
+    array_var  go to state 131
+
+
+state 166
+
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   71 factors: factors DUTOK_OPER_MUL . factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT         shift, and go to state 118
+    DUTOK_IDENTIFIER  shift, and go to state 119
+    DUTOK_UINT        shift, and go to state 120
+    DUTOK_REAL        shift, and go to state 121
+    DUTOK_STRING      shift, and go to state 122
+    DUTOK_LPAR        shift, and go to state 123
+
+    factor     go to state 196
+    array_var  go to state 131
+
+
+state 167
+
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   31       | DUTOK_WHILE expr DUTOK_DO . m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   34 u_stmt: . DUTOK_IF expr DUTOK_THEN stmt
+   35       | . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+   36       | . DUTOK_WHILE expr DUTOK_DO u_stmt
+   36       | DUTOK_WHILE expr DUTOK_DO . u_stmt
+   37       | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   38 stmt_rest: .  [DUTOK_END, DUTOK_ELSE, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 85
+    DUTOK_WHILE       shift, and go to state 86
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 88
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    m_stmt     go to state 197
+    u_stmt     go to state 198
+    stmt_rest  go to state 94
+    array_var  go to state 96
+
+
+state 168
+
+   45 stmt_rest: DUTOK_REPEAT stmts DUTOK_UNTIL . expr
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 199
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 169
+
+   37 u_stmt: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN . expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN . expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 200
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 170
+
+   42 stmt_rest: DUTOK_IDENTIFIER DUTOK_LPAR real_params . DUTOK_RPAR
+   50 real_params: real_params . DUTOK_COMMA expr
+
+    DUTOK_COMMA  shift, and go to state 201
+    DUTOK_RPAR   shift, and go to state 202
+
+
+state 171
+
+   49 real_params: expr .
+
+    $default  reduce using rule 49 (real_params)
+
+
+state 172
+
+   54 exprs: expr .
+
+    $default  reduce using rule 54 (exprs)
+
+
+state 173
+
+   55 exprs: exprs . DUTOK_COMMA expr
+   73 idx: DUTOK_LSBRA exprs . DUTOK_RSBRA
+
+    DUTOK_COMMA  shift, and go to state 203
+    DUTOK_RSBRA  shift, and go to state 204
+
+
+state 174
+
+   39 stmt_rest: DUTOK_IDENTIFIER DUTOK_ASSIGN expr .
+
+    $default  reduce using rule 39 (stmt_rest)
+
+
+state 175
+
+   75 idxs: idxs idx .
+
+    $default  reduce using rule 75 (idxs)
+
+
+state 176
+
+   46 stmt_rest: DUTOK_FOR . DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+
+    DUTOK_IDENTIFIER  shift, and go to state 205
+
+
+state 177
+
+   32 m_stmt: DUTOK_UINT DUTOK_COLON stmt_rest .
+
+    $default  reduce using rule 32 (m_stmt)
+
+
+state 178
+
+   48 stmts: stmts DUTOK_SEMICOLON stmt .
+
+    $default  reduce using rule 48 (stmts)
+
+
+state 179
+
+   40 stmt_rest: array_var DUTOK_ASSIGN expr .
+
+    $default  reduce using rule 40 (stmt_rest)
+
+
+state 180
+
+    9 block: block_label block_const block_type . block_var block_begin_end
+   22 block_var: .  [DUTOK_BEGIN]
+   23          | . DUTOK_VAR var_defs DUTOK_SEMICOLON
+
+    DUTOK_VAR  shift, and go to state 27
+
+    $default  reduce using rule 22 (block_var)
+
+    block_var  go to state 206
+
+
+state 181
+
+   76 type: . DUTOK_IDENTIFIER
+   77     | . ord_const DUTOK_DOTDOT ord_const
+   78     | . DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
+   78     | DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF . type
+   79     | . record
+   84 record: . DUTOK_RECORD DUTOK_END
+   85       | . DUTOK_RECORD record_items DUTOK_END
+   86       | . DUTOK_RECORD record_items DUTOK_SEMICOLON DUTOK_END
+  104 ord_const: .  [DUTOK_DOTDOT]
+  105          | . DUTOK_IDENTIFIER
+  106          | . DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | . DUTOK_UINT
+  108          | . DUTOK_OPER_SIGNADD DUTOK_UINT
+
+    DUTOK_ARRAY         shift, and go to state 51
+    DUTOK_RECORD        shift, and go to state 52
+    DUTOK_IDENTIFIER    shift, and go to state 53
+    DUTOK_UINT          shift, and go to state 54
+    DUTOK_OPER_SIGNADD  shift, and go to state 55
+
+    $default  reduce using rule 104 (ord_const)
+
+    type       go to state 207
+    record     go to state 57
+    ord_const  go to state 58
+
+
+state 182
+
+   83 ord_range: ord_range DUTOK_COMMA ord_const . DUTOK_DOTDOT ord_const
+
+    DUTOK_DOTDOT  shift, and go to state 208
+
+
+state 183
+
+   82 ord_range: ord_const DUTOK_DOTDOT ord_const .
+
+    $default  reduce using rule 82 (ord_range)
+
+
+state 184
+
+   76 type: . DUTOK_IDENTIFIER
+   77     | . ord_const DUTOK_DOTDOT ord_const
+   78     | . DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
+   79     | . record
+   84 record: . DUTOK_RECORD DUTOK_END
+   85       | . DUTOK_RECORD record_items DUTOK_END
+   86       | . DUTOK_RECORD record_items DUTOK_SEMICOLON DUTOK_END
+   88 record_items: record_items DUTOK_SEMICOLON identifiers DUTOK_COLON . type
+  104 ord_const: .  [DUTOK_DOTDOT]
+  105          | . DUTOK_IDENTIFIER
+  106          | . DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | . DUTOK_UINT
+  108          | . DUTOK_OPER_SIGNADD DUTOK_UINT
+
+    DUTOK_ARRAY         shift, and go to state 51
+    DUTOK_RECORD        shift, and go to state 52
+    DUTOK_IDENTIFIER    shift, and go to state 53
+    DUTOK_UINT          shift, and go to state 54
+    DUTOK_OPER_SIGNADD  shift, and go to state 55
+
+    $default  reduce using rule 104 (ord_const)
+
+    type       go to state 209
+    record     go to state 57
+    ord_const  go to state 58
+
+
+state 185
+
+   97 params_section: DUTOK_VAR identifiers DUTOK_COLON . DUTOK_IDENTIFIER
+
+    DUTOK_IDENTIFIER  shift, and go to state 210
+
+
+state 186
+
+   95 formal_params: formal_params DUTOK_SEMICOLON params_section .
+
+    $default  reduce using rule 95 (formal_params)
+
+
+state 187
+
+   96 params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER .
+
+    $default  reduce using rule 96 (params_section)
+
+
+state 188
+
+   50 real_params: real_params . DUTOK_COMMA expr
+   67 factor: DUTOK_IDENTIFIER DUTOK_LPAR real_params . DUTOK_RPAR
+
+    DUTOK_COMMA  shift, and go to state 201
+    DUTOK_RPAR   shift, and go to state 211
+
+
+state 189
+
+   68 factor: DUTOK_LPAR expr DUTOK_RPAR .
+
+    $default  reduce using rule 68 (factor)
+
+
+state 190
+
+   34 u_stmt: DUTOK_IF expr DUTOK_THEN stmt .
+
+    $default  reduce using rule 34 (u_stmt)
+
+
+state 191
+
+   28 stmt: m_stmt .  [DUTOK_END, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   30 m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt . DUTOK_ELSE m_stmt
+   35 u_stmt: DUTOK_IF expr DUTOK_THEN m_stmt . DUTOK_ELSE u_stmt
+
+    DUTOK_ELSE  shift, and go to state 212
+
+    $default  reduce using rule 28 (stmt)
+
+
+state 192
+
+   53 expr: simple_expr DUTOK_EQ simple_expr .
+
+    $default  reduce using rule 53 (expr)
+
+
+state 193
+
+   52 expr: simple_expr DUTOK_OPER_REL simple_expr .
+
+    $default  reduce using rule 52 (expr)
+
+
+state 194
+
+   61 terms: terms DUTOK_OR term .
+
+    $default  reduce using rule 61 (terms)
+
+
+state 195
+
+   60 terms: terms DUTOK_OPER_SIGNADD term .
+
+    $default  reduce using rule 60 (terms)
+
+
+state 196
+
+   71 factors: factors DUTOK_OPER_MUL factor .
+
+    $default  reduce using rule 71 (factors)
+
+
+state 197
+
+   31 m_stmt: DUTOK_WHILE expr DUTOK_DO m_stmt .
+
+    $default  reduce using rule 31 (m_stmt)
+
+
+state 198
+
+   36 u_stmt: DUTOK_WHILE expr DUTOK_DO u_stmt .
+
+    $default  reduce using rule 36 (u_stmt)
+
+
+state 199
+
+   45 stmt_rest: DUTOK_REPEAT stmts DUTOK_UNTIL expr .
+
+    $default  reduce using rule 45 (stmt_rest)
+
+
+state 200
+
+   37 u_stmt: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr . DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr . DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+
+    DUTOK_FOR_DIRECTION  shift, and go to state 213
+
+
+state 201
+
+   50 real_params: real_params DUTOK_COMMA . expr
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 214
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 202
+
+   42 stmt_rest: DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR .
+
+    $default  reduce using rule 42 (stmt_rest)
+
+
+state 203
+
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   55 exprs: exprs DUTOK_COMMA . expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 215
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 204
+
+   73 idx: DUTOK_LSBRA exprs DUTOK_RSBRA .
+
+    $default  reduce using rule 73 (idx)
+
+
+state 205
+
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER . DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+
+    DUTOK_ASSIGN  shift, and go to state 216
+
+
+state 206
+
+    9 block: block_label block_const block_type block_var . block_begin_end
+   27 block_begin_end: . DUTOK_BEGIN stmts DUTOK_END
+
+    DUTOK_BEGIN  shift, and go to state 65
+
+    block_begin_end  go to state 217
+
+
+state 207
+
+   78 type: DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type .
+
+    $default  reduce using rule 78 (type)
+
+
+state 208
+
+   83 ord_range: ord_range DUTOK_COMMA ord_const DUTOK_DOTDOT . ord_const
+  104 ord_const: .  [DUTOK_COMMA, DUTOK_RSBRA]
+  105          | . DUTOK_IDENTIFIER
+  106          | . DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+  107          | . DUTOK_UINT
+  108          | . DUTOK_OPER_SIGNADD DUTOK_UINT
+
+    DUTOK_IDENTIFIER    shift, and go to state 108
+    DUTOK_UINT          shift, and go to state 54
+    DUTOK_OPER_SIGNADD  shift, and go to state 55
+
+    $default  reduce using rule 104 (ord_const)
+
+    ord_const  go to state 218
+
+
+state 209
+
+   88 record_items: record_items DUTOK_SEMICOLON identifiers DUTOK_COLON type .
+
+    $default  reduce using rule 88 (record_items)
+
+
+state 210
+
+   97 params_section: DUTOK_VAR identifiers DUTOK_COLON DUTOK_IDENTIFIER .
+
+    $default  reduce using rule 97 (params_section)
+
+
+state 211
+
+   67 factor: DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR .
+
+    $default  reduce using rule 67 (factor)
+
+
+state 212
+
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   30       | DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE . m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   34 u_stmt: . DUTOK_IF expr DUTOK_THEN stmt
+   35       | . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+   35       | DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE . u_stmt
+   36       | . DUTOK_WHILE expr DUTOK_DO u_stmt
+   37       | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   38 stmt_rest: .  [DUTOK_END, DUTOK_ELSE, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 85
+    DUTOK_WHILE       shift, and go to state 86
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 88
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    m_stmt     go to state 219
+    u_stmt     go to state 220
+    stmt_rest  go to state 94
+    array_var  go to state 96
+
+
+state 213
+
+   37 u_stmt: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION . expr DUTOK_DO u_stmt
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION . expr DUTOK_DO m_stmt
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 221
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 214
+
+   50 real_params: real_params DUTOK_COMMA expr .
+
+    $default  reduce using rule 50 (real_params)
+
+
+state 215
+
+   55 exprs: exprs DUTOK_COMMA expr .
+
+    $default  reduce using rule 55 (exprs)
+
+
+state 216
+
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN . expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 222
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 217
+
+    9 block: block_label block_const block_type block_var block_begin_end .
+
+    $default  reduce using rule 9 (block)
+
+
+state 218
+
+   83 ord_range: ord_range DUTOK_COMMA ord_const DUTOK_DOTDOT ord_const .
+
+    $default  reduce using rule 83 (ord_range)
+
+
+state 219
+
+   30 m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt .
+
+    $default  reduce using rule 30 (m_stmt)
+
+
+state 220
+
+   35 u_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt .
+
+    $default  reduce using rule 35 (u_stmt)
+
+
+state 221
+
+   37 u_stmt: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr . DUTOK_DO u_stmt
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr . DUTOK_DO m_stmt
+
+    DUTOK_DO  shift, and go to state 223
+
+
+state 222
+
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr . DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+
+    DUTOK_FOR_DIRECTION  shift, and go to state 224
+
+
+state 223
+
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   34 u_stmt: . DUTOK_IF expr DUTOK_THEN stmt
+   35       | . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt
+   36       | . DUTOK_WHILE expr DUTOK_DO u_stmt
+   37       | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+   37       | DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO . u_stmt
+   38 stmt_rest: .  [DUTOK_END, DUTOK_ELSE, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   46          | DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO . m_stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 85
+    DUTOK_WHILE       shift, and go to state 86
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 88
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    m_stmt     go to state 225
+    u_stmt     go to state 226
+    stmt_rest  go to state 94
+    array_var  go to state 96
+
+
+state 224
+
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION . expr DUTOK_DO m_stmt
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 227
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 225
+
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt .
+
+    $default  reduce using rule 46 (stmt_rest)
+
+
+state 226
+
+   37 u_stmt: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt .
+
+    $default  reduce using rule 37 (u_stmt)
+
+
+state 227
+
+   46 stmt_rest: DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr . DUTOK_DO m_stmt
+
+    DUTOK_DO  shift, and go to state 228
+
+
+state 228
+
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   38 stmt_rest: .  [DUTOK_END, DUTOK_ELSE, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   46          | DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO . m_stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 229
+    DUTOK_WHILE       shift, and go to state 230
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 176
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    m_stmt     go to state 225
+    stmt_rest  go to state 94
+    array_var  go to state 96
+
+
+state 229
+
+   30 m_stmt: DUTOK_IF . expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 231
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 230
+
+   31 m_stmt: DUTOK_WHILE . expr DUTOK_DO m_stmt
+   51 expr: . simple_expr
+   52     | . simple_expr DUTOK_OPER_REL simple_expr
+   53     | . simple_expr DUTOK_EQ simple_expr
+   56 simple_expr: . terms
+   57            | . DUTOK_OPER_SIGNADD terms
+   58 term: . factors
+   59 terms: . term
+   60      | . terms DUTOK_OPER_SIGNADD term
+   61      | . terms DUTOK_OR term
+   62 factor: . DUTOK_IDENTIFIER
+   63       | . DUTOK_UINT
+   64       | . DUTOK_REAL
+   65       | . DUTOK_STRING
+   66       | . array_var
+   67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   68       | . DUTOK_LPAR expr DUTOK_RPAR
+   69       | . DUTOK_NOT factor
+   70 factors: . factor
+   71        | . factors DUTOK_OPER_MUL factor
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_NOT           shift, and go to state 118
+    DUTOK_IDENTIFIER    shift, and go to state 119
+    DUTOK_UINT          shift, and go to state 120
+    DUTOK_REAL          shift, and go to state 121
+    DUTOK_STRING        shift, and go to state 122
+    DUTOK_LPAR          shift, and go to state 123
+    DUTOK_OPER_SIGNADD  shift, and go to state 124
+
+    expr         go to state 232
+    simple_expr  go to state 126
+    term         go to state 127
+    terms        go to state 128
+    factor       go to state 129
+    factors      go to state 130
+    array_var    go to state 131
+
+
+state 231
+
+   30 m_stmt: DUTOK_IF expr . DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+
+    DUTOK_THEN  shift, and go to state 233
+
+
+state 232
+
+   31 m_stmt: DUTOK_WHILE expr . DUTOK_DO m_stmt
+
+    DUTOK_DO  shift, and go to state 234
+
+
+state 233
+
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   30       | DUTOK_IF expr DUTOK_THEN . m_stmt DUTOK_ELSE m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   38 stmt_rest: .  [DUTOK_ELSE]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 229
+    DUTOK_WHILE       shift, and go to state 230
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 176
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    m_stmt     go to state 235
+    stmt_rest  go to state 94
+    array_var  go to state 96
+
+
+state 234
+
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   31       | DUTOK_WHILE expr DUTOK_DO . m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   38 stmt_rest: .  [DUTOK_END, DUTOK_ELSE, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 229
+    DUTOK_WHILE       shift, and go to state 230
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 176
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    m_stmt     go to state 197
+    stmt_rest  go to state 94
+    array_var  go to state 96
+
+
+state 235
+
+   30 m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt . DUTOK_ELSE m_stmt
+
+    DUTOK_ELSE  shift, and go to state 236
+
+
+state 236
+
+   30 m_stmt: . DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt
+   30       | DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE . m_stmt
+   31       | . DUTOK_WHILE expr DUTOK_DO m_stmt
+   32       | . DUTOK_UINT DUTOK_COLON stmt_rest
+   33       | . stmt_rest
+   38 stmt_rest: .  [DUTOK_END, DUTOK_ELSE, DUTOK_UNTIL, DUTOK_SEMICOLON]
+   39          | . DUTOK_IDENTIFIER DUTOK_ASSIGN expr
+   40          | . array_var DUTOK_ASSIGN expr
+   41          | . DUTOK_IDENTIFIER
+   42          | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
+   43          | . DUTOK_GOTO DUTOK_UINT
+   44          | . DUTOK_BEGIN stmts DUTOK_END
+   45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
+   46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
+   72 array_var: . DUTOK_IDENTIFIER idxs
+
+    DUTOK_BEGIN       shift, and go to state 83
+    DUTOK_GOTO        shift, and go to state 84
+    DUTOK_IF          shift, and go to state 229
+    DUTOK_WHILE       shift, and go to state 230
+    DUTOK_REPEAT      shift, and go to state 87
+    DUTOK_FOR         shift, and go to state 176
+    DUTOK_IDENTIFIER  shift, and go to state 89
+    DUTOK_UINT        shift, and go to state 90
+
+    $default  reduce using rule 38 (stmt_rest)
+
+    m_stmt     go to state 219
+    stmt_rest  go to state 94
+    array_var  go to state 96

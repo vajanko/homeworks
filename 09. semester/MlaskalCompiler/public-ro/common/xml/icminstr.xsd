@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2006 sp2 U (http://www.altova.com) by Jakub Yaghob (KSI MFF UK) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="icminstr">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="instr_classes">
+					<xs:complexType>
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="instr_class">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="name" type="xs:string"/>
+										<xs:element name="note" type="xs:string"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="unit_types">
+					<xs:annotation>
+						<xs:documentation>builtin unit types</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="unit_type">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="name" type="xs:string"/>
+										<xs:element name="note" type="xs:string"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="mop_types">
+					<xs:annotation>
+						<xs:documentation>builtin mop types</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="mop_type">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="name" type="xs:string"/>
+										<xs:element name="note" type="xs:string"/>
+										<xs:element name="unit_type" type="xs:string"/>
+										<xs:element name="access" minOccurs="0">
+											<xs:simpleType>
+												<xs:restriction base="xs:string">
+													<xs:enumeration value="RD"/>
+													<xs:enumeration value="WR"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="mops">
+					<xs:annotation>
+						<xs:documentation>microoperations</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="mop">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="name" type="xs:string"/>
+										<xs:element name="note" type="xs:string"/>
+										<xs:element name="mop_type" type="xs:string"/>
+										<xs:element name="in1" type="mop_inout_type" minOccurs="0"/>
+										<xs:element name="in1_direct" type="xs:boolean" minOccurs="0"/>
+										<xs:element name="in2" type="mop_inout_type" minOccurs="0"/>
+										<xs:element name="in2_direct" type="xs:boolean" minOccurs="0"/>
+										<xs:element name="in3" type="mop_inout_type" minOccurs="0"/>
+										<xs:element name="out" type="mop_inout_type" minOccurs="0"/>
+										<xs:element name="out_uninit" type="xs:boolean" minOccurs="0"/>
+										<xs:element name="code" type="xs:string"/>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="units">
+					<xs:complexType>
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="unit">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="name" type="xs:string"/>
+										<xs:element name="note" type="xs:string"/>
+										<xs:element name="unit_type" type="xs:string"/>
+										<xs:element name="mops">
+											<xs:annotation>
+												<xs:documentation>mops elaborated by this unit</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:choice maxOccurs="unbounded">
+													<xs:element name="mop">
+														<xs:complexType>
+															<xs:sequence>
+																<xs:element name="mop_name" type="xs:string"/>
+																<xs:element name="timing" type="xs:int"/>
+															</xs:sequence>
+														</xs:complexType>
+													</xs:element>
+												</xs:choice>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="machines">
+					<xs:complexType>
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="machine">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="name" type="xs:string"/>
+										<xs:element name="note" type="xs:string"/>
+										<xs:element name="allowed_instr_classes">
+											<xs:complexType>
+												<xs:choice maxOccurs="unbounded">
+													<xs:element name="class_name" type="xs:string"/>
+												</xs:choice>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="units">
+											<xs:annotation>
+												<xs:documentation>only units for EXEC mops</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:choice maxOccurs="unbounded">
+													<xs:element name="unit">
+														<xs:complexType>
+															<xs:sequence>
+																<xs:element name="name" type="xs:string"/>
+																<xs:element name="number" type="xs:int"/>
+															</xs:sequence>
+														</xs:complexType>
+													</xs:element>
+												</xs:choice>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="instrs">
+					<xs:complexType>
+						<xs:choice maxOccurs="unbounded">
+							<xs:element name="instr">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="name" type="xs:string"/>
+										<xs:element name="operand" minOccurs="0">
+											<xs:annotation>
+												<xs:documentation>operand type</xs:documentation>
+											</xs:annotation>
+											<xs:simpleType>
+												<xs:restriction base="xs:string">
+													<xs:enumeration value="RELNUM"/>
+													<xs:enumeration value="ABSNUM"/>
+													<xs:enumeration value="GSTKOFFS"/>
+													<xs:enumeration value="LSTKOFFS"/>
+													<xs:enumeration value="SSTKOFFS"/>
+													<xs:enumeration value="LITINT"/>
+													<xs:enumeration value="LITREAL"/>
+													<xs:enumeration value="LITSTR"/>
+													<xs:enumeration value="RELJUMP"/>
+													<xs:enumeration value="ABSJUMP"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+										<xs:element name="reg_out" type="reg_type" minOccurs="0"/>
+										<xs:element name="reg_in1" type="reg_type" minOccurs="0"/>
+										<xs:element name="reg_in2" type="reg_type" minOccurs="0"/>
+										<xs:element name="reg_in3" type="reg_type" minOccurs="0"/>
+										<xs:element name="reg_in4" type="reg_type" minOccurs="0"/>
+										<xs:element name="stk_top2" type="stk_type" minOccurs="0"/>
+										<xs:element name="stk_top1" type="stk_type" minOccurs="0"/>
+										<xs:element name="stk_top0" type="stk_type" minOccurs="0"/>
+										<xs:element name="stk_res" type="stk_type" minOccurs="0"/>
+										<xs:element name="symb_note" type="html_content"/>
+										<xs:element name="note" type="html_content"/>
+										<xs:element name="class_name" type="xs:string"/>
+										<xs:element name="mop_descr">
+											<xs:complexType>
+												<xs:choice maxOccurs="unbounded">
+													<xs:element name="mop">
+														<xs:complexType>
+															<xs:sequence>
+																<xs:element name="mop_name" type="xs:string"/>
+																<xs:element name="in1_id" type="xs:string" minOccurs="0"/>
+																<xs:element name="in2_id" type="xs:string" minOccurs="0"/>
+																<xs:element name="in3_id" type="xs:string" minOccurs="0"/>
+																<xs:element name="id" type="xs:string"/>
+															</xs:sequence>
+														</xs:complexType>
+													</xs:element>
+												</xs:choice>
+											</xs:complexType>
+											<xs:key name="k-mop_box">
+												<xs:selector xpath="mop"/>
+												<xs:field xpath="id"/>
+											</xs:key>
+											<xs:keyref name="f-mop_box_1" refer="k-mop_box">
+												<xs:selector xpath="mop"/>
+												<xs:field xpath="in1_id"/>
+											</xs:keyref>
+											<xs:keyref name="f-mop_box_2" refer="k-mop_box">
+												<xs:selector xpath="mop"/>
+												<xs:field xpath="in2_id"/>
+											</xs:keyref>
+											<xs:keyref name="f-mop_box_3" refer="k-mop_box">
+												<xs:selector xpath="mop"/>
+												<xs:field xpath="in3_id"/>
+											</xs:keyref>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+		<xs:key name="k-instr_class">
+			<xs:selector xpath="instr_classes/instr_class"/>
+			<xs:field xpath="name"/>
+		</xs:key>
+		<xs:keyref name="f-class_name" refer="k-instr_class">
+			<xs:selector xpath="instrs/instr"/>
+			<xs:field xpath="class_name"/>
+		</xs:keyref>
+		<xs:key name="k-instr">
+			<xs:selector xpath="instrs/instr"/>
+			<xs:field xpath="name"/>
+		</xs:key>
+		<xs:key name="k-machine_name">
+			<xs:selector xpath="machines/machine"/>
+			<xs:field xpath="name"/>
+		</xs:key>
+		<xs:key name="k-mop_name">
+			<xs:selector xpath="mops/mop"/>
+			<xs:field xpath="name"/>
+		</xs:key>
+		<xs:keyref name="f-machine_mop_name" refer="k-mop_name">
+			<xs:selector xpath="units/unit/mops/mop"/>
+			<xs:field xpath="mop_name"/>
+		</xs:keyref>
+		<xs:keyref name="f-instr_mop_name" refer="k-mop_name">
+			<xs:selector xpath="instrs/instr/mop_descr/mop"/>
+			<xs:field xpath="mop_name"/>
+		</xs:keyref>
+		<xs:keyref name="f-machine_class_name" refer="k-instr_class">
+			<xs:selector xpath="machines/machine/allowed_instr_classes/class_name"/>
+			<xs:field xpath="."/>
+		</xs:keyref>
+		<xs:key name="k-unit">
+			<xs:selector xpath="units/unit"/>
+			<xs:field xpath="name"/>
+		</xs:key>
+		<xs:keyref name="f-machine_units" refer="k-unit">
+			<xs:selector xpath="machines/machine/units/unit"/>
+			<xs:field xpath="name"/>
+		</xs:keyref>
+		<xs:key name="k-unit_type">
+			<xs:selector xpath="unit_types/unit_type"/>
+			<xs:field xpath="name"/>
+		</xs:key>
+		<xs:keyref name="f-unit_type_mop_type" refer="k-unit_type">
+			<xs:selector xpath="mop_types/mop_type"/>
+			<xs:field xpath="unit_type"/>
+		</xs:keyref>
+		<xs:keyref name="f-unit_type_unit" refer="k-unit_type">
+			<xs:selector xpath="units/unit"/>
+			<xs:field xpath="unit_type"/>
+		</xs:keyref>
+		<xs:key name="k-mop_type">
+			<xs:selector xpath="mop_types/mop_type"/>
+			<xs:field xpath="name"/>
+		</xs:key>
+		<xs:keyref name="f-mop_type_mop" refer="k-mop_type">
+			<xs:selector xpath="mops/mop"/>
+			<xs:field xpath="mop_type"/>
+		</xs:keyref>
+	</xs:element>
+	<xs:complexType name="html_content" mixed="true">
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="i" type="xs:string"/>
+			<xs:element name="sub" type="xs:string"/>
+			<xs:element name="br"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="stk_type">
+		<xs:sequence>
+			<xs:element name="type">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="N"/>
+						<xs:enumeration value="B"/>
+						<xs:enumeration value="I"/>
+						<xs:enumeration value="S"/>
+						<xs:enumeration value="A"/>
+						<xs:enumeration value="P"/>
+						<xs:enumeration value="R"/>
+						<xs:enumeration value="F"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="text" type="html_content"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="reg_type">
+		<xs:sequence>
+			<xs:element name="type">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="N"/>
+						<xs:enumeration value="B"/>
+						<xs:enumeration value="I"/>
+						<xs:enumeration value="S"/>
+						<xs:enumeration value="A"/>
+						<xs:enumeration value="P"/>
+						<xs:enumeration value="R"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="text" type="html_content"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="reg_type_inout">
+		<xs:sequence>
+			<xs:element name="type">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="N"/>
+						<xs:enumeration value="B"/>
+						<xs:enumeration value="I"/>
+						<xs:enumeration value="S"/>
+						<xs:enumeration value="A"/>
+						<xs:enumeration value="P"/>
+						<xs:enumeration value="R"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="otype">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="N"/>
+						<xs:enumeration value="B"/>
+						<xs:enumeration value="I"/>
+						<xs:enumeration value="S"/>
+						<xs:enumeration value="A"/>
+						<xs:enumeration value="P"/>
+						<xs:enumeration value="R"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="text" type="html_content"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="mop_inout_type">
+		<xs:sequence>
+			<xs:element name="type">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="B"/>
+						<xs:enumeration value="I"/>
+						<xs:enumeration value="R"/>
+						<xs:enumeration value="S"/>
+						<xs:enumeration value="P"/>
+						<xs:enumeration value="F"/>
+						<xs:enumeration value="C"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="text" type="html_content"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

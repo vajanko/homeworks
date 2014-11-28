@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<symbol_tables>
+	<types>
+		<BOOLEAN type="T0"/>
+		<INTEGER type="T1"/>
+		<REAL type="T2"/>
+		<STRING type="T3"/>
+	</types>
+	<labels>
+	</labels>
+	<symbols>
+		<SKIND_TYPE name="BOOLEAN" type="T0"/>
+		<SKIND_CONST name="FALSE" value="0" type="T0"/>
+		<SKIND_FUNCTION name="FNC2" type="T?">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_TYPE name="INTEGER" type="T1"/>
+		<SKIND_PROCEDURE name="PROC2">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_FUNCTION name="READI" type="T1">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_FUNCTION name="READR" type="T2">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_FUNCTION name="READS" type="T3">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_TYPE name="REAL" type="T2"/>
+		<SKIND_TYPE name="STRING" type="T3"/>
+		<SKIND_CONST name="TRUE" value="1" type="T0"/>
+		<SKIND_PROCEDURE name="WRITEI">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T1"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="WRITELN">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="WRITER">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T2"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="WRITES">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T3"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+	</symbols>
+</symbol_tables>
