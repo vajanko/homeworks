@@ -3,29 +3,22 @@
 
 #include <cstddef>
 #include <string>
-#include <memory>
-
-#define CHUNK_W 2;
-#define CHUNK_H 2;
-
-typedef uint64_t chunk;
-
-#define MULTIPLY(res_ptr, in_a, in_b) (*res_ptr |= in_a & in_b)
-#define BIT(in, pos) ((in & (1 << pos)) >> pos)
+#include <xmmintrin.h>
 
 class matrix {
 private:
-	std::unique_ptr<chunk> _data;
 
 public:
-
 	static std::string name() { return "matrix"; }
 
-	std::size_t byte_size() const;
+	std::size_t byte_size() const
+	{
+		return 0;
+	}
 
-	matrix(std::size_t m, std::size_t n)
-		// TODO: somehow calculate the size of matrix
-		: _data(new chunk[m * n / sizeof(chunk)]) {}
+	matrix( std::size_t m, std::size_t n)
+	{
+	}
 
 	std::size_t vsize() const
 	{
@@ -37,17 +30,16 @@ public:
 		return 0;
 	}
 
-	void set(std::size_t i, std::size_t j, bool e)
+	void set( std::size_t i, std::size_t j, bool e)
 	{
-
 	}
 
-	bool get(std::size_t i, std::size_t j) const
+	bool get( std::size_t i, std::size_t j) const
 	{
 		return false;
 	}
 
-	void assign_mul(const matrix & a, const matrix & b)
+	void assign_mul( const matrix & a, const matrix & b)
 	{
 	}
 };

@@ -50,9 +50,9 @@ namespace ulibpp {
 	inline uUINT64 system_info::get_relative_time()
 	{
 		::timeval tv;
-		timezone tz;
+		//struct timezone tz;
 
-		if(gettimeofday(&tv, &tz))
+		if(gettimeofday(&tv, 0))
 			return 0;
 
 		return ((uUINT64)tv.tv_sec*1000)+tv.tv_usec/1000;
@@ -113,7 +113,7 @@ public:
 	void run_row( logger & log, const SP & sp, const SQ & sq) const
 	{
 		log.os() << sp;
-		std::for_each( tv_.begin(), tv_.end(), [&]( const generator_ptr & p){ p->run< debug>( log, sp, sq); });
+		std::for_each( tv_.begin(), tv_.end(), [&]( const generator_ptr & p){ p->template run< debug>( log, sp, sq); });
 		log.os() << std::endl;
 	}
 
@@ -198,7 +198,7 @@ struct generic_SQ {
 };
 
 template< typename G, typename GP, typename SP>
-class generic_generator : public abstract_generator< SP, std::size_t> {
+class generic_generator : public abstract_generator< SP, time_complexity> {
 public:
 	typedef typename G::data_type data_type;
 	typedef typename G::check_type check_type;
@@ -232,7 +232,7 @@ private:
 		sq.complexity = generator.complexity();
 		sq.iterations = std::max( time_complexity( 1), target_complexity / sq.complexity);
 
-		ml_.run< debug>( log, generator.data(), generator.check(), sq);
+		ml_.template run< debug>( log, generator.data(), generator.check(), sq);
 	}
 
 	task_list< data_type, check_type, generic_SQ> ml_;
@@ -273,16 +273,16 @@ private:
 		log.ss() << "START " << D::name() << " " << data.byte_size() << " " << M::name() << " " << sq.complexity << " " << sq.iterations << std::endl;
 		*/
 
-		M::initial_check< debug>( log, data, check);
+		M::template initial_check< debug>( log, data, check);
 
 		// cold run
-		M::run< true, debug>( data, check);
+		M::template run< true, debug>( data, check);
 
 		ulibpp::uUINT64 pre_mach = ulibpp::system_info::get_relative_time();
 
 		for ( std::size_t i = 0; i < sq.iterations; ++ i)
 		{
-			M::run< false, false>( data, check);
+			M::template run< false, false>( data, check);
 		}
 
 		ulibpp::uUINT64 post_mach = ulibpp::system_info::get_relative_time();
@@ -294,7 +294,7 @@ private:
 			<< ns
 			;
 
-		M::final_check< debug>( log, data, check);
+		M::template final_check< debug>( log, data, check);
 		/*
 		log.ss() 
 			<< "STOP " 
@@ -333,14 +333,14 @@ generic_generator< G, GP, SP, SQ> * make_generic_generator_task( const GP & p)
 struct empty_GP {};
 
 template< typename G, typename T, typename SP>
-typename generator_list< SP, std::size_t>::generator_ptr make_generic_generator_task()
+typename generator_list< SP, time_complexity>::generator_ptr make_generic_generator_task()
 {
 	typedef typename G::data_type data_type;
 	typedef typename G::check_type check_type;
 
 	task_list< data_type, check_type, generic_SQ> ml;
 	ml.push_back( typename task_list< data_type, check_type, generic_SQ>::task_ptr( new generic_task< data_type, check_type, T>()));
-	return typename generator_list< SP, std::size_t>::generator_ptr( new generic_generator< G, empty_GP, SP>( ml, empty_GP()));
+	return typename generator_list< SP, time_complexity>::generator_ptr( new generic_generator< G, empty_GP, SP>( ml, empty_GP()));
 }
 
 #endif

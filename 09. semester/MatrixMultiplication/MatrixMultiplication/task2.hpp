@@ -68,10 +68,12 @@ struct generator_3 {
 		
 	static std::string name() { return D::name() + "_" + P::name(); }
 
+	/*
 	std::string param() const 
 	{ 
 		return ulibpp::lexical_cast< std::string>( opsize_);
 	}
+	*/
 
 	time_complexity complexity() const 
 	{ 
@@ -155,7 +157,7 @@ struct policy_random {
 	}
 private:
 	std::mt19937 engine;
-	std::uniform_int<> distribution;
+	std::uniform_int_distribution<> distribution;
 };
 
 template< typename N>
