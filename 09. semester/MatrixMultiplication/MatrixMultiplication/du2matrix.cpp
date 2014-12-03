@@ -47,7 +47,7 @@ void chunk_mul<chunk_16>(chunk_16 &a, chunk_16 &b, chunk_16 &res)
 		ch_bit >>= 5;
 	}
 
-	const char16_t F = 0x8888;
+	const chunk_16 F = 0x8888;
 
 	for (short i = 0; i < 4; ++i)
 	{
@@ -95,6 +95,73 @@ void set_value<chunk_16>(chunk_16 *data, std::size_t cols, std::size_t i, std::s
 		data[i / 4 * cols / 4 + j / 4] |= res;
 }
 
+template<>
+void chunk_mul<chunk_64>(chunk_64 &a, chunk_64 &b, chunk_64 &res)
+{
+	// prepare A
+	chunk_64 A = 0;
+	chunk_64 L = 0xff00000000000000;
+	chunk_64 R = 0x0000000000000000;
+	chunk_64 ch_bit = 0x0080000000000000;
+
+	for (short i = 0; i < 8; ++i)
+	{
+		A |= (a & L) << i;
+		A |= (a & R) >> (8 - i);
+
+		L = (L >> 8) ^ ch_bit;
+		R = (R >> 8) ^ ch_bit;
+		ch_bit >>= 9;
+	}
+
+	const chunk_64 F = 0x8080808080808080;
+
+	for (short i = 0; i < 8; ++i)
+	{
+		chunk_64 t1 = A & F;
+		t1 |= t1 >> 1;
+		t1 |= t1 >> 2;
+		t1 |= t1 >> 4;
+
+		res |= t1 & b;
+		b = _rotl64(b, 8);
+		A <<= 1;
+	}
+}
+template<>
+void matrix_mul<chunk_64>(chunk_64 *a, chunk_64 *b, chunk_64 *res, std::size_t dim1, std::size_t dim2, std::size_t dim3)
+{
+	dim1 >>= 3;		// divide by 8
+	dim2 >>= 3;
+	dim3 >>= 3;
+	for (std::size_t i = 0; i < dim1; ++i)
+	{
+		for (std::size_t j = 0; j < dim2; ++j)
+		{
+			res[i * dim1 + j] = 0;
+			for (std::size_t k = 0; k < dim3; ++k)
+				chunk_mul(a[i * dim1 + k], b[k * dim2 + j], res[i * dim1 + j]);
+		}
+	}
+}
+template<>
+bool get_value<chunk_64>(chunk_64 *data, std::size_t cols, std::size_t i, std::size_t j)
+{
+	chunk_64 block = data[i / 8 * cols / 8 + j / 8];
+	chunk_64 res = block & (0x8000000000000000 >> (i % 8 * 8 + j % 8));
+
+	return res != 0;
+}
+template<>
+void set_value<chunk_64>(chunk_64 *data, std::size_t cols, std::size_t i, std::size_t j, bool e)
+{
+	chunk_64 block = data[i / 8 * cols / 8 + j / 8];
+	chunk_64 res = 0x8000000000000000 >> (i % 8 * 8 + j % 8);
+	if (!e)
+		data[i / 8 * cols / 8 + j / 8] &= ~res;
+	else
+		data[i / 8 * cols / 8 + j / 8] |= res;
+}
 
 std::size_t matrix::byte_size() const { return data_size * sizeof(chunk_t); }
 std::size_t matrix::vsize() const { return _vsize; }

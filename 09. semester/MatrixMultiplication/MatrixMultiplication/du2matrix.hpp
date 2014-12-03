@@ -9,10 +9,10 @@
 typedef bool chunk_1;
 typedef unsigned short chunk_16;
 typedef __int32 chunk_32;
-typedef __int64 chunk_64;
+typedef unsigned long long chunk_64;
 
 // type used by the matrix
-typedef chunk_16 chunk_t;
+typedef chunk_64 chunk_t;
 
 
 //#define CHUNK_MUL(out, a, b) (out |= a & b)
