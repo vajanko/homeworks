@@ -7,7 +7,7 @@
 #include <iostream>
 #include <fstream>
 
-///////////////////////////////
+using namespace std;
 
 ///////////////////////////////
 
@@ -16,14 +16,75 @@
 ///////////////////////////////
 
 ///////////////////////////////
+
+///////////////////////////////
+const std::size_t size = 16;
+void init_id(matrix &m)
+{
+	for (int i = 0; i < size; ++i)
+		for (int j = 0; j < size; ++j)
+			m.set(i, j, i == j);
+}
+void init_trian(matrix &m)
+{
+	for (int i = 0; i < size; ++i)
+		for (int j = 0; j < size; ++j)
+			m.set(i, j, i <= j);
+}
+void init_id2(matrix &m)
+{
+	for (int i = 0; i < size; ++i)
+		for (int j = 0; j < size; ++j)
+			m.set(i, j, i != j);
+}
+void init_cols(matrix &m)
+{
+	bool val = true;
+	for (int i = 0; i < size; ++i)
+	{
+		for (int j = 0; j < size; ++j)
+		{
+			m.set(i, j, val);
+			val = !val;
+		}
+	}
+}
+void write(matrix &m)
+{
+	for (int i = 0; i < size; ++i)
+	{
+		for (int j = 0; j < size; ++j)
+		{
+			bool val = m.get(i, j);
+			std::cout << val ? 1 : 0;
+			std::cout << " ";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+}
+void test()
+{
+	matrix a(size, size);
+	init_id(a);
+	matrix b(size, size);
+	init_cols(b);
+
+	matrix c(size, size);
+	c.assign_mul(b, a);
+	
+	write(a);
+	write(b);
+	write(c);
+}
 
 int main( int argc, char * * argv)
 {
 	generator_list< std::size_t, time_complexity> gl;
 
 #ifdef _DEBUG
-	std::size_t min_elements = 128UL;	// one SSE group
-	std::size_t max_elements = 128UL;
+	std::size_t min_elements = 256UL;	// one SSE group
+	std::size_t max_elements = 1024UL;//128UL;
 	time_complexity target_complexity = 25000UL;
 #else
 	std::size_t min_elements = 128UL;	
@@ -47,7 +108,10 @@ int main( int argc, char * * argv)
 #else
 	gl.run< false>( log);
 #endif
-	return 0;
+	
+	//test();
+	//system("pause");
+	//return 0;
 }
 
 ///////////////////////////////
