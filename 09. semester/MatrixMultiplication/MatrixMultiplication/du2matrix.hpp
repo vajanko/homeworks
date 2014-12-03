@@ -3,33 +3,17 @@
 
 #include <cstddef>
 #include <string>
-//#include <xmmintrin.h>
+#include <xmmintrin.h>
 #include <emmintrin.h>
+//#include <immintrin.h>
 
 typedef bool chunk_1;
 typedef unsigned short chunk_16;
-typedef __int32 chunk_32;
-typedef unsigned long long chunk_64;
+typedef unsigned __int64 chunk_64;
+typedef __m128i chunk_128;
 
 // type used by the matrix
 typedef chunk_64 chunk_t;
-
-
-//#define CHUNK_MUL(out, a, b) (out |= a & b)
-//#define ASSIGN_ZERO(out) (out = 0)
-
-//__m128i sse_trans_slice(__m128i x)
-//{
-//	union { unsigned short s[8]; __m128i m; } u;
-//	int    i;
-//	for (i = 0; i < 8; ++i) {
-//		u.s[7 - i] = _mm_movemask_epi8(x);
-//		x = _mm_slli_epi64(x, 1);
-//	}
-//	return  u.m;
-//}
-
-
 
 
 class matrix {
