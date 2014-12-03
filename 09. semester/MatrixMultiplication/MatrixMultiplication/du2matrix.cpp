@@ -135,9 +135,13 @@ void matrix_mul<chunk_64>(chunk_64 *a, chunk_64 *b, chunk_64 *res, std::size_t d
 	dim2 >>= 3;
 	dim3 >>= 3;
 	for (std::size_t i = 0; i < dim1; ++i)
+  //for (std::size_t j = 0; j < dim2; ++j)
 	{
 		for (std::size_t j = 0; j < dim2; ++j)
+    //for (std::size_t i = 0; i < dim1; ++i)
 		{
+      // first matrix 8x8 where first line is rotated by 0 positions
+      // second line is rotated by 1 positions, ...
 			chunk_64 A = 0;
 			chunk_64 r = 0;
 			for (std::size_t k = 0; k < dim3; ++k)
@@ -148,6 +152,7 @@ void matrix_mul<chunk_64>(chunk_64 *a, chunk_64 *b, chunk_64 *res, std::size_t d
 
 				chunk_64 a1 = a[i * dim1 + k];
 
+        // rotate lines of first matrix
 				for (short i = 0; i < 8; ++i)
 				{
 					A |= (a1 & L) << i;
