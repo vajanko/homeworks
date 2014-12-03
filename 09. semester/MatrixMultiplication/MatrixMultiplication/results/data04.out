@@ -1,0 +1,27 @@
+# chunk_16, removed method call - code inserted directly into the loop
+size	matrix_zero	matrix_random	matrix_one
+128
+	0.0907377
+	0.0805922
+	0.078163
+
+256
+	0.0807593
+	0.0803305
+	0.0806164
+
+512
+	0.0805236
+	0.0808101
+	0.0806669
+
+1024
+	0.0799385
+	0.0799385
+	0.0800937
+
+2048
+	0.0837026
+	0.0837026
+	0.08184
+

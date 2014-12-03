@@ -138,9 +138,41 @@ void matrix_mul<chunk_64>(chunk_64 *a, chunk_64 *b, chunk_64 *res, std::size_t d
 	{
 		for (std::size_t j = 0; j < dim2; ++j)
 		{
-			res[i * dim1 + j] = 0;
+			chunk_64 A = 0;
+			chunk_64 r = 0;
 			for (std::size_t k = 0; k < dim3; ++k)
-				chunk_mul(a[i * dim1 + k], b[k * dim2 + j], res[i * dim1 + j]);
+			{
+				chunk_64 L = 0xff00000000000000;
+				chunk_64 R = 0x0000000000000000;
+				chunk_64 ch_bit = 0x0080000000000000;
+
+				chunk_64 a1 = a[i * dim1 + k];
+
+				for (short i = 0; i < 8; ++i)
+				{
+					A |= (a1 & L) << i;
+					A |= (a1 & R) >> (8 - i);
+
+					L = (L >> 8) ^ ch_bit;
+					R = (R >> 8) ^ ch_bit;
+					ch_bit >>= 9;
+				}
+
+				const chunk_64 F = 0x8080808080808080;
+				chunk_64 b1 = b[k * dim2 + j];
+
+				for (short i = 0; i < 8; ++i)
+				{
+					chunk_64 t1 = A & F;
+					t1 |= t1 >> 1; t1 |= t1 >> 2; t1 |= t1 >> 4;
+
+					r |= t1 & b1;
+					b1 = _rotl64(b1, 8);
+					A <<= 1;
+				}
+			}
+			res[i * dim1 + j] = r;
+				//chunk_mul(a[i * dim1 + k], b[k * dim2 + j], res[i * dim1 + j]);
 		}
 	}
 }
