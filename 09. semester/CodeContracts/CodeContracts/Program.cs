@@ -11,38 +11,9 @@ namespace CodeContracts
     {
         static void Main(string[] args)
         {
-            Graph graph = new Graph();
+            Huffman.Histogram("file.txt");
 
-            var first = 
-                graph.Create(1).Connect(
-                    graph.Create(2).Connect(
-                        graph.Get(1)), 
-                    graph.Create(3).Connect(
-                        graph.Create(4),
-                        graph.Create(5).Connect(
-                            graph.Get(2)),
-                        graph.Create(6).Connect(
-                            graph.Get(1))
-                        )
-                    );
-
-            IntCollection stack = new IntCollection();
-            stack.Add(first.Id);
-
-            IntCollection searchPath = new IntCollection();
-
-            while (stack.Size() > 0)
-            {
-                int id = stack.Get(stack.Size() - 1);
-                searchPath.Add(id);
-
-                Node node = graph.Get(id);
-                foreach(Node n in node.Neighbors)
-                {
-                    if (searchPath.c)
-                }
-
-            }
+            Console.ReadKey();
 
 
             //IntCollection col = new IntCollection();

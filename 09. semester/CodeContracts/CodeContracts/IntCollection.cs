@@ -15,11 +15,6 @@ namespace CodeContracts
             Contract.Invariant(data != null);
             Contract.Invariant(Size() >= 0);
         }
-        [ContractAbbreviator]
-        private void indexInBounds(int index)
-        {
-             Contract.Requires(index >= 0 && index < Size());
-        }
 
         private readonly List<int> data = new List<int>();
 
