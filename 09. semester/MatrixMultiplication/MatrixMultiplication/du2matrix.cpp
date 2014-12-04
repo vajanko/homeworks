@@ -199,6 +199,8 @@ void matrix_mul<chunk_64>(chunk_64 *a, chunk_64 *b, chunk_64 *res, std::size_t d
 			{
 				chunk_mul(aa[i * dim1 + k].m128i_u64[0], bb[k * dim2 + j].m128i_u64[0], rr[i * dim1 + j].m128i_u64[0]);
 				chunk_mul(aa[i * dim1 + k].m128i_u64[1], bb[k * dim2 + j].m128i_u64[1], rr[i * dim1 + j].m128i_u64[1]);
+				chunk_mul(aa[i * dim1 + k].m128i_u64[0], bb[k * dim2 + j].m128i_u64[1], rr[i * dim1 + j].m128i_u64[0]);
+				chunk_mul(aa[i * dim1 + k].m128i_u64[1], bb[k * dim2 + j].m128i_u64[0], rr[i * dim1 + j].m128i_u64[1]);
 				//chunk_mul(a[i * dim1 + k], b[k * dim2 + j], res[i * dim1 + j]);
 			}
 		}
