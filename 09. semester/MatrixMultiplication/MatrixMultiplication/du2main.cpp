@@ -80,6 +80,8 @@ void test()
 
 int main( int argc, char * * argv)
 {
+	test();
+
 	generator_list< std::size_t, time_complexity> gl;
 
 #ifdef _DEBUG
@@ -109,7 +111,7 @@ int main( int argc, char * * argv)
 	gl.run< false>( log);
 #endif
 	
-	//test();
+	
 	//system("pause");
 	//return 0;
 }
