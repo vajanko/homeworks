@@ -8,6 +8,7 @@
 //#include <immintrin.h>
 
 typedef bool chunk_1;
+typedef unsigned char chunk_8;
 typedef unsigned short chunk_16;
 typedef unsigned __int64 chunk_64;
 typedef __m128i chunk_128;

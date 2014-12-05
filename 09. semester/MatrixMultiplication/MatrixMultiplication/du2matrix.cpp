@@ -98,7 +98,7 @@ void set_value<chunk_16>(chunk_16 *data, std::size_t cols, std::size_t i, std::s
 template<>
 void chunk_mul<chunk_64>(chunk_64 &a, chunk_64 &b, chunk_64 &res)
 {
-	chunk_64 A = 0;
+	/*chunk_64 A = 0;
 	chunk_64 L = 0xff00000000000000;
 	chunk_64 R = 0x0000000000000000;
 	chunk_64 ch_bit = 0x0080000000000000;
@@ -111,7 +111,12 @@ void chunk_mul<chunk_64>(chunk_64 &a, chunk_64 &b, chunk_64 &res)
 		L = (L >> 8) ^ ch_bit;
 		R = (R >> 8) ^ ch_bit;
 		ch_bit >>= 9;
-	}
+	}*/
+	union { chunk_64 m; chunk_8 u[8]; } T;
+	T.m = a;
+	for (chunk_8 i = 1; i < 8; ++i)
+		T.u[i] = _rotl8(T.u[i], i);
+	chunk_64 A = T.m;
 
 	const chunk_64 F = 0x8080808080808080;
 
@@ -124,6 +129,28 @@ void chunk_mul<chunk_64>(chunk_64 &a, chunk_64 &b, chunk_64 &res)
 		b = _rotl64(b, 8);
 		A <<= 1;
 	}
+
+	//static const chunk_64 D = 0x8040201008040201;	// diagonal
+	//static const chunk_64 UD = 0x80C0E0F0F8FCFE;	// ones under the diagonal
+	//static const chunk_64 AD = 0x7F3F1F0F07030100;	// ones above the diagonal
+
+	//for (short i = 0; i < 8; ++i)
+	//{
+
+	//	chunk_64 A = a & D;
+	//	A = A & (A >> 1);			// no oveflows
+	//	A = A & ((A >> 2) & UD);	// clear overflows from the upper line
+	//	A = A & ((A >> 4) & UD);	// clear overflows from the upper line
+	//	A = A & (A << 1);			// no overflows
+	//	A = A & ((A << 2) & AD);	// clear overflows from the lower line
+	//	A = A & ((A << 4) & AD);	// clear overflows from the lower line
+
+	//	// now A is a matrix 8x8 with 8 ones on the line when there is 1 on the diagonal
+	//	// otherwise there are zeros
+
+
+	//	b = _rotl64(b, 8);
+	//}
 }
 //template<>
 //void matrix_mul<chunk_64>(chunk_64 *a, chunk_64 *b, chunk_64 *res, std::size_t dim1, std::size_t dim2, std::size_t dim3)
@@ -189,20 +216,24 @@ void matrix_mul<chunk_64>(chunk_64 *a, chunk_64 *b, chunk_64 *res, std::size_t d
 	chunk_128 *rr = (chunk_128 *)res;
 	for (std::size_t i = 0; i < dim1; ++i)
 	{
-		for (std::size_t j = 0; j < dim2; j += 2)
+		//for (std::size_t j = 0; j < dim2; j += 2)
+		for (std::size_t j = 0; j < dim2; ++j)
 		{
 			// function call solution
+			res[i * dim1 + j] = 0;
+			for (std::size_t k = 0; k < dim3; ++k)
+				chunk_mul(a[i * dim1 + k], b[k * dim2 + j], res[i * dim1 + j]);
 			/*res[i * dim1 + j] = 0;
 			res[(i + 1) * dim1 + j] = 0;*/
-			rr[i * dim1 + j] = _mm_setzero_si128();
-			for (std::size_t k = 0; k < dim3; k += 2)
-			{
-				chunk_mul(aa[i * dim1 + k].m128i_u64[0], bb[k * dim2 + j].m128i_u64[0], rr[i * dim1 + j].m128i_u64[0]);
-				chunk_mul(aa[i * dim1 + k].m128i_u64[1], bb[k * dim2 + j].m128i_u64[1], rr[i * dim1 + j].m128i_u64[1]);
-				chunk_mul(aa[i * dim1 + k].m128i_u64[0], bb[k * dim2 + j].m128i_u64[1], rr[i * dim1 + j].m128i_u64[0]);
-				chunk_mul(aa[i * dim1 + k].m128i_u64[1], bb[k * dim2 + j].m128i_u64[0], rr[i * dim1 + j].m128i_u64[1]);
-				//chunk_mul(a[i * dim1 + k], b[k * dim2 + j], res[i * dim1 + j]);
-			}
+			//rr[i * dim1 + j] = _mm_setzero_si128();
+			//for (std::size_t k = 0; k < dim3; k += 2)
+			//{
+			//	chunk_mul(aa[i * dim1 + k].m128i_u64[0], bb[k * dim2 + j].m128i_u64[0], rr[i * dim1 + j].m128i_u64[0]);
+			//	chunk_mul(aa[i * dim1 + k].m128i_u64[1], bb[k * dim2 + j].m128i_u64[1], rr[i * dim1 + j].m128i_u64[1]);
+			//	chunk_mul(aa[i * dim1 + k].m128i_u64[0], bb[k * dim2 + j].m128i_u64[1], rr[i * dim1 + j].m128i_u64[0]);
+			//	chunk_mul(aa[i * dim1 + k].m128i_u64[1], bb[k * dim2 + j].m128i_u64[0], rr[i * dim1 + j].m128i_u64[1]);
+			//	//chunk_mul(a[i * dim1 + k], b[k * dim2 + j], res[i * dim1 + j]);
+			//}
 		}
 	}
 }
