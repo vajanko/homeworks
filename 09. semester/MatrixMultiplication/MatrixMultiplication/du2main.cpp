@@ -80,7 +80,9 @@ void test()
 
 int main( int argc, char * * argv)
 {
+#ifdef _DEBUG
 	test();
+#endif
 
 	generator_list< std::size_t, time_complexity> gl;
 
