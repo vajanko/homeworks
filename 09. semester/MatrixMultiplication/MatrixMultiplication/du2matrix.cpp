@@ -115,10 +115,10 @@ void chunk_mul<chunk_64>(chunk_64 &a, chunk_64 &b, chunk_64 &res)
 
 	// it would be nice if this could be done in parallel using sse instructions
 	// TODO: notice that this matrix can be cached and used multiple times
-	union { chunk_64 m; chunk_8 u[8]; } T;
+	union { chunk_8 u[8]; chunk_64 m; } T;
 	T.m = a;
 	for (chunk_8 i = 1; i < 8; ++i)
-		T.u[i] = _rotl8(T.u[i], i);
+		T.u[7 - i] = _rotl8(T.u[7 - i], i);
 	chunk_64 A = T.m;
 
 	static const chunk_64 F = 0x8080808080808080;
@@ -205,30 +205,43 @@ void chunk_mul2(chunk_64 a, chunk_64 b, chunk_64 &res)
 template<>
 void matrix_mul<chunk_64>(chunk_64 *a, chunk_64 *b, chunk_64 *res, std::size_t dim1, std::size_t dim2, std::size_t dim3)
 {
+	static const chunk_64 F = 0x8080808080808080;
+
 	dim1 >>= 3;		// divide by 8
 	dim2 >>= 3;
 	dim3 >>= 3;
 
-	chunk_128 *aa = (chunk_128 *)a;
-	chunk_128 *bb = (chunk_128 *)b;
-	chunk_128 *rr = (chunk_128 *)res;
 	for (std::size_t i = 0; i < dim1; ++i)
 	{
-		// notice that j and k indices are switch - this way rotate line of the left matrix only onv
+		// notice that j and k indices are switch - this way rotate line of the left matrix only once
 		for (std::size_t k = 0; k < dim3; ++k)
 		{
 			// prepare a[i * dim1 + k]
+			// it would be nice if this could be done in parallel using sse instructions (but it can not)
 			union { chunk_64 m; chunk_8 u[8]; } T;
 			T.m = a[i * dim1 + k];
 			for (chunk_8 x = 1; x < 8; ++x)
-				T.u[x] = _rotl8(T.u[x], x);
+				T.u[7 - x] = _rotl8(T.u[7 - x], x);
 
 			for (std::size_t j = 0; j < dim2; ++j)
 			{
+				chunk_64 A = T.m;
+
 				if (k == 0)
 					res[i * dim1 + j] = 0;
 
-				chunk_mul2(T.m, b[k * dim2 + j], res[i * dim1 + j]);
+				chunk_64 B = b[k * dim2 + j];
+				chunk_64 &R = res[i * dim1 + j];
+
+				for (short i = 0; i < 8; ++i)
+				{
+					chunk_64 t1 = A & F;
+					t1 |= t1 >> 1; t1 |= t1 >> 2; t1 |= t1 >> 4;
+
+					R |= t1 & B;
+					B = _rotl64(B, 8);
+					A <<= 1;
+				}
 			}
 		}
 		//for (std::size_t j = 0; j < dim2; ++j)
@@ -238,18 +251,27 @@ void matrix_mul<chunk_64>(chunk_64 *a, chunk_64 *b, chunk_64 *res, std::size_t d
 		//	for (std::size_t k = 0; k < dim3; ++k)
 		//		chunk_mul(a[i * dim1 + k], b[k * dim2 + j], res[i * dim1 + j]);
 		//}
-		/*for (std::size_t j = 0; j < dim2; j += 2)
-		{
-			rr[i * dim1 + j] = _mm_setzero_si128();
-			for (std::size_t k = 0; k < dim3; k += 2)
-			{
-				chunk_mul(aa[i * dim1 + k].m128i_u64[0], bb[k * dim2 + j].m128i_u64[0], rr[i * dim1 + j].m128i_u64[0]);
-				chunk_mul(aa[i * dim1 + k].m128i_u64[1], bb[k * dim2 + j].m128i_u64[1], rr[i * dim1 + j].m128i_u64[1]);
-				chunk_mul(aa[i * dim1 + k].m128i_u64[0], bb[k * dim2 + j].m128i_u64[1], rr[i * dim1 + j].m128i_u64[0]);
-				chunk_mul(aa[i * dim1 + k].m128i_u64[1], bb[k * dim2 + j].m128i_u64[0], rr[i * dim1 + j].m128i_u64[1]);
-			}
-		}*/
 	}
+
+	/*chunk_128 *aa = (chunk_128 *)a;
+	chunk_128 *bb = (chunk_128 *)b;
+	chunk_128 *rr = (chunk_128 *)res;
+	for (std::size_t i = 0; i < dim1; ++i)
+	{
+		for (std::size_t j = 0; j < dim2; j += 2)
+		{
+			chunk_128 &r1 = rr[i * dim1 / 2 + j / 2];
+			r1 = _mm_setzero_si128();
+			for (std::size_t k = 0; k < dim3; ++k)
+			{
+				chunk_128 a1 = aa[i * dim1 / 2 + k / 2];
+				chunk_128 b1 = bb[k * dim2 / 2 + j / 2];
+
+				chunk_mul(a1.m128i_u64[k % 2], b1.m128i_u64[0], r1.m128i_u64[0]);
+				chunk_mul(a1.m128i_u64[k % 2], b1.m128i_u64[1], r1.m128i_u64[1]);
+			}
+		}
+	}*/
 }
 template<>
 bool get_value<chunk_64>(chunk_64 *data, std::size_t cols, std::size_t i, std::size_t j)
@@ -399,10 +421,14 @@ matrix::matrix(std::size_t m, std::size_t n) :
 	),
 	data(new chunk_t[data_size])
 {
-
+	
 }
 
 matrix::~matrix()
 {
-	delete data;
+	if (data != nullptr)
+	{
+		delete data;
+		data = nullptr;
+	}
 }

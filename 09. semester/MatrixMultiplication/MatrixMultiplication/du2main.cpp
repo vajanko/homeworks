@@ -68,7 +68,7 @@ void test()
 	matrix a(size, size);
 	init_id(a);
 	matrix b(size, size);
-	init_cols(b);
+	init_trian(b);
 
 	matrix c(size, size);
 	c.assign_mul(b, a);
