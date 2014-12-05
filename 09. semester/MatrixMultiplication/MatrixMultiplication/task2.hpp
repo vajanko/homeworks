@@ -197,14 +197,14 @@ struct task_3 {
 	template< bool debug, typename D, typename C>
 	static void initial_check( logger & log, const D & data, const C & check)
 	{
-		log.ss() << "CHKSUM A[" << data.a.vsize() << "," << data.a.hsize() << "] = " << chksum( data.a) << std::endl;
-		log.ss() << "CHKSUM B[" << data.b.vsize() << "," << data.b.hsize() << "] = " << chksum( data.b) << std::endl;
+		//log.ss() << "CHKSUM A[" << data.a.vsize() << "," << data.a.hsize() << "] = " << chksum( data.a) << std::endl;
+		//log.ss() << "CHKSUM B[" << data.b.vsize() << "," << data.b.hsize() << "] = " << chksum( data.b) << std::endl;
 	}
 
 	template< bool debug, typename D, typename C>
 	static void final_check( logger & log, const D & data, const C & check)
 	{
-		log.ss() << "CHKSUM C[" << data.c.vsize() << "," << data.c.hsize() << "] = " << chksum( data.c) << std::endl;
+		//log.ss() << "CHKSUM C[" << data.c.vsize() << "," << data.c.hsize() << "] = " << chksum( data.c) << std::endl;
 	}
 };
 
