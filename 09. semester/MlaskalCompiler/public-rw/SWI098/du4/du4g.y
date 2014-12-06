@@ -229,7 +229,7 @@ ord_range: ord_const DUTOK_DOTDOT ord_const
 proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params { procedure_declare(ctx, @1, $2); }
 	;
 /* function header */
-func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER { function_declare(ctx, @1, $2, @4, $4); }/* --> scalar type identifier */
+func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER { function_declare(ctx, @1, $2, @5, $5); }/* --> scalar type identifier */
 	;
 /* procedure or function parameters possibly without parentesis and any parameters */
 params:	/* empty parameters without parentesis */
