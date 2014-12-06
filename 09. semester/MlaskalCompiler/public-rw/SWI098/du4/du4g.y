@@ -80,7 +80,6 @@
 %lex-param {mlc::MlaskalCtx *ctx}
 %locations
 
-/* %type <mlc::ls_int_type::const_pointer> uints; */
 
 %%
 
@@ -93,11 +92,11 @@ program_block: block_label block_const block_type block_var block_proc_func bloc
 block_proc_func: 
 	| proc_func_defs DUTOK_SEMICOLON
 	;
-proc_func_def: proc DUTOK_SEMICOLON block
+proc_func_def: proc DUTOK_SEMICOLON block 
 	| func DUTOK_SEMICOLON block
 	;
 proc_func_defs: proc_func_def
-	| proc_func_defs DUTOK_SEMICOLON proc_func_def
+	| proc_func_defs DUTOK_SEMICOLON proc_func_def 
 	;
 /* End of block P*/
 
@@ -131,7 +130,7 @@ var_def: identifiers DUTOK_COLON type
 var_defs: var_def
 	| var_defs DUTOK_SEMICOLON var_def
 	;
-block_begin_end: DUTOK_BEGIN stmts DUTOK_END
+block_begin_end: DUTOK_BEGIN stmts DUTOK_END { block_leave(ctx, @2); }
 /* End of block */
 
 /* Statement */
@@ -227,10 +226,10 @@ ord_range: ord_const DUTOK_DOTDOT ord_const
 
 /* Procedure - function */
 /* procedure header */
-proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params
+proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params { procedure_declare(ctx, @1, $2); }
 	;
 /* function header */
-func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER /* --> scalar type identifier */
+func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER { function_declare(ctx, @1, $2, @4, $4); }/* --> scalar type identifier */
 	;
 /* procedure or function parameters possibly without parentesis and any parameters */
 params:	/* empty parameters without parentesis */
@@ -267,9 +266,9 @@ ord_const:
 identifiers: DUTOK_IDENTIFIER
 	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER
 	;
-/* non-empty list of uints separated by a comma */
-uints: DUTOK_UINT 
-	| uints DUTOK_COMMA DUTOK_UINT
+/* non-empty list of uints separated by a comma - these are only used in block_label */
+uints: DUTOK_UINT { ctx->tab->add_label_entry(@1, $1.int_ci_, new_label(ctx)); }
+	| uints DUTOK_COMMA DUTOK_UINT { ctx->tab->add_label_entry(@3, $3.int_ci_, new_label(ctx)); }
 	;
 
 %%

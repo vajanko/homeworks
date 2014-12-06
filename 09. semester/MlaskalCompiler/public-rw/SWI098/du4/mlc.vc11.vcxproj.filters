@@ -155,4 +155,7 @@
       <Filter>Header Files - students</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\public-ro\mlc\du4\tests\test.mls" />
+  </ItemGroup>
 </Project>
