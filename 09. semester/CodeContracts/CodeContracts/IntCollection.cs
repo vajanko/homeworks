@@ -48,6 +48,7 @@ namespace CodeContracts
             Contract.Requires(Contract.Exists(0, Size(), i => Get(i) < val));
             // returned value is higher than "val"
             Contract.Ensures(Contract.Result<int>() > val && 
+                // and it is minimal such value
                 Contract.ForAll(0, Size(), i => Get(i) <= val || Get(i) >= Contract.Result<int>()));
 
             return data.Where(i => i > val).OrderBy(i => i).First();

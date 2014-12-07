@@ -11,8 +11,14 @@ namespace CodeContracts
     {
         static void Main(string[] args)
         {
-            Huffman.Histogram("file.txt");
+            Histogram hist = Huffman.ReadHistogram("file.txt");
+            Console.WriteLine("Histrogram:\n{0}", hist);
 
+            hist.SortByOccurance();
+
+            Console.WriteLine("Sorted histrogram:\n{0}", hist);
+
+            Console.WriteLine("Press any key to continue ... (Do you know where the \"any\" key is?)");
             Console.ReadKey();
 
 

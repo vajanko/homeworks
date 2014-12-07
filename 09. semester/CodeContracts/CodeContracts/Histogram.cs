@@ -1,0 +1,54 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CodeContracts
+{
+    class Histogram
+    {
+        private IntCollection data;
+
+        public Histogram(IntCollection data)
+        {
+            this.data = data;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        public void SortByOccurance()
+        {
+            // this is special value so that GetHigher method won't throw an exception
+            data.Add(int.MaxValue);
+
+            int curItem = 0;
+            // -1 is because of the int.MaxValue
+            while (curItem != int.MaxValue)
+            //for (int i = 0; i < data.Size() - 1; i++)
+            {
+                // get next value in the ordering
+                curItem = data.GetHigher(curItem);
+                // remove value from its current position ...
+                data.RemoveAll(curItem);
+                // ... and place it at the end
+                data.Add(curItem);
+            }
+
+            // this was just auxiliary value and can be removed at the end
+            data.RemoveAll(int.MaxValue);
+        }
+
+        public override string ToString()
+        {
+            StringBuilder str = new StringBuilder();
+            for (int i = 0; i < data.Size(); i++)
+            {
+                int item = data.Get(i);
+                if (Huffman.GetCount(item) > 0)
+                    str.AppendFormat("{0}: {1}\n", Huffman.GetChar(item), Huffman.GetCount(item));
+            }
+            return str.ToString();
+        }
+    }
+}

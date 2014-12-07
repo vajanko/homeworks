@@ -82,19 +82,19 @@ namespace CodeContracts
             }
 
             // remove all characters without occurance
-            int idx = 0;
-            while (idx < hist.Size())
-            {
-                int item = hist.Get(idx);
-                if (GetCount(item) == 0)
-                {
-                    hist.RemoveAll(item);
-                }
-                else
-                {
-                    idx++;
-                }
-            }
+            //int idx = 0;
+            //while (idx < hist.Size())
+            //{
+            //    int item = hist.Get(idx);
+            //    if (GetCount(item) == 0)
+            //    {
+            //        hist.RemoveAll(item);
+            //    }
+            //    else
+            //    {
+            //        idx++;
+            //    }
+            //}
 
             return new Histogram(hist);
         }
