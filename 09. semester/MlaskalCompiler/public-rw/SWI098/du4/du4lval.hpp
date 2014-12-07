@@ -28,6 +28,8 @@ namespace mlc {
 				mlc::ls_str_type::const_pointer			str_ci_;		// const iterator into STRING literal table
 				mlc::ls_id_type::const_pointer			id_ci_;			// const iterator into identifier table
 
+				mlc::parameter_list *param_list_;
+				std::vector<mlc::ls_id_type::const_pointer> identifiers_;
 		};
 
 		/*************************************************************/

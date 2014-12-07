@@ -226,23 +226,23 @@ ord_range: ord_const DUTOK_DOTDOT ord_const
 
 /* Procedure - function */
 /* procedure header */
-proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params { procedure_declare(ctx, @1, $2); }
+proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params { procedure_declare(ctx, @1, $2, $3); }
 	;
 /* function header */
-func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER { function_declare(ctx, @1, $2, @5, $5); }/* --> scalar type identifier */
+func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER { function_declare(ctx, @1, $2, $3, @5, $5); }/* --> scalar type identifier */
 	;
 /* procedure or function parameters possibly without parentesis and any parameters */
-params:	/* empty parameters without parentesis */
-	| DUTOK_LPAR DUTOK_RPAR	/* empty parameters wiht parentesis */
-	| DUTOK_LPAR formal_params DUTOK_RPAR
+params: { $$.param_list_ = create_parameter_list(); }	/* empty parameters without parentesis */
+	| DUTOK_LPAR DUTOK_RPAR	{ $$.param_list_ = create_parameter_list(); }	/* empty parameters with parentesis */
+	| DUTOK_LPAR formal_params DUTOK_RPAR { $$.param_list_ = $2.param_list_; }
 	;
 /* non-empty list of parameter sections separated by semicolon */
-formal_params: params_section
-	| formal_params DUTOK_SEMICOLON params_section
+formal_params: params_section { $1.param_list_ = $$.param_list_; }
+	| formal_params DUTOK_SEMICOLON params_section { $1.param_list_->append_and_kill($3.param_list_); $$.param_list_ = $1.param_list_; }
 	;
 /* declaration of possibly multiple parameters for one single type,  */
-params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier */
-	| DUTOK_VAR identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier */
+params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER { parameter_add(ctx, $$, $1, @3, $3, param_type::value); }		/* --> type identifier */
+	| DUTOK_VAR identifiers DUTOK_COLON DUTOK_IDENTIFIER { parameter_add(ctx, $$, $2, @4, $4, param_type::reference); } /* --> type identifier */
 	;
 /* End of procedure - function */
 
@@ -263,8 +263,8 @@ ord_const:
 /* End of constants */
 
 /* non-empty list of identifiers separated by comma */
-identifiers: DUTOK_IDENTIFIER
-	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+identifiers: DUTOK_IDENTIFIER { identifier_add($$, $1); }
+	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER { /*identifier_copy($$, $1);*/ identifier_add($$, $3); }
 	;
 /* non-empty list of uints separated by a comma - these are only used in block_label */
 uints: DUTOK_UINT { ctx->tab->add_label_entry(@1, $1.int_ci_, new_label(ctx)); }
