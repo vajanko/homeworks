@@ -11,11 +11,11 @@ namespace CodeContracts
     {
         static void Main(string[] args)
         {
-            // from given text file create a historgram of character occurances
+            // from given text file create a historgram of character occurences
             Histogram hist = Huffman.CreateHistogram("file.txt");
             Console.WriteLine("Histrogram:\n{0}", hist);
 
-            // sort historgram table by the number of occurances
+            // sort historgram table by the number of occurences
             hist.Sort();
 
             Console.WriteLine("Sorted histrogram:\n{0}", hist);

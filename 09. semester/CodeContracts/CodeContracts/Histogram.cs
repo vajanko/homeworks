@@ -11,7 +11,7 @@ namespace CodeContracts
     /// </summary>
     class Histogram
     {
-        private IntCollection data;
+        private readonly IntCollection data;
 
         /// <summary>
         /// Create a new histogram initialized with data representation as described in <see cref="Huffman"/>
@@ -21,8 +21,8 @@ namespace CodeContracts
             this.data = data;
         }
         /// <summary>
-        /// Sort historgam table by number of character occurances. Characters with the same number
-        /// of occurances are sorted by the character ordinal value.
+        /// Sort historgam table by number of character occurences. Characters with the same number
+        /// of occurences are sorted by the character ordinal value.
         /// </summary>
         public void Sort()
         {

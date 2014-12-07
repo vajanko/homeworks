@@ -42,11 +42,11 @@ namespace CodeContracts
         /// <returns>Histogram of given text file</returns>
         public static Histogram CreateHistogram(string filename)
         {
-            // collection of characters and its occurances stored in a single int
+            // collection of characters and its occurences stored in a single int
             IntCollection hist = new IntCollection();
             // initialize empty tables
             for (char ch = (char)0; ch < 256; ch++)
-                hist.Add(CreateItem(ch, 0));    // zero occurances of each character
+                hist.Add(CreateItem(ch, 0));    // zero occurences of each character
 
             // collection of character from the input file stored as integers
             // that is because we only have int collection
@@ -70,7 +70,7 @@ namespace CodeContracts
                     {
                         int firstChar = text.Get(0);
 
-                        // count occurance of the first character
+                        // count occurence of the first character
                         int count = 0;
                         while (count < text.Size() && text.Get(count) == firstChar)
                             count++;
@@ -84,7 +84,7 @@ namespace CodeContracts
                             int item = hist.Get(i);
                             if (GetChar(item) == firstChar)
                             {
-                                count += GetCount(item);    // total number of firstChar occurances
+                                count += GetCount(item);    // total number of firstChar occurences
                                 hist.Remove(i);
                                 break;
                             }
