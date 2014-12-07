@@ -6,18 +6,25 @@ using System.Threading.Tasks;
 
 namespace CodeContracts
 {
+    /// <summary>
+    /// Encapsulates a collection of characters and its occurences in some peace of text.
+    /// </summary>
     class Histogram
     {
         private IntCollection data;
 
+        /// <summary>
+        /// Create a new histogram initialized with data representation as described in <see cref="Huffman"/>
+        /// </summary>
         public Histogram(IntCollection data)
         {
             this.data = data;
         }
         /// <summary>
-        /// 
+        /// Sort historgam table by number of character occurances. Characters with the same number
+        /// of occurances are sorted by the character ordinal value.
         /// </summary>
-        public void SortByOccurance()
+        public void Sort()
         {
             // this is special value so that GetHigher method won't throw an exception
             data.Add(int.MaxValue);

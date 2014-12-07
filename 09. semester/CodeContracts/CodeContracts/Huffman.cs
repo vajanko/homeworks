@@ -7,31 +7,49 @@ using System.Threading.Tasks;
 
 namespace CodeContracts
 {
+    /// <summary>
+    /// Huffman encoding tools
+    /// </summary>
     class Huffman
     {
+        /// <summary>
+        /// Get last 8 bits from given integer number as char
+        /// </summary>
         public static char GetChar(int val)
         {
             return (char)(val & 0xff);
         }
+        /// <summary>
+        /// Get first 24 bits from given integer number as int
+        /// </summary>
         public static int GetCount(int val)
         {
             return val >> 8;
         }
+        /// <summary>
+        /// Create single integer storing 24 bit integer and 8 bit char value
+        /// </summary>
+        /// <param name="ch">char value to be combined with int</param>
+        /// <param name="count">int value to be combined with char</param>
         public static int CreateItem(char ch, int count)
         {
             return (count << 8) | (int)ch;
         }
-
-        public static Histogram ReadHistogram(string filename)
+        /// <summary>
+        /// Read given text file and creat a historgram useful for huffman encoding
+        /// </summary>
+        /// <param name="filename">Full path to the file</param>
+        /// <returns>Histogram of given text file</returns>
+        public static Histogram CreateHistogram(string filename)
         {
+            // collection of characters and its occurances stored in a single int
             IntCollection hist = new IntCollection();
             // initialize empty tables
             for (char ch = (char)0; ch < 256; ch++)
-            {
-                // zero occurances of each character
-                hist.Add(CreateItem(ch, 0));
-            }
+                hist.Add(CreateItem(ch, 0));    // zero occurances of each character
 
+            // collection of character from the input file stored as integers
+            // that is because we only have int collection
             IntCollection text = new IntCollection();
             char[] buff = new char[4];
 
@@ -44,9 +62,10 @@ namespace CodeContracts
                     for (int i = 0; i < readLength; i++)
                         text.Add((int)buff[i]);
 
-                    // put same characters together so that thay can be counted easily
+                    // put same characters together so that we can count them easily
                     text.Sort();
 
+                    // now "text" works as a queue, characters are processed and removed from the begining
                     while (text.Size() > 0)
                     {
                         int firstChar = text.Get(0);
@@ -56,13 +75,16 @@ namespace CodeContracts
                         while (count < text.Size() && text.Get(count) == firstChar)
                             count++;
 
-                        // get number of occurances of the first character processed in the previous buffer
+                        // iterrate over the hist collection and find current number of occurences of firstChar
+                        // notice that hist is initialized with zero for each character
                         for (int i = 0; i < hist.Size(); i++)
                         {
+                            // this is very inefficient but we don't have any "IndexOf" method
+
                             int item = hist.Get(i);
                             if (GetChar(item) == firstChar)
                             {
-                                count += GetCount(item);
+                                count += GetCount(item);    // total number of firstChar occurances
                                 hist.Remove(i);
                                 break;
                             }
@@ -80,21 +102,6 @@ namespace CodeContracts
                     text.Clear();
                 }
             }
-
-            // remove all characters without occurance
-            //int idx = 0;
-            //while (idx < hist.Size())
-            //{
-            //    int item = hist.Get(idx);
-            //    if (GetCount(item) == 0)
-            //    {
-            //        hist.RemoveAll(item);
-            //    }
-            //    else
-            //    {
-            //        idx++;
-            //    }
-            //}
 
             return new Histogram(hist);
         }
