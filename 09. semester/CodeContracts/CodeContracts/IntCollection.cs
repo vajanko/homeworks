@@ -47,9 +47,10 @@ namespace CodeContracts
             // there exists an item that is smaller than given value "val"
             Contract.Requires(Contract.Exists(0, Size(), i => Get(i) < val));
             // returned value is higher than "val"
-            Contract.Ensures(Contract.Result<int>() > val);
+            Contract.Ensures(Contract.Result<int>() > val && 
+                Contract.ForAll(0, Size(), i => Get(i) <= val || Get(i) >= Contract.Result<int>()));
 
-            return data.First(i => i > val);
+            return data.Where(i => i > val).OrderBy(i => i).First();
         }
         public void Remove(int index)
         {
@@ -81,6 +82,11 @@ namespace CodeContracts
             Contract.Ensures(Size() == 0);
 
             data.Clear();
+        }
+
+        public override string ToString()
+        {
+            return string.Format("[{0}]", string.Join(", ", data));
         }
         
     }

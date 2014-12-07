@@ -9,17 +9,27 @@ namespace CodeContracts
 {
     class Huffman
     {
-        public static void Histogram(string filename)
+        public static char GetChar(int val)
         {
-            // initialize empty table of characters and zero counts
-            // this is necessary because of the GetHigher method
-            // notice that there is not characted with value 256
-            IntCollection counts = new IntCollection();
-            IntCollection chars = new IntCollection();
+            return (char)(val & 0xff);
+        }
+        public static int GetCount(int val)
+        {
+            return val >> 8;
+        }
+        public static int CreateItem(char ch, int count)
+        {
+            return (count << 8) | (int)ch;
+        }
+
+        public static Histogram ReadHistogram(string filename)
+        {
+            IntCollection hist = new IntCollection();
+            // initialize empty tables
             for (char ch = (char)0; ch < 256; ch++)
             {
-                chars.Add((int)ch);
-                counts.Add(0);
+                // zero occurances of each character
+                hist.Add(CreateItem(ch, 0));
             }
 
             IntCollection text = new IntCollection();
@@ -45,28 +55,24 @@ namespace CodeContracts
                         int count = 0;
                         while (count < text.Size() && text.Get(count) == firstChar)
                             count++;
-                        //int nextChar = text.GetHigher(firstChar);
-                        //chars.GetHigher(firstChar);
 
                         // get number of occurances of the first character processed in the previous buffer
-                        for (int i = 0; i < chars.Size(); i++)
+                        for (int i = 0; i < hist.Size(); i++)
                         {
-                            if (chars.Get(i) == firstChar)
+                            int item = hist.Get(i);
+                            if (GetChar(item) == firstChar)
                             {
-                                count += counts.Get(i);
-                                chars.Remove(i);
-                                counts.Remove(i);
-
+                                count += GetCount(item);
+                                hist.Remove(i);
                                 break;
                             }
                         }
 
                         // in this container we can not update already inserted value
                         // therefore we need to remove previously added value and add a new one at the end
-                        chars.Add(firstChar);
-                        counts.Add(count);
+                        hist.Add(CreateItem((char)firstChar, count));
 
-                        // remove processed character from the text buffer
+                        // remove processed character from the text buffer (there can be multiple)
                         text.RemoveAll(firstChar);
                     }
 
@@ -75,11 +81,22 @@ namespace CodeContracts
                 }
             }
 
-            for (int i = 0; i < chars.Size(); i++)
+            // remove all characters without occurance
+            int idx = 0;
+            while (idx < hist.Size())
             {
-                if (counts.Get(i) > 0)
-                    Console.WriteLine("{0}: {1}", (char)chars.Get(i), counts.Get(i));
+                int item = hist.Get(idx);
+                if (GetCount(item) == 0)
+                {
+                    hist.RemoveAll(item);
+                }
+                else
+                {
+                    idx++;
+                }
             }
+
+            return new Histogram(hist);
         }
     }
 }
