@@ -213,14 +213,16 @@ idxs: idx
 
 /* Type */
 type: DUTOK_IDENTIFIER	/* --> type, ordinal type, structural type, integer constant identifier */
-	| ord_const DUTOK_DOTDOT ord_const
+	| range
 	| DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
 	;
 ord_type: DUTOK_IDENTIFIER	/* --> ordinal type identifier */
-	| ord_range
+	| ranges
 	;
-ord_range: ord_const DUTOK_DOTDOT ord_const
-	| ord_range DUTOK_COMMA ord_const DUTOK_DOTDOT ord_const
+range: ord_const DUTOK_DOTDOT ord_const
+	;
+ranges: range
+	| ranges DUTOK_COMMA range
 	;
 /* End of type*/
 
