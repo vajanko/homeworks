@@ -29,9 +29,10 @@ namespace mlc {
 	/* This method must be called when procedure or function declaration is finised (after the body) */
 	void block_leave(MlaskalCtx *ctx, int line);
 
+	void var_declare(MlaskalCtx *ctx, MlaskalLval &ids, int type_line, MlaskalLval &type);
 
 	void identifier_add(MlaskalLval &out_lval, MlaskalLval &in_lval);
-	void identifier_copy(MlaskalLval &out_lval, MlaskalLval &in_lval);
+	//void identifier_copy(MlaskalLval &out_lval, MlaskalLval &in_lval);
 
 	void test(MlaskalCtx *ctx, MlaskalLval &lval);
 }

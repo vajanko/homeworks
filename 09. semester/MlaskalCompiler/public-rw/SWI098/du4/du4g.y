@@ -125,7 +125,7 @@ type_assigns: type_assign
 block_var: /* empty */
 	| DUTOK_VAR var_defs DUTOK_SEMICOLON
 	;
-var_def: identifiers DUTOK_COLON type
+var_def: identifiers DUTOK_COLON type { var_declare(ctx, $1, @3, $3); }
 	;
 var_defs: var_def
 	| var_defs DUTOK_SEMICOLON var_def

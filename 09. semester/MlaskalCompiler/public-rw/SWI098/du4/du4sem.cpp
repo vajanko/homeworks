@@ -44,7 +44,7 @@ namespace mlc {
 		else if (tp->cat() == TCAT_ARRAY || tp->cat() == TCAT_UNDEF)
 		{	// return type is not an scalar type
 			error(DUERR_NOTSCALAR, type_line, *type.id_ci_);
-		}	
+		}
 
 		ctx->tab->add_fnc(fnc_line, fnc.id_ci_, tp, params.param_list_);
 		ctx->tab->enter(fnc_line, fnc.id_ci_);
@@ -54,6 +54,20 @@ namespace mlc {
 		// do not leave at the end of a program
 		if (ctx->tab->nested())
 			ctx->tab->leave(line);
+	}
+	void var_declare(MlaskalCtx *ctx, MlaskalLval &ids, int type_line, MlaskalLval &type)
+	{
+		auto sp = ctx->tab->find_symbol(type.id_ci_);
+		type_pointer tp = sp->access_typed()->type();
+		if (sp->kind() != SKIND_TYPE)
+		{	// return type does not exit
+			error(DUERR_NOTTYPE, type_line, *type.id_ci_);
+		}
+
+		for (auto &id : ids.identifiers_)
+		{	// TODO: here should be the line number of each identifier
+			ctx->tab->add_var(type_line, id, tp);
+		}
 	}
 
 	void type_declare(MlaskalCtx *ctx, int line, MlaskalLval &lval)
@@ -66,7 +80,12 @@ namespace mlc {
 		out.param_list_ = mlc::create_parameter_list();
 
 		/* --> type identifier */
-		type_pointer tp = get_type_pointer(ctx, type_line, type.id_ci_);
+		auto sp = ctx->tab->find_symbol(type.id_ci_);
+		type_pointer tp = sp->access_typed()->type();
+		if (sp->kind() != SKIND_TYPE)
+		{	// type does not exit
+			error(DUERR_NOTTYPE, type_line, *type.id_ci_);
+		}
 
 		if (pt == param_type::value)
 		{
