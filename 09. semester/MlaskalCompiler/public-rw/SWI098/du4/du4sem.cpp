@@ -65,12 +65,29 @@ namespace mlc {
 		}
 	}
 
-	void type_declare(MlaskalCtx *ctx, int name_line, MlaskalLval &name, int type_line, MlaskalLval &type)
+	void type_assign(MlaskalCtx *ctx, int name_line, MlaskalLval &name, MlaskalLval &type)
+	{
+		ctx->tab->add_type(name_line, name.id_ci_, type.type_);
+	}
+	void type_declare(MlaskalCtx *ctx, MlaskalLval &out, int type_line, MlaskalLval &type)
+	{
+		/* --> type, ordinal type, structural type, integer constant identifier */
+		type_pointer tp = get_type_pointer(ctx, type_line, type.id_ci_);
+		out.type_ = tp;
+	}
+	void range_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &low, MlaskalLval &high)
 	{
 		//DUERR_BADRANGE
-		type_pointer tp = get_type_pointer(ctx, type_line, type.id_ci_);
+		auto l = ctx->tab->ls_int().add(*low.int_ci_);
+		auto h = ctx->tab->ls_int().add(*high.int_ci_);
+		out.type_ = ctx->tab->create_range_type(l, h);
+	}
+	void array_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &range, MlaskalLval &type)
+	{
+		// TODO: type can be either identifier or anonym structural type
 
-		ctx->tab->add_type(name_line, name.id_ci_, tp);
+
+		out.type_ = ctx->tab->create_array_type(range.type_, type.type_);
 	}
 
 	void parameter_add(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &ids, int type_line, MlaskalLval &type, param_type pt)

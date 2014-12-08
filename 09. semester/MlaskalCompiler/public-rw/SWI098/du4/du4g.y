@@ -117,7 +117,7 @@ id_assigns: id_assign
 block_type: /* empty */
 	| DUTOK_TYPE type_assigns DUTOK_SEMICOLON
 	;
-type_assign: DUTOK_IDENTIFIER DUTOK_EQ type { type_declare(ctx, @1, $1, @3, $3); }
+type_assign: DUTOK_IDENTIFIER DUTOK_EQ type { type_assign(ctx, @1, $1, $3); }
 	;
 type_assigns: type_assign
 	| type_assigns DUTOK_SEMICOLON type_assign
@@ -212,17 +212,17 @@ idxs: idx
 /* End of expression */
 
 /* Type */
-type: DUTOK_IDENTIFIER	/* --> type, ordinal type, structural type, integer constant identifier */
-	| range
-	| DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
+type: DUTOK_IDENTIFIER { type_declare(ctx, $$, @1, $1); }	/* --> type, ordinal type, structural type, integer constant identifier */
+	| range { $$.type_ = $1.type_; }
+	| DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type { array_declare(ctx, $$, $3, $6); }
 	;
-ord_type: DUTOK_IDENTIFIER	/* --> ordinal type identifier */
-	| ranges
+ord_type: DUTOK_IDENTIFIER  { type_declare(ctx, $$, @1, $1); }	/* --> ordinal type identifier */
+	| ranges { $$.type_ = $1.type_; }
 	;
-range: ord_const DUTOK_DOTDOT ord_const
+range: ord_const DUTOK_DOTDOT ord_const { range_declare(ctx, $$, $1, $3); }
 	;
 ranges: range
-	| ranges DUTOK_COMMA range
+	| range DUTOK_COMMA ranges { array_declare(ctx, $$, $1, $3);  }
 	;
 /* End of type*/
 

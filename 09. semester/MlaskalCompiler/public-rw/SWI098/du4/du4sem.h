@@ -22,7 +22,10 @@ namespace mlc {
 		reference
 	};
 
-	void type_declare(MlaskalCtx *ctx, int name_line, MlaskalLval &name, int type_line, MlaskalLval &type);
+	void type_assign(MlaskalCtx *ctx, int name_line, MlaskalLval &name, MlaskalLval &type);
+	void type_declare(MlaskalCtx *ctx, MlaskalLval &out, int type_line, MlaskalLval &type);
+	void range_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &low, MlaskalLval &high);
+	void array_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &range, MlaskalLval &type);
 
 	void procedure_declare(MlaskalCtx *ctx, int proc_line, MlaskalLval &proc_lval, MlaskalLval &params_lval);
 	void function_declare(MlaskalCtx *ctx, int fnc_line, MlaskalLval &fnc, MlaskalLval &params, int type_line, MlaskalLval &type);
@@ -34,7 +37,6 @@ namespace mlc {
 	void var_declare(MlaskalCtx *ctx, MlaskalLval &ids, int type_line, MlaskalLval &type);
 
 	void identifier_add(MlaskalLval &out_lval, MlaskalLval &in_lval);
-	//void identifier_copy(MlaskalLval &out_lval, MlaskalLval &in_lval);
 
 	void test(MlaskalCtx *ctx, MlaskalLval &lval);
 }

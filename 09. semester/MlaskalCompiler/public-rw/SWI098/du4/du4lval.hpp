@@ -30,6 +30,7 @@ namespace mlc {
 
 				mlc::parameter_list *param_list_;
 				std::vector<mlc::ls_id_type::const_pointer> identifiers_;
+				mlc::type_pointer type_;
 		};
 
 		/*************************************************************/
