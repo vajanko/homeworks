@@ -11,33 +11,36 @@ namespace CodeContracts
     {
         static void Main(string[] args)
         {
-            // from given text file create a historgram of character occurences
-            Histogram hist = Huffman.CreateHistogram("file.txt");
-            Console.WriteLine("Histrogram:\n{0}", hist);
+            //// from given text file create a historgram of character occurences
+            //Histogram hist = Huffman.CreateHistogram("file.txt");
+            //Console.WriteLine("Histrogram:\n{0}", hist);
 
-            // sort historgram table by the number of occurences
-            hist.Sort();
+            //// sort historgram table by the number of occurences
+            //hist.Sort();
 
-            Console.WriteLine("Sorted histrogram:\n{0}", hist);
+            //Console.WriteLine("Sorted histrogram:\n{0}", hist);
 
-            Console.WriteLine("Press any key to continue ... :(Do you know where the \"any\" key is? :)");
-            Console.ReadKey();
+            //Console.WriteLine("Press any key to continue ... :(Do you know where the \"any\" key is? :)");
+            //Console.ReadKey();
 
 
-            //IntCollection col = new IntCollection();
+            IntCollection col = new IntCollection();
 
-            //Contract.Assert(col.Size() == 0);
+            Contract.Assert(col.Size() == 0);
 
-            //col.Add(100);
-            //Contract.Assert(col.Size() == 1);
-            //Contract.Assert(col.Get(0) == 100);
+            col.Add(100);
+            Contract.Assert(col.Size() == 1);
+            Contract.Assert(col.Get(0) == 200);
+            //int x = col.GetHigher(100);
 
             //col.Add(200);
             //Contract.Assert(col.Size() == 2);
             //Contract.Assert(col.Get(0) == 100);
-            //Contract.Assert(col.Get(1) == 100);
+            //Contract.Assert(col.Get(1) == 200);
 
-            
+            //col.Remove(0);
+            //Contract.Assert(col.Size() == 1);
+            //Contract.Assert(col.Get(0) == 100);
 
             //Contract.Assert(col.Size() == 0);
             //col.Add(1);

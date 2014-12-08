@@ -27,7 +27,7 @@ namespace CodeContracts
         public void Sort()
         {
             // this is special value so that GetHigher method won't throw an exception
-            data.Add(int.MaxValue);
+            //data.Add(int.MaxValue);
 
             int curItem = 0;
             // -1 is because of the int.MaxValue
@@ -43,7 +43,7 @@ namespace CodeContracts
             }
 
             // this was just auxiliary value and can be removed at the end
-            data.RemoveAll(int.MaxValue);
+            //data.RemoveAll(int.MaxValue);
         }
 
         public override string ToString()
