@@ -57,12 +57,7 @@ namespace mlc {
 	}
 	void var_declare(MlaskalCtx *ctx, MlaskalLval &ids, int type_line, MlaskalLval &type)
 	{
-		auto sp = ctx->tab->find_symbol(type.id_ci_);
-		type_pointer tp = sp->access_typed()->type();
-		if (sp->kind() != SKIND_TYPE)
-		{	// return type does not exit
-			error(DUERR_NOTTYPE, type_line, *type.id_ci_);
-		}
+		type_pointer tp = get_type_pointer(ctx, type_line, type.id_ci_);
 
 		for (auto &id : ids.identifiers_)
 		{	// TODO: here should be the line number of each identifier
@@ -70,9 +65,12 @@ namespace mlc {
 		}
 	}
 
-	void type_declare(MlaskalCtx *ctx, int line, MlaskalLval &lval)
+	void type_declare(MlaskalCtx *ctx, int name_line, MlaskalLval &name, int type_line, MlaskalLval &type)
 	{
 		//DUERR_BADRANGE
+		type_pointer tp = get_type_pointer(ctx, type_line, type.id_ci_);
+
+		ctx->tab->add_type(name_line, name.id_ci_, tp);
 	}
 
 	void parameter_add(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &ids, int type_line, MlaskalLval &type, param_type pt)
@@ -80,12 +78,7 @@ namespace mlc {
 		out.param_list_ = mlc::create_parameter_list();
 
 		/* --> type identifier */
-		auto sp = ctx->tab->find_symbol(type.id_ci_);
-		type_pointer tp = sp->access_typed()->type();
-		if (sp->kind() != SKIND_TYPE)
-		{	// type does not exit
-			error(DUERR_NOTTYPE, type_line, *type.id_ci_);
-		}
+		type_pointer tp = get_type_pointer(ctx, type_line, type.id_ci_);
 
 		if (pt == param_type::value)
 		{

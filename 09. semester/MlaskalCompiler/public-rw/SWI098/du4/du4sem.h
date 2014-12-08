@@ -22,6 +22,8 @@ namespace mlc {
 		reference
 	};
 
+	void type_declare(MlaskalCtx *ctx, int name_line, MlaskalLval &name, int type_line, MlaskalLval &type);
+
 	void procedure_declare(MlaskalCtx *ctx, int proc_line, MlaskalLval &proc_lval, MlaskalLval &params_lval);
 	void function_declare(MlaskalCtx *ctx, int fnc_line, MlaskalLval &fnc, MlaskalLval &params, int type_line, MlaskalLval &type);
 	void parameter_add(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &ids, int type_line, MlaskalLval &type, param_type pt);

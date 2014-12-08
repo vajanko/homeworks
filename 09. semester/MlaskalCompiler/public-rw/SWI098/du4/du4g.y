@@ -117,7 +117,7 @@ id_assigns: id_assign
 block_type: /* empty */
 	| DUTOK_TYPE type_assigns DUTOK_SEMICOLON
 	;
-type_assign: DUTOK_IDENTIFIER DUTOK_EQ type
+type_assign: DUTOK_IDENTIFIER DUTOK_EQ type { type_declare(ctx, @1, $1, @3, $3); }
 	;
 type_assigns: type_assign
 	| type_assigns DUTOK_SEMICOLON type_assign
