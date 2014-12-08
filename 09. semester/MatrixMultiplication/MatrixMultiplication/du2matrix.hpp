@@ -5,13 +5,15 @@
 #include <string>
 #include <xmmintrin.h>
 #include <emmintrin.h>
-//#include <immintrin.h>
+#include <immintrin.h>
+#include <array>
 
 typedef bool chunk_1;
 typedef unsigned char chunk_8;
 typedef unsigned short chunk_16;
 typedef unsigned __int64 chunk_64;
 typedef __m128i chunk_128;
+typedef __m256i chunk_256;
 
 // type used by the matrix
 typedef chunk_64 chunk_t;

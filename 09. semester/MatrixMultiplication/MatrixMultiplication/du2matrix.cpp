@@ -293,12 +293,12 @@ void set_value<chunk_64>(chunk_64 *data, std::size_t cols, std::size_t i, std::s
 }
 
 //template<>
-//void chunk_mul<chunk_128>(chunk_128 &a, chunk_128 &b, chunk_128 &res)
+//void chunk_mul<chunk_256>(chunk_256 &a, chunk_256 &b, chunk_256 &res)
 //{
-//	chunk_128 A = 0;
-//	chunk_128 L = 0xff00000000000000;
-//	chunk_128 R = 0x0000000000000000;
-//	chunk_128 ch_bit = 0x0080000000000000;
+//	chunk_256 A = 0;
+//	chunk_256 L = 0xff00000000000000;
+//	chunk_256 R = 0x0000000000000000;
+//	chunk_256 ch_bit = 0x0080000000000000;
 //
 //	for (short i = 0; i < 8; ++i)
 //	{
@@ -310,11 +310,11 @@ void set_value<chunk_64>(chunk_64 *data, std::size_t cols, std::size_t i, std::s
 //		ch_bit >>= 9;
 //	}
 //
-//	const chunk_128 F = 0x8080808080808080;
+//	const chunk_256 F = 0x8080808080808080;
 //
 //	for (short i = 0; i < 8; ++i)
 //	{
-//		chunk_128 t1 = A & F;
+//		chunk_256 t1 = A & F;
 //		t1 |= t1 >> 1; t1 |= t1 >> 2; t1 |= t1 >> 4;
 //
 //		res |= t1 & b;
@@ -323,11 +323,11 @@ void set_value<chunk_64>(chunk_64 *data, std::size_t cols, std::size_t i, std::s
 //	}
 //}
 //template<>
-//void matrix_mul<chunk_128>(chunk_128 *a, chunk_128 *b, chunk_128 *res, std::size_t dim1, std::size_t dim2, std::size_t dim3)
+//void matrix_mul<chunk_256>(chunk_256 *a, chunk_256 *b, chunk_256 *res, std::size_t dim1, std::size_t dim2, std::size_t dim3)
 //{
-//	dim1 >>= 3;		// divide by 8
-//	dim2 >>= 3;
-//	dim3 >>= 3;
+//	dim1 >>= 4;		// divide by 16
+//	dim2 >>= 4;
+//	dim3 >>= 4;
 //	for (std::size_t i = 0; i < dim1; ++i)
 //	{
 //		for (std::size_t j = 0; j < dim2; ++j)
@@ -337,15 +337,15 @@ void set_value<chunk_64>(chunk_64 *data, std::size_t cols, std::size_t i, std::s
 //			for (std::size_t k = 0; k < dim3; ++k)
 //			chunk_mul(a[i * dim1 + k], b[k * dim2 + j], res[i * dim1 + j]);*/
 //
-//			chunk_128 r = 0;
+//			chunk_256 r = 0;
 //			for (std::size_t k = 0; k < dim3; ++k)
 //			{
-//				chunk_128 A = 0;
-//				chunk_128 L = 0xff00000000000000;
-//				chunk_128 R = 0x0000000000000000;
-//				chunk_128 ch_bit = 0x0080000000000000;
+//				chunk_256 A = 0;
+//				chunk_256 L = 0xff00000000000000;
+//				chunk_256 R = 0x0000000000000000;
+//				chunk_256 ch_bit = 0x0080000000000000;
 //
-//				chunk_128 a1 = a[i * dim1 + k];
+//				chunk_256 a1 = a[i * dim1 + k];
 //
 //				// rotate list of a1 chunk-matrix
 //				for (short i = 0; i < 8; ++i)
@@ -358,12 +358,12 @@ void set_value<chunk_64>(chunk_64 *data, std::size_t cols, std::size_t i, std::s
 //					ch_bit >>= 9;
 //				}
 //
-//				const chunk_128 F = 0x8080808080808080;
-//				chunk_128 b1 = b[k * dim2 + j];
+//				const chunk_256 F = 0x8080808080808080;
+//				chunk_256 b1 = b[k * dim2 + j];
 //
 //				for (short i = 0; i < 8; ++i)
 //				{
-//					chunk_128 t1 = A & F; t1 |= t1 >> 1; t1 |= t1 >> 2; t1 |= t1 >> 4;
+//					chunk_256 t1 = A & F; t1 |= t1 >> 1; t1 |= t1 >> 2; t1 |= t1 >> 4;
 //
 //					r |= t1 & b1;
 //					b1 = _rotl64(b1, 8);
@@ -374,22 +374,24 @@ void set_value<chunk_64>(chunk_64 *data, std::size_t cols, std::size_t i, std::s
 //		}
 //	}
 //}
+template<>
+bool get_value<chunk_256>(chunk_256 *data, std::size_t cols, std::size_t i, std::size_t j)
+{
+	chunk_256 block = data[i / 16 * cols / 16 + j / 16];
+	chunk_256 mask = _mm256_setr_epi64x(0x8000000000000000, 0x0, 0x0, 0x0);
+	
+		//(0x8000000000000000 >> (i % 8 * 8 + j % 16));
+	//chunk_256 res = _mm_and_si128(block, mask);
+
+	//return res.m128i_u64[0] != 0 && res.m128i_u64[1] != 0;
+	return false;
+}
 //template<>
-//bool get_value<chunk_128>(chunk_128 *data, std::size_t cols, std::size_t i, std::size_t j)
+//void set_value<chunk_256>(chunk_256 *data, std::size_t cols, std::size_t i, std::size_t j, bool e)
 //{
-//	chunk_128 block = data[i / 8 * cols / 8 + j / 16];
-//	chunk_128 mask = 
-//		//(0x8000000000000000 >> (i % 8 * 8 + j % 16));
-//	chunk_128 res = _mm_and_si128(block, mask);
-//
-//	return res.m128i_u64[0] != 0 && res.m128i_u64[1] != 0;
-//}
-//template<>
-//void set_value<chunk_128>(chunk_128 *data, std::size_t cols, std::size_t i, std::size_t j, bool e)
-//{
-//	chunk_128 block = data[i / 8 * cols / 16 + j / 16];
+//	chunk_256 block = data[i / 8 * cols / 16 + j / 16];
 //	//chunk_64 res = 0x8000000000000000 >> (i % 8 * 8 + j % 8);
-//	chunk_128 res;
+//	chunk_256 res;
 //	if (!e)
 //		data[i / 8 * cols / 8 + j / 16] = _mm_andnot_si128(data[i / 8 * cols / 8 + j / 16], res);
 //	//data[i / 8 * cols / 8 + j / 16] &= ~res;
