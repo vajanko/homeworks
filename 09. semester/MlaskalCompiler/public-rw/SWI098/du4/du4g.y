@@ -264,7 +264,7 @@ ord_const:
 
 /* non-empty list of identifiers separated by comma */
 identifiers: DUTOK_IDENTIFIER { identifier_add($$, $1); }
-	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER { /*identifier_copy($$, $1);*/ identifier_add($$, $3); }
+	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER { identifier_add($$, $3); }
 	;
 /* non-empty list of uints separated by a comma - these are only used in block_label */
 uints: DUTOK_UINT { ctx->tab->add_label_entry(@1, $1.int_ci_, new_label(ctx)); }
