@@ -156,6 +156,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\public-ro\mlc\du4\tests\test.mls" />
+    <None Include="test.mls" />
   </ItemGroup>
 </Project>
