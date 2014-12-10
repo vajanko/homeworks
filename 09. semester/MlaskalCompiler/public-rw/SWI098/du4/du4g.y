@@ -219,7 +219,7 @@ type: DUTOK_IDENTIFIER { type_declare(ctx, $$, @1, $1); }	/* --> type, ordinal t
 ord_type: DUTOK_IDENTIFIER  { type_declare(ctx, $$, @1, $1); }	/* --> ordinal type identifier */
 	| ranges /*{ $$.type_ = $1.type_; }*/
 	;
-range: ord_const DUTOK_DOTDOT ord_const { range_declare(ctx, $$, $1, $3); }
+range: ord_const DUTOK_DOTDOT ord_const { range_declare(ctx, $$, $1, @3, $3); }
 	;
 ranges: range { range_add($$, $1); }
 	| ranges DUTOK_COMMA range { range_add($$, $3); /*array_declare(ctx, $$, $1, $3);*/  }

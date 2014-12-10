@@ -75,9 +75,13 @@ namespace mlc {
 		type_pointer tp = get_type_pointer(ctx, type_line, type.id_ci_);
 		out.type_ = tp;
 	}
-	void range_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &low, MlaskalLval &high)
+	void range_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &low, int high_line, MlaskalLval &high)
 	{
-		//DUERR_BADRANGE
+		if (*low.int_ci_ > *high.int_ci_)
+		{	// bad range
+			error(DUERR_BADRANGE, high_line);
+		}
+
 		auto l = ctx->tab->ls_int().add(*low.int_ci_);
 		auto h = ctx->tab->ls_int().add(*high.int_ci_);
 		out.type_ = ctx->tab->create_range_type(l, h);
