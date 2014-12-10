@@ -139,11 +139,8 @@ namespace mlc {
 	{
 		switch (value.const_type_)
 		{
-		case mlc::identifier:
-			break;
 		case mlc::boolean:
-			// TODO: 
-			ctx->tab->add_const_bool(line, name.id_ci_, false);
+			ctx->tab->add_const_bool(line, name.id_ci_, value.bool_val_);
 			break;
 		case mlc::integer:
 			ctx->tab->add_const_int(line, name.id_ci_, value.int_ci_);
@@ -160,6 +157,8 @@ namespace mlc {
 	}
 	void const_calculate(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &sig, MlaskalLval &value, const_type type)
 	{
+		symbol_pointer sp;
+
 		switch (type)
 		{
 		case mlc::integer:
@@ -181,6 +180,42 @@ namespace mlc {
 		}
 
 		out.const_type_ = type;
+	}
+	void const_load(MlaskalCtx *ctx, MlaskalLval &out, int line, MlaskalLval &id)
+	{
+		auto sp = ctx->tab->find_symbol(id.id_ci_);
+		if (sp->kind() != SKIND_CONST)
+		{
+			error(DUERR_NOTCONST, line, *id.id_ci_);
+		}
+
+		switch (sp->access_typed()->type()->cat())
+		{
+		case mlc::TCAT_BOOL:
+			out.bool_val_ = sp->access_const()->access_bool_const()->bool_value();
+			out.const_type_ = const_type::boolean;
+			break;
+		case mlc::TCAT_INT:
+			out.int_ci_ = sp->access_const()->access_int_const()->int_value();
+			out.const_type_ = const_type::integer;
+			break;
+		case mlc::TCAT_REAL:
+			out.real_ci_ = sp->access_const()->access_real_const()->real_value();
+			out.const_type_ = const_type::real;
+			break;
+		case mlc::TCAT_STR:
+			out.str_ci_ = sp->access_const()->access_str_const()->str_value();
+			out.const_type_ = const_type::string;
+			break;
+		default:
+			out.const_type_ = const_type::none;
+			break;
+		}
+	}
+	void const_load_and_calculate(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &sig, int id_line, MlaskalLval &id)
+	{
+		const_load(ctx, id, id_line, id);
+		const_calculate(ctx, out, sig, id, id.const_type_);
 	}
 
 

@@ -26,7 +26,8 @@ namespace mlc {
 		boolean,
 		integer,
 		real,
-		string
+		string,
+		none
 	};
 
 		// compiler's semantic value
@@ -37,6 +38,7 @@ namespace mlc {
 				mlc::ls_str_type::const_pointer			str_ci_;		// const iterator into STRING literal table
 				mlc::ls_id_type::const_pointer			id_ci_;			// const iterator into identifier table
 
+				bool bool_val_;
 				mlc::const_type const_type_;
 				mlc::parameter_list *param_list_;
 				std::vector<mlc::ls_id_type::const_pointer> identifiers_;

@@ -249,7 +249,8 @@ params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER { parameter_add(ctx, $$
 /* End of procedure - function */
 
 /* Constants */
-const: DUTOK_IDENTIFIER	{ $$.const_type_ = const_type::identifier; } /* --> constant identifier */
+const:DUTOK_IDENTIFIER	{ const_load(ctx, $$, @1, $1); } /* --> constant identifier */
+	| DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER { const_load_and_calculate(ctx, $$, $1, @2, $2); }
 	| DUTOK_UINT { $$.const_type_ = const_type::integer; }
 	| DUTOK_OPER_SIGNADD DUTOK_UINT { const_calculate(ctx, $$, $1, $2, const_type::integer);  }
 	| DUTOK_REAL { $$.const_type_ = const_type::real; }
@@ -257,10 +258,10 @@ const: DUTOK_IDENTIFIER	{ $$.const_type_ = const_type::identifier; } /* --> cons
 	| DUTOK_STRING { $$.const_type_ = const_type::string; }
 	;
 ord_const:
-	| DUTOK_IDENTIFIER	
-	| DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+	| DUTOK_IDENTIFIER	{ const_load(ctx, $$, @1, $1); }
+	| DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER { const_load_and_calculate(ctx, $$, $1, @2, $2); }
 	| DUTOK_UINT
-	| DUTOK_OPER_SIGNADD DUTOK_UINT
+	| DUTOK_OPER_SIGNADD DUTOK_UINT { const_calculate(ctx, $$, $1, $2, const_type::integer); }
 	;
 /* End of constants */
 
