@@ -214,16 +214,19 @@ idxs: idx
 /* Type */
 type: DUTOK_IDENTIFIER { type_declare(ctx, $$, @1, $1); }	/* --> type, ordinal type, structural type, integer constant identifier */
 	| range { $$.type_ = $1.type_; }
-	| DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type { array_declare(ctx, $$, $3, $6); }
+	| DUTOK_ARRAY DUTOK_LSBRA ord_types DUTOK_RSBRA DUTOK_OF type { array_declare(ctx, $$, $3, $6); }
 	;
-ord_type: DUTOK_IDENTIFIER  { type_declare(ctx, $$, @1, $1); }	/* --> ordinal type identifier */
-	| ranges /*{ $$.type_ = $1.type_; }*/
+ord_types: ord_type { range_add($$, $1); }
+	| ord_types DUTOK_COMMA ord_type { range_add($$, $3); }
+	;
+ord_type: DUTOK_IDENTIFIER  { type_declare_ordinal(ctx, $$, @1, $1); }	/* --> ordinal type identifier (range) */
+	| range { $$.type_ = $1.type_; }
 	;
 range: ord_const DUTOK_DOTDOT ord_const { range_declare(ctx, $$, $1, @3, $3); }
 	;
-ranges: range { range_add($$, $1); }
-	| ranges DUTOK_COMMA range { range_add($$, $3); /*array_declare(ctx, $$, $1, $3);*/  }
-	;
+/*ranges: range { range_add($$, $1); }
+	| ranges DUTOK_COMMA range { range_add($$, $3); array_declare(ctx, $$, $1, $3);  }
+	;*/
 /* End of type*/
 
 /* Procedure - function */

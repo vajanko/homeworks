@@ -41,7 +41,7 @@ namespace mlc {
 		{	// return type does not exit
 			error(DUERR_NOTTYPE, type_line, *type.id_ci_);
 		}
-		else if (tp->cat() == TCAT_ARRAY || tp->cat() == TCAT_UNDEF)
+		else if (tp->cat() == type_category::TCAT_ARRAY || tp->cat() == type_category::TCAT_UNDEF)
 		{	// return type is not an scalar type
 			error(DUERR_NOTSCALAR, type_line, *type.id_ci_);
 		}
@@ -71,9 +71,16 @@ namespace mlc {
 	}
 	void type_declare(MlaskalCtx *ctx, MlaskalLval &out, int type_line, MlaskalLval &type)
 	{
-		/* --> type, ordinal type, structural type, integer constant identifier */
 		type_pointer tp = get_type_pointer(ctx, type_line, type.id_ci_);
 		out.type_ = tp;
+	}
+	void type_declare_ordinal(MlaskalCtx *ctx, MlaskalLval &out, int type_line, MlaskalLval &type)
+	{
+		type_declare(ctx, out, type_line, type);
+		if (out.type_->cat() != type_category::TCAT_RANGE)
+		{
+			error(DUERR_NOTORDINAL, type_line);
+		}
 	}
 	void range_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &low, int high_line, MlaskalLval &high)
 	{
@@ -93,8 +100,12 @@ namespace mlc {
 	void array_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &range, MlaskalLval &type)
 	{
 		// TODO: type can be either identifier or anonym structural type
-
 		type_pointer tp = type.type_;
+		if (tp->cat() == type_category::TCAT_RANGE)
+		{
+			//error(DUERR_NOTSCALAR, , type_line, *type.id_ci_);
+		}
+		
 		for (auto rt = range.ranges_.begin(); rt != range.ranges_.end(); ++rt)
 			tp = ctx->tab->create_array_type(*rt, tp);
 
