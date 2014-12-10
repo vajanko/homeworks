@@ -82,12 +82,19 @@ namespace mlc {
 		auto h = ctx->tab->ls_int().add(*high.int_ci_);
 		out.type_ = ctx->tab->create_range_type(l, h);
 	}
+	void range_add(MlaskalLval &out, MlaskalLval &in)
+	{
+		out.ranges_.push_back(in.type_);
+	}
 	void array_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &range, MlaskalLval &type)
 	{
 		// TODO: type can be either identifier or anonym structural type
 
+		type_pointer tp = type.type_;
+		for (auto rt = range.ranges_.begin(); rt != range.ranges_.end(); ++rt)
+			tp = ctx->tab->create_array_type(*rt, tp);
 
-		out.type_ = ctx->tab->create_array_type(range.type_, type.type_);
+		out.type_ = tp;
 	}
 
 	void parameter_add(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &ids, int type_line, MlaskalLval &type, param_type pt)

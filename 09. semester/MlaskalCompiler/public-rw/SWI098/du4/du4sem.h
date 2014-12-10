@@ -25,6 +25,7 @@ namespace mlc {
 	void type_assign(MlaskalCtx *ctx, int name_line, MlaskalLval &name, MlaskalLval &type);
 	void type_declare(MlaskalCtx *ctx, MlaskalLval &out, int type_line, MlaskalLval &type);
 	void range_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &low, MlaskalLval &high);
+	void range_add(MlaskalLval &out, MlaskalLval &in);
 	void array_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &range, MlaskalLval &type);
 
 	void procedure_declare(MlaskalCtx *ctx, int proc_line, MlaskalLval &proc_lval, MlaskalLval &params_lval);
