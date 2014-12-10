@@ -38,7 +38,10 @@ namespace mlc {
 
 	void var_declare(MlaskalCtx *ctx, MlaskalLval &ids, int type_line, MlaskalLval &type);
 
-	void identifier_add(MlaskalLval &out_lval, MlaskalLval &in_lval);
+	void identifier_add(MlaskalLval &out, MlaskalLval &in);
+
+	void const_declare(MlaskalCtx *ctx, int line, MlaskalLval &name, MlaskalLval &value);
+	void const_calculate(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &sig, MlaskalLval &value, const_type type);
 
 	void test(MlaskalCtx *ctx, MlaskalLval &lval);
 }

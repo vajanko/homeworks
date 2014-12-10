@@ -101,11 +101,6 @@ namespace mlc {
 	{
 		// TODO: type can be either identifier or anonym structural type
 		type_pointer tp = type.type_;
-		if (tp->cat() == type_category::TCAT_RANGE)
-		{
-			//error(DUERR_NOTSCALAR, , type_line, *type.id_ci_);
-		}
-		
 		for (auto rt = range.ranges_.begin(); rt != range.ranges_.end(); ++rt)
 			tp = ctx->tab->create_array_type(*rt, tp);
 
@@ -139,6 +134,55 @@ namespace mlc {
 	{
 		out_lval.identifiers_.insert(out_lval.identifiers_.end(), in_lval.identifiers_.begin(), in_lval.identifiers_.end());
 	}
+
+	void const_declare(MlaskalCtx *ctx, int line, MlaskalLval &name, MlaskalLval &value)
+	{
+		switch (value.const_type_)
+		{
+		case mlc::identifier:
+			break;
+		case mlc::boolean:
+			// TODO: 
+			ctx->tab->add_const_bool(line, name.id_ci_, false);
+			break;
+		case mlc::integer:
+			ctx->tab->add_const_int(line, name.id_ci_, value.int_ci_);
+			break;
+		case mlc::real:
+			ctx->tab->add_const_real(line, name.id_ci_, value.real_ci_);
+			break;
+		case mlc::string:
+			ctx->tab->add_const_str(line, name.id_ci_, value.str_ci_);
+			break;
+		default:
+			break;
+		}
+	}
+	void const_calculate(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &sig, MlaskalLval &value, const_type type)
+	{
+		switch (type)
+		{
+		case mlc::integer:
+			if (sig.dtge_ == DUTOKGE_MINUS)
+				out.int_ci_ = ctx->tab->ls_int().add(-(*value.int_ci_));
+			else
+				out.int_ci_ = value.int_ci_;
+			break;
+
+		case mlc::real:
+			if (sig.dtge_ == DUTOKGE_MINUS)
+				out.real_ci_ = ctx->tab->ls_real().add(-(*value.real_ci_));
+			else
+				out.real_ci_ = value.real_ci_;
+			break;
+
+		default:
+			break;
+		}
+
+		out.const_type_ = type;
+	}
+
 
 	void test(MlaskalCtx *ctx, MlaskalLval &lval)
 	{

@@ -20,6 +20,15 @@ Main interface for DU4
 
 namespace mlc {
 
+	enum const_type
+	{
+		identifier,
+		boolean,
+		integer,
+		real,
+		string
+	};
+
 		// compiler's semantic value
 		struct MlaskalLval {
 				int										dtge_;			// group element
@@ -28,6 +37,7 @@ namespace mlc {
 				mlc::ls_str_type::const_pointer			str_ci_;		// const iterator into STRING literal table
 				mlc::ls_id_type::const_pointer			id_ci_;			// const iterator into identifier table
 
+				mlc::const_type const_type_;
 				mlc::parameter_list *param_list_;
 				std::vector<mlc::ls_id_type::const_pointer> identifiers_;
 				mlc::type_pointer type_;

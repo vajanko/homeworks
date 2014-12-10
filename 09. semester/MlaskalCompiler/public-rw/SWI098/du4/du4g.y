@@ -109,7 +109,7 @@ block_label: /* empty */
 block_const: /* empty */
 	| DUTOK_CONST id_assigns DUTOK_SEMICOLON
 	;
-id_assign: DUTOK_IDENTIFIER DUTOK_EQ const
+id_assign: DUTOK_IDENTIFIER DUTOK_EQ const { const_declare(ctx, @1, $1, $3); }
 	;
 id_assigns: id_assign
 	| id_assigns DUTOK_SEMICOLON id_assign
@@ -224,9 +224,6 @@ ord_type: DUTOK_IDENTIFIER  { type_declare_ordinal(ctx, $$, @1, $1); }	/* --> or
 	;
 range: ord_const DUTOK_DOTDOT ord_const { range_declare(ctx, $$, $1, @3, $3); }
 	;
-/*ranges: range { range_add($$, $1); }
-	| ranges DUTOK_COMMA range { range_add($$, $3); array_declare(ctx, $$, $1, $3);  }
-	;*/
 /* End of type*/
 
 /* Procedure - function */
@@ -252,12 +249,12 @@ params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER { parameter_add(ctx, $$
 /* End of procedure - function */
 
 /* Constants */
-const: DUTOK_IDENTIFIER	/* --> constant identifier */
-	| DUTOK_UINT
-	| DUTOK_OPER_SIGNADD DUTOK_UINT
-	| DUTOK_REAL
-	| DUTOK_OPER_SIGNADD DUTOK_REAL
-	| DUTOK_STRING
+const: DUTOK_IDENTIFIER	{ $$.const_type_ = const_type::identifier; } /* --> constant identifier */
+	| DUTOK_UINT { $$.const_type_ = const_type::integer; }
+	| DUTOK_OPER_SIGNADD DUTOK_UINT { const_calculate(ctx, $$, $1, $2, const_type::integer);  }
+	| DUTOK_REAL { $$.const_type_ = const_type::real; }
+	| DUTOK_OPER_SIGNADD DUTOK_REAL { const_calculate(ctx, $$, $1, $2, const_type::real); }
+	| DUTOK_STRING { $$.const_type_ = const_type::string; }
 	;
 ord_const:
 	| DUTOK_IDENTIFIER	
