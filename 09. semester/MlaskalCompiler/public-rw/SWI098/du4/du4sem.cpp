@@ -41,7 +41,8 @@ namespace mlc {
 		{	// return type does not exit
 			error(DUERR_NOTTYPE, type_line, *type.id_ci_);
 		}
-		else if (tp->cat() == type_category::TCAT_ARRAY || tp->cat() == type_category::TCAT_UNDEF)
+		else if (tp->cat() == type_category::TCAT_ARRAY || tp->cat() == type_category::TCAT_UNDEF
+			|| tp->cat() == type_category::TCAT_RANGE || tp->cat() == type_category::TCAT_RECORD)
 		{	// return type is not an scalar type
 			error(DUERR_NOTSCALAR, type_line, *type.id_ci_);
 		}
@@ -50,17 +51,14 @@ namespace mlc {
 		ctx->tab->enter(fnc_line, fnc.id_ci_);
 	}
 	void block_leave(MlaskalCtx *ctx, int line)
-	{
-		// do not leave at the end of a program
+	{	// do not leave at the end of a program
 		if (ctx->tab->nested())
 			ctx->tab->leave(line);
 	}
 	void var_declare(MlaskalCtx *ctx, MlaskalLval &ids, int type_line, MlaskalLval &type)
 	{
 		for (auto &id : ids.identifiers_)
-		{
 			ctx->tab->add_var(type_line, id, type.type_);
-		}
 	}
 
 	void type_assign(MlaskalCtx *ctx, int name_line, MlaskalLval &name, MlaskalLval &type)
@@ -97,7 +95,7 @@ namespace mlc {
 	}
 	void array_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &range, MlaskalLval &type)
 	{
-		// TODO: type can be either identifier or anonym structural type
+		// (TODO: type can be either identifier or anonym structural type)
 		type_pointer tp = type.type_;
 		for (auto rt = range.ranges_.begin(); rt != range.ranges_.end(); ++rt)
 			tp = ctx->tab->create_array_type(*rt, tp);
@@ -124,14 +122,14 @@ namespace mlc {
 		}
 	}
 
-	void identifier_add(MlaskalLval &out_lval, MlaskalLval &in_lval)
+	void identifier_add(MlaskalLval &out, MlaskalLval &in)
 	{
-		out_lval.identifiers_.push_back(in_lval.id_ci_);
+		out.identifiers_.push_back(in.id_ci_);
 	}
-	void identifier_copy(MlaskalLval &out_lval, MlaskalLval &in_lval)
+	/*void identifier_copy(MlaskalLval &out_lval, MlaskalLval &in_lval)
 	{
 		out_lval.identifiers_.insert(out_lval.identifiers_.end(), in_lval.identifiers_.begin(), in_lval.identifiers_.end());
-	}
+	}*/
 
 	void const_declare(MlaskalCtx *ctx, int line, MlaskalLval &name, MlaskalLval &value)
 	{
@@ -217,8 +215,8 @@ namespace mlc {
 	}
 
 
-	void test(MlaskalCtx *ctx, MlaskalLval &lval)
+	/*void test(MlaskalCtx *ctx, MlaskalLval &lval)
 	{
 
-	}
+	}*/
 }

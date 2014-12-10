@@ -231,7 +231,7 @@ range: ord_const DUTOK_DOTDOT ord_const { range_declare(ctx, $$, $1, @3, $3); }
 proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params { procedure_declare(ctx, @1, $2, $3); }
 	;
 /* function header */
-func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER { function_declare(ctx, @1, $2, $3, @5, $5); }/* --> scalar type identifier */
+func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER { function_declare(ctx, @1, $2, $3, @5, $5); } /* --> scalar type identifier */
 	;
 /* procedure or function parameters possibly without parentesis and any parameters */
 params: { $$.param_list_ = create_parameter_list(); }	/* empty parameters without parentesis */
