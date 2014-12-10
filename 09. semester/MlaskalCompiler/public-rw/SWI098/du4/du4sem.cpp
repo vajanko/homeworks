@@ -57,11 +57,9 @@ namespace mlc {
 	}
 	void var_declare(MlaskalCtx *ctx, MlaskalLval &ids, int type_line, MlaskalLval &type)
 	{
-		type_pointer tp = get_type_pointer(ctx, type_line, type.id_ci_);
-
 		for (auto &id : ids.identifiers_)
-		{	// TODO: here should be the line number of each identifier
-			ctx->tab->add_var(type_line, id, tp);
+		{
+			ctx->tab->add_var(type_line, id, type.type_);
 		}
 	}
 
