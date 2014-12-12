@@ -170,7 +170,6 @@ until			return DUTOK_UNTIL;
 for				return DUTOK_FOR;
 or				return DUTOK_OR;
 not				return DUTOK_NOT;
-record		return DUTOK_RECORD;
 
 {LETTER}({DIGIT}|{LETTER})*			{ 
 	toupper(yytext);

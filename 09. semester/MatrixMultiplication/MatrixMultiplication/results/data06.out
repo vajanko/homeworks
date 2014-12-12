@@ -1,0 +1,8 @@
+# chunk_64 using the old approach of left matrix line roatation
+# a bit slower than accessing individual bytes and rotating them
+size	matrix_zero	matrix_random	matrix_one
+128	0.084879	0.084879	0.0870224
+256	0.0843327	0.0839039	0.0839039
+512	0.0868279	0.0856817	0.0851086
+1024	0.0872339	0.0873891	0.0873891
+2048	0.0982545	0.0980217	0.0946457

@@ -68,7 +68,7 @@ void test()
 	matrix a(size, size);
 	init_id(a);
 	matrix b(size, size);
-	init_cols(b);
+	init_trian(b);
 
 	matrix c(size, size);
 	c.assign_mul(b, a);
@@ -80,7 +80,9 @@ void test()
 
 int main( int argc, char * * argv)
 {
+#ifdef _DEBUG
 	test();
+#endif
 
 	generator_list< std::size_t, time_complexity> gl;
 

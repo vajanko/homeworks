@@ -47,7 +47,6 @@
 %token DUTOK_FOR			    /* for */
 %token DUTOK_OR				    /* or */
 %token DUTOK_NOT			    /* not */
-%token DUTOK_RECORD			    /* record */
 
 /* literals */
 %token DUTOK_IDENTIFIER			/* identifier */
@@ -81,6 +80,7 @@
 %lex-param {mlc::MlaskalCtx *ctx}
 %locations
 
+
 %%
 
 mlaskal:	  DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
@@ -92,11 +92,11 @@ program_block: block_label block_const block_type block_var block_proc_func bloc
 block_proc_func: 
 	| proc_func_defs DUTOK_SEMICOLON
 	;
-proc_func_def: proc DUTOK_SEMICOLON block
+proc_func_def: proc DUTOK_SEMICOLON block 
 	| func DUTOK_SEMICOLON block
 	;
 proc_func_defs: proc_func_def
-	| proc_func_defs DUTOK_SEMICOLON proc_func_def
+	| proc_func_defs DUTOK_SEMICOLON proc_func_def 
 	;
 /* End of block P*/
 
@@ -109,7 +109,7 @@ block_label: /* empty */
 block_const: /* empty */
 	| DUTOK_CONST id_assigns DUTOK_SEMICOLON
 	;
-id_assign: DUTOK_IDENTIFIER DUTOK_EQ const
+id_assign: DUTOK_IDENTIFIER DUTOK_EQ const { const_declare(ctx, @1, $1, $3); }
 	;
 id_assigns: id_assign
 	| id_assigns DUTOK_SEMICOLON id_assign
@@ -117,7 +117,7 @@ id_assigns: id_assign
 block_type: /* empty */
 	| DUTOK_TYPE type_assigns DUTOK_SEMICOLON
 	;
-type_assign: DUTOK_IDENTIFIER DUTOK_EQ type
+type_assign: DUTOK_IDENTIFIER DUTOK_EQ type { type_assign(ctx, @1, $1, $3); }
 	;
 type_assigns: type_assign
 	| type_assigns DUTOK_SEMICOLON type_assign
@@ -125,12 +125,12 @@ type_assigns: type_assign
 block_var: /* empty */
 	| DUTOK_VAR var_defs DUTOK_SEMICOLON
 	;
-var_def: identifiers DUTOK_COLON type
+var_def: identifiers DUTOK_COLON type { var_declare(ctx, $1, @3, $3); }
 	;
 var_defs: var_def
 	| var_defs DUTOK_SEMICOLON var_def
 	;
-block_begin_end: DUTOK_BEGIN stmts DUTOK_END
+block_begin_end: DUTOK_BEGIN stmts DUTOK_END { block_leave(ctx, @2); }
 /* End of block */
 
 /* Statement */
@@ -212,74 +212,66 @@ idxs: idx
 /* End of expression */
 
 /* Type */
-type: DUTOK_IDENTIFIER	/* --> type, ordinal type, structural type, integer constant identifier */
-	| ord_const DUTOK_DOTDOT ord_const
-	| DUTOK_ARRAY DUTOK_LSBRA ord_type DUTOK_RSBRA DUTOK_OF type
-	| record
+type: DUTOK_IDENTIFIER { type_declare(ctx, $$, @1, $1); }	/* --> type, ordinal type, structural type, integer constant identifier */
+	| range { $$.type_ = $1.type_; }
+	| DUTOK_ARRAY DUTOK_LSBRA ord_types DUTOK_RSBRA DUTOK_OF type { array_declare(ctx, $$, $3, $6); }
 	;
-ord_type: DUTOK_IDENTIFIER	/* --> ordinal type identifier */
-	| ord_range
+ord_types: ord_type { range_add($$, $1); }
+	| ord_types DUTOK_COMMA ord_type { range_add($$, $3); }
 	;
-ord_range: ord_const DUTOK_DOTDOT ord_const
-	| ord_range DUTOK_COMMA ord_const DUTOK_DOTDOT ord_const
+ord_type: DUTOK_IDENTIFIER  { type_declare_ordinal(ctx, $$, @1, $1); }	/* --> ordinal type identifier (range) */
+	| range { $$.type_ = $1.type_; }
+	;
+range: ord_const DUTOK_DOTDOT ord_const { range_declare(ctx, $$, $1, @3, $3); }
 	;
 /* End of type*/
 
-/* Record */
-record: DUTOK_RECORD DUTOK_END
-	| DUTOK_RECORD record_items DUTOK_END
-	| DUTOK_RECORD record_items DUTOK_SEMICOLON DUTOK_END
-	;
-record_items: identifiers DUTOK_COLON type
-	| record_items DUTOK_SEMICOLON identifiers DUTOK_COLON type
-	;
-/* End of record */
-
 /* Procedure - function */
 /* procedure header */
-proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params
+proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params { procedure_declare(ctx, @1, $2, $3); }
 	;
 /* function header */
-func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER /* --> scalar type identifier */
+func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER { function_declare(ctx, @1, $2, $3, @5, $5); } /* --> scalar type identifier */
 	;
 /* procedure or function parameters possibly without parentesis and any parameters */
-params:	/* empty parameters without parentesis */
-	| DUTOK_LPAR DUTOK_RPAR	/* empty parameters wiht parentesis */
-	| DUTOK_LPAR formal_params DUTOK_RPAR
+params: { $$.param_list_ = create_parameter_list(); }	/* empty parameters without parentesis */
+	| DUTOK_LPAR DUTOK_RPAR	{ $$.param_list_ = create_parameter_list(); }	/* empty parameters with parentesis */
+	| DUTOK_LPAR formal_params DUTOK_RPAR { $$.param_list_ = $2.param_list_; }
 	;
 /* non-empty list of parameter sections separated by semicolon */
-formal_params: params_section
-	| formal_params DUTOK_SEMICOLON params_section
+formal_params: params_section { $1.param_list_ = $$.param_list_; }
+	| formal_params DUTOK_SEMICOLON params_section { $1.param_list_->append_and_kill($3.param_list_); $$.param_list_ = $1.param_list_; }
 	;
 /* declaration of possibly multiple parameters for one single type,  */
-params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier */
-	| DUTOK_VAR identifiers DUTOK_COLON DUTOK_IDENTIFIER /* --> type identifier */
+params_section: identifiers DUTOK_COLON DUTOK_IDENTIFIER { parameter_add(ctx, $$, $1, @3, $3, param_type::value); }		/* --> type identifier */
+	| DUTOK_VAR identifiers DUTOK_COLON DUTOK_IDENTIFIER { parameter_add(ctx, $$, $2, @4, $4, param_type::reference); } /* --> type identifier */
 	;
 /* End of procedure - function */
 
 /* Constants */
-const: DUTOK_IDENTIFIER	/* --> constant identifier */
-	| DUTOK_UINT
-	| DUTOK_OPER_SIGNADD DUTOK_UINT
-	| DUTOK_REAL
-	| DUTOK_OPER_SIGNADD DUTOK_REAL
-	| DUTOK_STRING
+const:DUTOK_IDENTIFIER	{ const_load(ctx, $$, @1, $1); } /* --> constant identifier */
+	| DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER { const_load_and_calculate(ctx, $$, $1, @2, $2); }
+	| DUTOK_UINT { $$.const_type_ = const_type::integer; }
+	| DUTOK_OPER_SIGNADD DUTOK_UINT { const_calculate(ctx, $$, $1, $2, const_type::integer);  }
+	| DUTOK_REAL { $$.const_type_ = const_type::real; }
+	| DUTOK_OPER_SIGNADD DUTOK_REAL { const_calculate(ctx, $$, $1, $2, const_type::real); }
+	| DUTOK_STRING { $$.const_type_ = const_type::string; }
 	;
 ord_const:
-	| DUTOK_IDENTIFIER	
-	| DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER
+	| DUTOK_IDENTIFIER	{ const_load(ctx, $$, @1, $1); }
+	| DUTOK_OPER_SIGNADD DUTOK_IDENTIFIER { const_load_and_calculate(ctx, $$, $1, @2, $2); }
 	| DUTOK_UINT
-	| DUTOK_OPER_SIGNADD DUTOK_UINT
+	| DUTOK_OPER_SIGNADD DUTOK_UINT { const_calculate(ctx, $$, $1, $2, const_type::integer); }
 	;
 /* End of constants */
 
 /* non-empty list of identifiers separated by comma */
-identifiers: DUTOK_IDENTIFIER
-	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER
+identifiers: DUTOK_IDENTIFIER { identifier_add($$, $1); }
+	| identifiers DUTOK_COMMA DUTOK_IDENTIFIER { identifier_add($$, $3); }
 	;
-/* non-empty list of uints separated by a comma */
-uints: DUTOK_UINT
-	| uints DUTOK_COMMA DUTOK_UINT
+/* non-empty list of uints separated by a comma - these are only used in block_label */
+uints: DUTOK_UINT { ctx->tab->add_label_entry(@1, $1.int_ci_, new_label(ctx)); }
+	| uints DUTOK_COMMA DUTOK_UINT { ctx->tab->add_label_entry(@3, $3.int_ci_, new_label(ctx)); }
 	;
 
 %%

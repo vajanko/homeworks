@@ -155,4 +155,7 @@
       <Filter>Header Files - students</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="test.mls" />
+  </ItemGroup>
 </Project>
