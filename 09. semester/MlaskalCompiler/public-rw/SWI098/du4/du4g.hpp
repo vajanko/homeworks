@@ -1,37 +1,27 @@
+/* A Bison parser, made by GNU Bison 2.1.  */
 
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* Skeleton parser for Yacc-like parsing with Bison,
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
-/* Skeleton interface for Bison's Yacc-like parsers in C
-   
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
-   
-   This program is free software: you can redistribute it and/or modify
+   This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-   
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
 
-/* As a special exception, you may create a larger work that contains
-   part or all of the Bison parser skeleton and distribute that work
-   under terms of your choice, so long as that work isn't itself a
-   parser generator using the skeleton or a modified version thereof
-   as a parser skeleton.  Alternatively, if you modify or redistribute
-   the parser skeleton itself, you may (at your option) remove this
-   special exception, which will cause the skeleton and the resulting
-   Bison output files to be licensed under the GNU General Public
-   License without this special exception.
-   
-   This special exception was added by the Free Software Foundation in
-   version 2.2 of Bison.  */
-
+/* As a special exception, when this file is copied by Bison into a
+   Bison output file, you may use that output file without restriction.
+   This special exception was added by the Free Software Foundation
+   in version 1.24 of Bison.  */
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -82,19 +72,62 @@
      DUTOK_FOR_DIRECTION = 298
    };
 #endif
+/* Tokens.  */
+#define DUTOK_PROGRAM 258
+#define DUTOK_LABEL 259
+#define DUTOK_CONST 260
+#define DUTOK_TYPE 261
+#define DUTOK_VAR 262
+#define DUTOK_BEGIN 263
+#define DUTOK_END 264
+#define DUTOK_PROCEDURE 265
+#define DUTOK_FUNCTION 266
+#define DUTOK_ARRAY 267
+#define DUTOK_OF 268
+#define DUTOK_GOTO 269
+#define DUTOK_IF 270
+#define DUTOK_THEN 271
+#define DUTOK_ELSE 272
+#define DUTOK_WHILE 273
+#define DUTOK_DO 274
+#define DUTOK_REPEAT 275
+#define DUTOK_UNTIL 276
+#define DUTOK_FOR 277
+#define DUTOK_OR 278
+#define DUTOK_NOT 279
+#define DUTOK_IDENTIFIER 280
+#define DUTOK_UINT 281
+#define DUTOK_REAL 282
+#define DUTOK_STRING 283
+#define DUTOK_SEMICOLON 284
+#define DUTOK_DOT 285
+#define DUTOK_COMMA 286
+#define DUTOK_EQ 287
+#define DUTOK_COLON 288
+#define DUTOK_LPAR 289
+#define DUTOK_RPAR 290
+#define DUTOK_DOTDOT 291
+#define DUTOK_LSBRA 292
+#define DUTOK_RSBRA 293
+#define DUTOK_ASSIGN 294
+#define DUTOK_OPER_REL 295
+#define DUTOK_OPER_SIGNADD 296
+#define DUTOK_OPER_MUL 297
+#define DUTOK_FOR_DIRECTION 298
 
 
 
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+
+#if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
 typedef int YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
+# define YYSTYPE_IS_TRIVIAL 1
 #endif
 
 
 
-#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
+#if ! defined (YYLTYPE) && ! defined (YYLTYPE_IS_DECLARED)
 typedef struct YYLTYPE
 {
   int first_line;
@@ -106,6 +139,7 @@ typedef struct YYLTYPE
 # define YYLTYPE_IS_DECLARED 1
 # define YYLTYPE_IS_TRIVIAL 1
 #endif
+
 
 
 

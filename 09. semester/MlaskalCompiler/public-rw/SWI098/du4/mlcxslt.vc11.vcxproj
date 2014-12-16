@@ -95,7 +95,7 @@
   <ItemGroup>
     <CustomBuild Include="..\..\..\public-ro\common\xml\genaifctrc.xslt">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\public-ro\common\tools\xsltproc --output gen_aifactory.cpp ..\..\..\public-ro\common\xml\genaifctrc.xslt ..\..\..\public-ro\common\xml\icminstr.xml
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xsltproc --output gen_aifactory.cpp ..\..\..\public-ro\common\xml\genaifctrc.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xsltproc --output gen_aifactory.cpp ..\..\..\public-ro\common\xml\genaifctrc.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
@@ -106,7 +106,7 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\public-ro\common\xml\genainstrh.xslt">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\public-ro\common\tools\xsltproc --output gen_ainstr.hpp ..\..\..\public-ro\common\xml\genainstrh.xslt ..\..\..\public-ro\common\xml\icminstr.xml
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xsltproc --output gen_ainstr.hpp ..\..\..\public-ro\common\xml\genainstrh.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xsltproc --output gen_ainstr.hpp ..\..\..\public-ro\common\xml\genainstrh.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
@@ -117,7 +117,7 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\public-ro\common\xml\genicfctrc.xslt">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\public-ro\common\tools\xsltproc --output gen_icfactory.cpp ..\..\..\public-ro\common\xml\genicfctrc.xslt ..\..\..\public-ro\common\xml\icminstr.xml
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xsltproc --output gen_icfactory.cpp ..\..\..\public-ro\common\xml\genicfctrc.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xsltproc --output gen_icfactory.cpp ..\..\..\public-ro\common\xml\genicfctrc.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
@@ -128,7 +128,7 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\public-ro\common\xml\genicinstrh.xslt">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\public-ro\common\tools\xsltproc --output gen_icinstr.hpp ..\..\..\public-ro\common\xml\genicinstrh.xslt ..\..\..\public-ro\common\xml\icminstr.xml
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xsltproc --output gen_icinstr.hpp ..\..\..\public-ro\common\xml\genicinstrh.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xsltproc --output gen_icinstr.hpp ..\..\..\public-ro\common\xml\genicinstrh.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
@@ -139,7 +139,7 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\public-ro\common\xml\genicoph.xslt">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\public-ro\common\tools\xsltproc --output gen_icopcodes.hpp ..\..\..\public-ro\common\xml\genicoph.xslt ..\..\..\public-ro\common\xml\icminstr.xml
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xsltproc --output gen_icopcodes.hpp ..\..\..\public-ro\common\xml\genicoph.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xsltproc --output gen_icopcodes.hpp ..\..\..\public-ro\common\xml\genicoph.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
@@ -150,7 +150,7 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\public-ro\common\xml\genictabc.xslt">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\public-ro\common\tools\xsltproc --output gen_icinstrtab.cpp ..\..\..\public-ro\common\xml\genictabc.xslt ..\..\..\public-ro\common\xml\icminstr.xml
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xsltproc --output gen_icinstrtab.cpp ..\..\..\public-ro\common\xml\genictabc.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xsltproc --output gen_icinstrtab.cpp ..\..\..\public-ro\common\xml\genictabc.xslt ..\..\..\public-ro\common\xml\icminstr.xml
 </Command>

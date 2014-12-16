@@ -97,7 +97,7 @@ namespace mlc {
 	{
 		// (TODO: type can be either identifier or anonym structural type)
 		type_pointer tp = type.type_;
-		for (auto rt = range.ranges_.begin(); rt != range.ranges_.end(); ++rt)
+		for (auto rt = range.ranges_.rbegin(); rt != range.ranges_.rend(); ++rt)
 			tp = ctx->tab->create_array_type(*rt, tp);
 
 		out.type_ = tp;
