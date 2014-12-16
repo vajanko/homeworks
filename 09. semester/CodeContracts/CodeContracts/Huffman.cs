@@ -45,7 +45,7 @@ namespace CodeContracts
             // collection of characters and its occurences stored in a single int
             IntCollection hist = new IntCollection();
             // initialize empty tables
-            for (char ch = (char)0; ch < 256; ch++)
+            for (char ch = (char)0;     ch < 256; ch++)
                 hist.Add(CreateItem(ch, 0));    // zero occurences of each character
 
             // collection of character from the input file stored as integers
