@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,7 @@ namespace CodeContracts
     /// <summary>
     /// Huffman encoding tools
     /// </summary>
+    [ContractVerification(false)]
     class Huffman
     {
         /// <summary>
@@ -43,21 +45,21 @@ namespace CodeContracts
         public static Histogram CreateHistogram(string filename)
         {
             // collection of characters and its occurences stored in a single int
-            IntCollection hist = new IntCollection();
+            IntArray hist = new IntArray();
             // initialize empty tables
-            for (char ch = (char)0;     ch < 256; ch++)
+            for (char ch = (char)0; ch < 256; ch++)
                 hist.Add(CreateItem(ch, 0));    // zero occurences of each character
 
             // collection of character from the input file stored as integers
             // that is because we only have int collection
-            IntCollection text = new IntCollection();
+            IntArray text = new IntArray();
             char[] buff = new char[4];
 
             using (var reader = File.OpenText(filename))
             {
                 while (!reader.EndOfStream)
                 {
-                    // read a peace of text and put it to the IntCollection buffer
+                    // read a peace of text and put it to the IntArray buffer
                     int readLength = reader.Read(buff, 0, buff.Length);
                     for (int i = 0; i < readLength; i++)
                         text.Add((int)buff[i]);

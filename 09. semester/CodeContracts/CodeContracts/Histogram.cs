@@ -10,14 +10,15 @@ namespace CodeContracts
     /// <summary>
     /// Encapsulates a collection of characters and its occurences in some peace of text.
     /// </summary>
+    [ContractVerification(false)]
     class Histogram
     {
-        private readonly IntCollection data;
+        private readonly IntArray data;
 
         /// <summary>
         /// Create a new histogram initialized with data representation as described in <see cref="Huffman"/>
         /// </summary>
-        public Histogram(IntCollection data)
+        public Histogram(IntArray data)
         {
             Contract.Requires(data != null);
 
@@ -30,7 +31,7 @@ namespace CodeContracts
         public void Sort()
         {
             // this is special value so that GetHigher method won't throw an exception
-            //data.Add(int.MaxValue);
+            data.Add(int.MaxValue);
 
             int curItem = 0;
             // -1 is because of the int.MaxValue
@@ -46,7 +47,7 @@ namespace CodeContracts
             }
 
             // this was just auxiliary value and can be removed at the end
-            //data.RemoveAll(int.MaxValue);
+            data.RemoveAll(int.MaxValue);
         }
 
         public override string ToString()
