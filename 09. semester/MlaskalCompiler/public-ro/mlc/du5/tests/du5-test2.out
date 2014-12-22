@@ -1,0 +1,4 @@
+Warning (line 46): Conversion loses significancy
+Warning (line 2): Label '729' declared but never used
+Warning (line 15): Label '729' declared but never used
+Everything is nearly OK, although there were 3 warnings

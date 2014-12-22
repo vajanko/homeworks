@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="XSLT transformations">
+      <UniqueIdentifier>{d568a54e-067e-4a7b-b608-e4b8028b0de0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\common\xml\genainstrh.xslt">
+      <Filter>XSLT transformations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\common\xml\genicfctrc.xslt">
+      <Filter>XSLT transformations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\common\xml\genicinstrh.xslt">
+      <Filter>XSLT transformations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\common\xml\genicoph.xslt">
+      <Filter>XSLT transformations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\common\xml\genictabc.xslt">
+      <Filter>XSLT transformations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="xml\geninstrdecodec.xslt">
+      <Filter>XSLT transformations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="xml\genmachc.xslt">
+      <Filter>XSLT transformations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="xml\genmopcodh.xslt">
+      <Filter>XSLT transformations</Filter>
+    </CustomBuild>
+    <CustomBuild Include="xml\genmopsc.xslt">
+      <Filter>XSLT transformations</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

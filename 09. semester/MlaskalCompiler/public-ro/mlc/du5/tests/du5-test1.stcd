@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<symbol_tables>
+	<types>
+		<BOOLEAN type="T0"/>
+		<INTEGER type="T1"/>
+		<REAL type="T2"/>
+		<STRING type="T3"/>
+	</types>
+	<labels>
+	</labels>
+	<symbols>
+		<SKIND_TYPE name="BOOLEAN" type="T0"/>
+		<SKIND_GLOBAL_VARIABLE name="CISLO" type="T1"/>
+		<SKIND_CONST name="FALSE" value="0" type="T0"/>
+		<SKIND_TYPE name="INTEGER" type="T1"/>
+		<SKIND_FUNCTION name="JEDNA" type="T1">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_FUNCTION name="MULTIPLY" type="T1">
+			<parameters>
+				<PMODE_BY_VALUE name="I" type="T1"/>
+				<PMODE_BY_VALUE name="J" type="T1"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+				<SKIND_LOCAL_VARIABLE name="I" type="T1"/>
+				<SKIND_LOCAL_VARIABLE name="J" type="T1"/>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_FUNCTION name="PLUSJEDNA" type="T1">
+			<parameters>
+				<PMODE_BY_VALUE name="I" type="T1"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+				<SKIND_LOCAL_VARIABLE name="I" type="T1"/>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_FUNCTION name="READI" type="T1">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_FUNCTION name="READR" type="T2">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_FUNCTION name="READS" type="T3">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_TYPE name="REAL" type="T2"/>
+		<SKIND_GLOBAL_VARIABLE name="S" type="T3"/>
+		<SKIND_TYPE name="STRING" type="T3"/>
+		<SKIND_CONST name="TRUE" value="1" type="T0"/>
+		<SKIND_PROCEDURE name="VYPISDVAKRAT">
+			<parameters>
+				<PMODE_BY_VALUE name="I" type="T1"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+				<SKIND_LOCAL_VARIABLE name="I" type="T1"/>
+				<SKIND_LOCAL_VARIABLE name="R" type="T2"/>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="WRITEI">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T1"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="WRITELN">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="WRITER">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T2"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="WRITES">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T3"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+	</symbols>
+</symbol_tables>

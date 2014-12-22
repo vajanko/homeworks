@@ -1,0 +1,183 @@
+Integer constants
+0:	1
+1:	2
+2:	5
+3:	6
+4:	30
+5:	11
+6:	10
+7:	4
+
+Real constants
+
+String constants
+0:	"ahoj"
+1:	" lidi"
+
+Identifiers
+0:	"BOOLEAN"
+1:	"INTEGER"
+2:	"REAL"
+3:	"STRING"
+4:	"FALSE"
+5:	"TRUE"
+6:	"READI"
+7:	"READR"
+8:	"READS"
+9:	"P"
+10:	"WRITEI"
+11:	"WRITER"
+12:	"WRITES"
+13:	"WRITELN"
+14:	"DU5TEST4"
+15:	"CISLO"
+16:	"S"
+17:	"MULTIPLY"
+18:	"I"
+19:	"J"
+20:	"JEDNA"
+21:	"PLUSJEDNA"
+22:	"VYPISDVAKRAT"
+23:	"R"
+
+Functions and procedures
+READI:INTEGER	[0;2], used registers=0
+READR:REAL	[3;5], used registers=0
+READS:STRING	[6;8], used registers=0
+WRITEI(P:INTEGER [size=1;stkoffs=-1])	[9;11], used registers=0
+WRITER(P:REAL [size=1;stkoffs=-1])	[12;14], used registers=0
+WRITES(P:STRING [size=1;stkoffs=-1])	[15;17], used registers=0
+WRITELN	[18;19], used registers=0
+MULTIPLY(I:INTEGER [size=1;stkoffs=-2], J:INTEGER [size=1;stkoffs=-1]):INTEGER	[20;24], used registers=0
+JEDNA:INTEGER	[25;27], used registers=0
+PLUSJEDNA(I:INTEGER [size=1;stkoffs=-1]):INTEGER	[28;32], used registers=0
+VYPISDVAKRAT(I:INTEGER [size=1;stkoffs=-1])	[33;43], used registers=0
+	VAR
+		R:REAL[start=44;end44size=1;stkoffs=1]
+DU5TEST4	[44;107], used registers=0
+	VAR
+		CISLO:INTEGER[start=108;end108size=1;stkoffs=0]
+		S:STRING[start=108;end108size=1;stkoffs=1]
+
+Instructions
+READI:
+0:	FNCREADI
+1:	LSTI	[-1]
+2:	RET
+READR:
+3:	FNCREADR
+4:	LSTR	[-1]
+5:	RET
+READS:
+6:	FNCREADS
+7:	LSTS	[-1]
+8:	RET
+WRITEI:
+9:	LLDI	[-1]
+10:	FNCWRITEI
+11:	RET
+WRITER:
+12:	LLDR	[-1]
+13:	FNCWRITER
+14:	RET
+WRITES:
+15:	LLDS	[-1]
+16:	FNCWRITES
+17:	RET
+WRITELN:
+18:	FNCWRITELN
+19:	RET
+MULTIPLY:
+20:	LLDI	[-2]
+21:	LLDI	[-1]
+22:	MULI
+23:	LSTI	[-3]
+24:	RET
+JEDNA:
+25:	LDLITI	LITINT[0]
+26:	LSTI	[-1]
+27:	RET
+PLUSJEDNA:
+28:	LLDI	[-1]
+29:	LDLITI	LITINT[0]
+30:	ADDI
+31:	LSTI	[-2]
+32:	RET
+VYPISDVAKRAT:
+33:	INITR
+34:	LLDI	[-1]
+35:	LDLITI	LITINT[1]
+36:	MULI
+37:	CVRTIR
+38:	LSTR	[1]
+39:	LLDR	[1]
+40:	CALL	12	;; label=WRITER
+41:	DTORR
+42:	DTORR
+43:	RET
+DU5TEST4:
+44:	INITI
+45:	INITS
+46:	INITI
+47:	LDLITI	LITINT[2]
+48:	LDLITI	LITINT[3]
+49:	CALL	20	;; label=MULTIPLY
+50:	DTORI
+51:	DTORI
+52:	GSTI	[0]
+53:	GLDI	[0]
+54:	CALL	9	;; label=WRITEI
+55:	DTORI
+56:	LDLITI	LITINT[4]
+57:	LDLITI	LITINT[5]
+58:	DIVI
+59:	GSTI	[0]
+60:	GLDI	[0]
+61:	CALL	9	;; label=WRITEI
+62:	DTORI
+63:	LDLITI	LITINT[4]
+64:	LDLITI	LITINT[5]
+65:	MODI
+66:	GSTI	[0]
+67:	GLDI	[0]
+68:	CALL	9	;; label=WRITEI
+69:	DTORI
+70:	LDLITI	LITINT[6]
+71:	GSTI	[0]
+72:	GLDI	[0]
+73:	CALL	33	;; label=VYPISDVAKRAT
+74:	DTORI
+75:	LDLITI	LITINT[2]
+76:	LDLITI	LITINT[1]
+77:	MULI
+78:	LDLITI	LITINT[6]
+79:	LDLITI	LITINT[7]
+80:	LDLITI	LITINT[0]
+81:	SUBI
+82:	MODI
+83:	ADDI
+84:	GSTI	[0]
+85:	LDLITS	LITSTR[0]
+86:	GSTS	[1]
+87:	GLDS	[1]
+88:	LDLITS	LITSTR[1]
+89:	ADDS
+90:	GSTS	[1]
+91:	GLDS	[1]
+92:	CALL	15	;; label=WRITES
+93:	DTORS
+94:	INITI
+95:	CALL	25	;; label=JEDNA
+96:	CALL	9	;; label=WRITEI
+97:	DTORI
+98:	INITI
+99:	LDLITI	LITINT[1]
+100:	CALL	28	;; label=PLUSJEDNA
+101:	DTORI
+102:	CALL	9	;; label=WRITEI
+103:	DTORI
+104:	CALL	18	;; label=WRITELN
+105:	DTORS
+106:	DTORI
+107:	HALT
+

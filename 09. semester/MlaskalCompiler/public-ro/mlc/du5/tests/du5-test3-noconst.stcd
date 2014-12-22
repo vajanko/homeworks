@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<symbol_tables>
+	<types>
+		<BOOLEAN type="T0"/>
+		<STRING type="T1"/>
+		<INTEGER type="T2"/>
+		<REAL type="T3"/>
+	</types>
+	<labels>
+	</labels>
+	<symbols>
+		<SKIND_TYPE name="BOOLEAN" type="T0"/>
+		<SKIND_PROCEDURE name="D3I">
+			<parameters>
+				<PMODE_BY_VALUE name="S" type="T1"/>
+				<PMODE_BY_VALUE name="P" type="T2"/>
+				<PMODE_BY_VALUE name="Q" type="T2"/>
+				<PMODE_BY_VALUE name="R" type="T2"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+				<SKIND_LOCAL_VARIABLE name="P" type="T2"/>
+				<SKIND_LOCAL_VARIABLE name="Q" type="T2"/>
+				<SKIND_LOCAL_VARIABLE name="R" type="T2"/>
+				<SKIND_LOCAL_VARIABLE name="S" type="T1"/>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="D3R">
+			<parameters>
+				<PMODE_BY_VALUE name="S" type="T1"/>
+				<PMODE_BY_VALUE name="P" type="T3"/>
+				<PMODE_BY_VALUE name="Q" type="T3"/>
+				<PMODE_BY_VALUE name="R" type="T3"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+				<SKIND_LOCAL_VARIABLE name="P" type="T3"/>
+				<SKIND_LOCAL_VARIABLE name="Q" type="T3"/>
+				<SKIND_LOCAL_VARIABLE name="R" type="T3"/>
+				<SKIND_LOCAL_VARIABLE name="S" type="T1"/>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_CONST name="FALSE" value="0" type="T0"/>
+		<SKIND_PROCEDURE name="GLOBALINTEGEREXPRESSIONS">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="GLOBALREALEXPRESSIONS">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_GLOBAL_VARIABLE name="I" type="T2"/>
+		<SKIND_TYPE name="INTEGER" type="T2"/>
+		<SKIND_GLOBAL_VARIABLE name="J" type="T2"/>
+		<SKIND_GLOBAL_VARIABLE name="K" type="T2"/>
+		<SKIND_PROCEDURE name="LOCALINTEGEREXPRESSIONS">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+				<SKIND_LOCAL_VARIABLE name="I" type="T2"/>
+				<SKIND_LOCAL_VARIABLE name="JJ" type="T2"/>
+				<SKIND_LOCAL_VARIABLE name="K" type="T2"/>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="LOCALREALEXPRESSIONS">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+				<SKIND_LOCAL_VARIABLE name="X" type="T3"/>
+				<SKIND_LOCAL_VARIABLE name="YY" type="T3"/>
+				<SKIND_LOCAL_VARIABLE name="Z" type="T3"/>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="PARAMTESTINTEGER">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T2"/>
+				<PMODE_BY_VALUE name="Q" type="T2"/>
+				<PMODE_BY_VALUE name="R" type="T2"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+				<SKIND_LOCAL_VARIABLE name="P" type="T2"/>
+				<SKIND_LOCAL_VARIABLE name="Q" type="T2"/>
+				<SKIND_LOCAL_VARIABLE name="R" type="T2"/>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="PARAMTESTREAL">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T3"/>
+				<PMODE_BY_VALUE name="Q" type="T3"/>
+				<PMODE_BY_VALUE name="R" type="T3"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+				<SKIND_LOCAL_VARIABLE name="P" type="T3"/>
+				<SKIND_LOCAL_VARIABLE name="Q" type="T3"/>
+				<SKIND_LOCAL_VARIABLE name="R" type="T3"/>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_FUNCTION name="READI" type="T2">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_FUNCTION name="READR" type="T3">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_FUNCTION name="READS" type="T1">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_FUNCTION>
+		<SKIND_TYPE name="REAL" type="T3"/>
+		<SKIND_TYPE name="STRING" type="T1"/>
+		<SKIND_CONST name="TRUE" value="1" type="T0"/>
+		<SKIND_PROCEDURE name="WRITEI">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T2"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="WRITELN">
+			<parameters>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="WRITER">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T3"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_PROCEDURE name="WRITES">
+			<parameters>
+				<PMODE_BY_VALUE name="P" type="T1"/>
+			</parameters>
+			<labels>
+			</labels>
+			<symbols>
+			</symbols>
+		</SKIND_PROCEDURE>
+		<SKIND_GLOBAL_VARIABLE name="X" type="T3"/>
+		<SKIND_GLOBAL_VARIABLE name="Y" type="T3"/>
+		<SKIND_GLOBAL_VARIABLE name="Z" type="T3"/>
+	</symbols>
+</symbol_tables>
