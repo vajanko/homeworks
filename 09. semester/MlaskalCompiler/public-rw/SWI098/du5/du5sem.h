@@ -117,11 +117,11 @@ namespace mlc {
 	void append_code_block(MlaskalLval &out, MlaskalLval &in);
 
 	void load_value(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &val, const_type type);
-	void mul_factor(MlaskalLval &out, MlaskalLval &left, MlaskalLval &op, MlaskalLval &right);
 	void store_identifier(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &expr);
 
 	void unary_op(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val);
 	void unary_not(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val);
+	void binary_op(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &left, int op_line, MlaskalLval &op, MlaskalLval &right);
 }
 
 #endif

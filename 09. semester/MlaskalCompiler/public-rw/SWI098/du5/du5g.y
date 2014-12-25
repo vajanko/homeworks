@@ -190,7 +190,7 @@ term: factors
 	;
 /* non-empty list of factors separated by *,/,div,mod,and */
 factors: factor									
-	| factors DUTOK_OPER_MUL factor				{ mul_factor($$, $1, $2, $3); }
+	| factors DUTOK_OPER_MUL factor				{ binary_op(ctx, $$, $1, @2, $2, $3); }
 	;
 factor:DUTOK_IDENTIFIER	{ load_value(ctx, $$, $1, const_type::identifier); }	/* --> unsigned constant, variable, function identifier */
 	| DUTOK_UINT		{ load_value(ctx, $$, $1, const_type::integer); }	/* --> unsigned constant identifier */

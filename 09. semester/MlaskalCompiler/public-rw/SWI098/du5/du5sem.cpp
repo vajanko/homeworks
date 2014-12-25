@@ -333,27 +333,7 @@ namespace mlc {
 			break;
 		}
 	}
-	void mul_factor(MlaskalLval &out, MlaskalLval &left, MlaskalLval &op, MlaskalLval &right)
-	{
-		icblock_append_delete(left.code_, right.code_);
-		out.code_ = left.code_;
-		// TODO: conversion, real/integer multiplication/division, bool and
-
-		switch (op.dtge_)
-		{
-		case DUTOKGE_ASTERISK:
-			out.code_->append_instruction(new ai::MULI());
-			break;
-		case DUTOKGE_SOLIDUS:
-			break;
-		case DUTOKGE_DIV:
-			break;
-		case DUTOKGE_MOD:
-			break;
-		case DUTOKGE_AND:
-			break;
-		}
-	}
+	
 	void unary_op(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val)
 	{
 		out.code_ = val.code_;
@@ -400,31 +380,106 @@ namespace mlc {
 			error(DUERR_SYNTAX, op_line, "'not' operator before non-boolean expression");
 		}
 	}
-	void binary_op(MlaskalLval &out, MlaskalLval &left, MlaskalLval &op, MlaskalLval &right)
+	void binary_op(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &left, int op_line, MlaskalLval &op, MlaskalLval &right)
 	{
-		icblock_append_delete(left.code_, right.code_);
-		out.code_ = left.code_;
+		auto real_type = ctx->tab->logical_real();
+		auto int_type = ctx->tab->logical_integer();
+		auto str_type = ctx->tab->logical_string();
+		auto l_type = left.type_;
+		auto r_type = right.type_;
 
-		switch (op.dtge_)
+		if (identical_type(l_type, str_type) && identical_type(r_type, str_type))
+		{	// string x string -> string
+			icblock_append_delete(left.code_, right.code_);
+			out.code_ = left.code_;
+
+			switch (op.dtge_)
+			{
+			case DUTOKGE_PLUS:
+				out.code_->append_instruction(new ai::ADDS());
+				break;
+			default:
+				// operator is undefined for given operands
+				error(DUERR_CANNOTCONVERT, op_line);
+				break;
+			}
+
+			out.type_ = str_type;
+		}
+		else if (identical_type(l_type, int_type) && identical_type(r_type, int_type) &&
+			op.dtge_ != DUTOKGE_SOLIDUS)
+		{	// integer x integer -> integer
+			icblock_append_delete(left.code_, right.code_);
+			out.code_ = left.code_;
+
+			switch (op.dtge_)
+			{
+			case DUTOKGE_ASTERISK:
+				out.code_->append_instruction(new ai::MULI());
+				break;
+			case DUTOKGE_DIV:
+				out.code_->append_instruction(new ai::DIVI());
+				break;
+			case DUTOKGE_MOD:
+				out.code_->append_instruction(new ai::MODI());
+				break;
+			case DUTOKGE_PLUS:
+				out.code_->append_instruction(new ai::ADDI());
+				break;
+			case DUTOKGE_MINUS:
+				out.code_->append_instruction(new ai::SUBI());
+				break;
+			default:
+				// operator is undefined for given operands - SOLIDUS
+				error(DUERR_CANNOTCONVERT, op_line);
+				break;
+			}
+
+			out.type_ = int_type;
+		}
+		else
 		{
-		case DUTOKGE_ASTERISK:
-			out.code_->append_instruction(new ai::MULI());
-			break;
-		case DUTOKGE_SOLIDUS:
-			break;
-		case DUTOKGE_DIV:
-			break;
-		case DUTOKGE_MOD:
-			break;
-		case DUTOKGE_PLUS:
-			break;
-		case DUTOKGE_MINUS:
-			break;
+			// real/integer x real/integer -> real
+
+			// convert all integers to reals
+			if (identical_type(r_type, int_type))
+			{	// real x integer
+				right.code_->append_instruction(new ai::CVRTIR());
+			}
+			if (identical_type(l_type, int_type))
+			{	// integer x real
+				left.code_->append_instruction(new ai::CVRTIR());
+			}
+
+			icblock_append_delete(left.code_, right.code_);
+			out.code_ = left.code_;
+
+			switch (op.dtge_)
+			{
+			case DUTOKGE_ASTERISK:
+				out.code_->append_instruction(new ai::MULR());
+				break;
+			case DUTOKGE_SOLIDUS:
+				out.code_->append_instruction(new ai::DIVR());
+				break;
+			case DUTOKGE_PLUS:
+				out.code_->append_instruction(new ai::ADDR());
+				break;
+			case DUTOKGE_MINUS:
+				out.code_->append_instruction(new ai::SUBR());
+				break;
+			default:
+				// operator is undefined for given operands - DIV, MOD
+				error(DUERR_CANNOTCONVERT, op_line);
+				break;
+			}
+
+			out.type_ = real_type;
 		}
 	}
 	
 	
-	void add_conversion(mlc::icblock_pointer code, int line, mlc::type_pointer lt, mlc::type_pointer rt)
+	void store_conversion(mlc::icblock_pointer code, int line, mlc::type_pointer lt, mlc::type_pointer rt)
 	{
 		if (lt->cat() == type_category::TCAT_INT && rt->cat() == type_category::TCAT_REAL)
 		{	// conversion from REAL to INTEGER
@@ -454,7 +509,7 @@ namespace mlc {
 			
 		// possible conversion in the assignment
 		// it is also checked whether assignment is possible
-		add_conversion(block, id_line, id.type_, expr.type_);
+		store_conversion(block, id_line, id.type_, expr.type_);
 
 		type_category tcat = id.type_->cat();
 		if (sp->kind() == symbol_kind::SKIND_GLOBAL_VARIABLE)
