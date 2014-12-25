@@ -305,7 +305,7 @@ namespace mlc {
 			break;
 		}
 	}
-	void unary_op(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &op, MlaskalLval &val)
+	void unary_op(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val)
 	{
 		out.code_ = val.code_;
 		out.type_ = val.type_;
@@ -317,7 +317,7 @@ namespace mlc {
 			if (!identical_type(val.type_, ctx->tab->logical_integer()) &&
 				!identical_type(val.type_, ctx->tab->logical_real()))
 			{
-				error(DUERR_SYNTAX, 0);// TODO: operator line
+				error(DUERR_SYNTAX, 0, "'+' operator before non-integral expression");
 			}
 			break;
 		case DUTOKGE_MINUS:
@@ -331,7 +331,7 @@ namespace mlc {
 			}
 			else
 			{
-				error(DUERR_SYNTAX, 0);// TODO: operator line
+				error(DUERR_SYNTAX, 0, "'-' operator before non-integral expression");
 			}
 			break;
 			// todo: NOT

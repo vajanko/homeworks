@@ -179,7 +179,7 @@ exprs: expr
 	| exprs DUTOK_COMMA expr
 	;
 simple_expr: terms								
-	| DUTOK_OPER_SIGNADD terms	{ unary_op(ctx, $$, $1, $2); }
+	| DUTOK_OPER_SIGNADD terms	{ unary_op(ctx, $$, @1, $1, $2); }
 	;
 /* non-empty list of terms sepatated by +,-,or */
 terms: term										
