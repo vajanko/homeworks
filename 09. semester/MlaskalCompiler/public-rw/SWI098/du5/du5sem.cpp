@@ -366,7 +366,7 @@ namespace mlc {
 			if (!identical_type(val.type_, ctx->tab->logical_integer()) &&
 				!identical_type(val.type_, ctx->tab->logical_real()))
 			{
-				error(DUERR_SYNTAX, 0, "'+' operator before non-integral expression");
+				error(DUERR_SYNTAX, op_line, "'+' operator before non-integral expression");
 			}
 			break;
 		case DUTOKGE_MINUS:
@@ -380,10 +380,24 @@ namespace mlc {
 			}
 			else
 			{
-				error(DUERR_SYNTAX, 0, "'-' operator before non-integral expression");
+				error(DUERR_SYNTAX, op_line, "'-' operator before non-integral expression");
 			}
 			break;
 			// todo: NOT
+		}
+	}
+	void unary_not(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val)
+	{
+		out.code_ = val.code_;
+		out.type_ = val.type_;
+
+		if (identical_type(val.type_, ctx->tab->logical_bool()))
+		{
+			out.code_->append_instruction(new ai::NOT());
+		}
+		else
+		{
+			error(DUERR_SYNTAX, op_line, "'not' operator before non-boolean expression");
 		}
 	}
 	void binary_op(MlaskalLval &out, MlaskalLval &left, MlaskalLval &op, MlaskalLval &right)
@@ -427,7 +441,7 @@ namespace mlc {
 			error(DUERR_CANNOTCONVERT, line);
 		}
 	}
-	void assign(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &expr)
+	void store_identifier(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &expr)
 	{
 		icblock_pointer block = expr.code_;
 		out.code_ = block;

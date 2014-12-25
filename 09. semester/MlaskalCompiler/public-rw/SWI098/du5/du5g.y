@@ -151,7 +151,7 @@ u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
 	;
 /* the rest of statement definition except "if" and "while" without leading label */
 stmt_rest: /* empty */
-	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr { assign(ctx, $$, @1, $1, $3); }/* --> variable, function identifier */
+	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr { store_identifier(ctx, $$, @1, $1, $3); }/* --> variable, function identifier */
 	| array_var DUTOK_ASSIGN expr							/* --> array variable */
 	| DUTOK_IDENTIFIER										/* --> procedure identifier */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	/* --> procedure identifier */
@@ -200,7 +200,7 @@ factor:DUTOK_IDENTIFIER	{ load_value(ctx, $$, $1, const_type::identifier); }	/* 
 	/*| DUTOK_IDENTIFIER DUTOK_LSBRA exprs DUTOK_RSBRA		/* --> array identifier, ordinal expressions */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	/* --> function identifier */
 	| DUTOK_LPAR expr DUTOK_RPAR
-	| DUTOK_NOT factor	{ unary_op(ctx, $$, @1, $1, $2); }
+	| DUTOK_NOT factor	{ unary_not(ctx, $$, @1, $1, $2); }
 	;
 array_var: DUTOK_IDENTIFIER idxs		/* --> array identifier, ordinal expressions */
 	;
