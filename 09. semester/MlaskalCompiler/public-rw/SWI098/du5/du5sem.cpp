@@ -11,16 +11,27 @@ DU5SEM.CPP
 
 namespace mlc {
 
-	type_pointer get_type_pointer(MlaskalCtx *ctx, int line, mlc::ls_id_type::const_pointer type_id)
+	/**
+	 * Gets type of type-identifier and prints an error when there is no such type
+	 */
+	type_pointer get_type_pointer(MlaskalCtx *ctx, int line, mlc::ls_id_type::const_pointer id)
 	{
-		auto sp = ctx->tab->find_symbol(type_id);
+		auto sp = ctx->tab->find_symbol(id);
 		type_pointer tp = sp->access_typed()->type();
 		if (sp->kind() != SKIND_TYPE)
 		{	// type does not exit
-			error(DUERR_NOTTYPE, line, *type_id);
+			error(DUERR_NOTTYPE, line, *id);
 		}
 
 		return tp;
+	}
+	/**
+	 *  Gets type of an identifier (variable, function, constant)
+	 */
+	type_pointer get_symbol_type(MlaskalCtx *ctx, mlc::ls_id_type::const_pointer id)
+	{
+		auto sp = ctx->tab->find_symbol(id);
+		return sp->access_typed()->type();
 	}
 
 	void procedure_declare(MlaskalCtx *ctx, int proc_line, MlaskalLval &proc, MlaskalLval &params)
@@ -215,6 +226,205 @@ namespace mlc {
 	{
 
 	}*/
+
+
+	/*  */
+	void set_block_code(MlaskalCtx *ctx, MlaskalLval &id, MlaskalLval &code, block_type type)
+	{
+		switch (type)
+		{
+		case mlc::program:
+			ctx->tab->set_main_code(id.id_ci_, code.code_);
+			break;
+		case mlc::subprogram:
+			//ctx->tab->set_subprogram_code(id.id_ci_, code.code_);
+			break;
+		}
+	}
+	void append_code_block(MlaskalLval &out, MlaskalLval &in)
+	{
+		if (out.code_ == NULL)
+		{
+			out.code_ = in.code_;
+		}
+		else if (in.code_ != NULL)
+		{
+			icblock_append_delete(out.code_, in.code_);
+			in.code_ = NULL;
+		}
+	}
+
+	/**
+	 * type_ is assigned with the type of constant
+	 */
+	void load_value(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &val, const_type type)
+	{
+		out.code_ = icblock_create();
+
+		switch (type)
+		{
+		case mlc::identifier:
+			out.type_ = get_symbol_type(ctx, val.id_ci_);
+			break;
+		case mlc::boolean:
+			out.code_->append_instruction(new ai::LDLITB(val.bool_val_));
+			out.type_ = ctx->tab->logical_bool();
+			break;
+		case mlc::integer:
+			out.code_->append_instruction(new ai::LDLITI(val.int_ci_));
+			out.type_ = ctx->tab->logical_integer();
+			break;
+		case mlc::real:
+			out.code_->append_instruction(new ai::LDLITR(val.real_ci_));
+			out.type_ = ctx->tab->logical_real();
+			break;
+		case mlc::string:
+			out.code_->append_instruction(new ai::LDLITS(val.str_ci_));
+			out.type_ = ctx->tab->logical_string();
+			break;
+		}
+	}
+	void mul_factor(MlaskalLval &out, MlaskalLval &left, MlaskalLval &op, MlaskalLval &right)
+	{
+		icblock_append_delete(left.code_, right.code_);
+		out.code_ = left.code_;
+		// TODO: conversion, real/integer multiplication/division, bool and
+
+		switch (op.dtge_)
+		{
+		case DUTOKGE_ASTERISK:
+			out.code_->append_instruction(new ai::MULI());
+			break;
+		case DUTOKGE_SOLIDUS:
+			break;
+		case DUTOKGE_DIV:
+			break;
+		case DUTOKGE_MOD:
+			break;
+		case DUTOKGE_AND:
+			break;
+		}
+	}
+	void unary_op(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &op, MlaskalLval &val)
+	{
+		out.code_ = val.code_;
+		out.type_ = val.type_;
+
+		switch (op.dtge_)
+		{
+		case DUTOKGE_PLUS:
+			// just ignore it, but check whether operand is either real or integer
+			if (!identical_type(val.type_, ctx->tab->logical_integer()) &&
+				!identical_type(val.type_, ctx->tab->logical_real()))
+			{
+				error(DUERR_SYNTAX, 0);// TODO: operator line
+			}
+			break;
+		case DUTOKGE_MINUS:
+			if (identical_type(val.type_, ctx->tab->logical_integer()))
+			{
+				out.code_->append_instruction(new ai::MINUSI());
+			}
+			else if (identical_type(val.type_, ctx->tab->logical_real()))
+			{
+				out.code_->append_instruction(new ai::MINUSR());
+			}
+			else
+			{
+				error(DUERR_SYNTAX, 0);// TODO: operator line
+			}
+			break;
+			// todo: NOT
+		}
+	}
+	void binary_op(MlaskalLval &out, MlaskalLval &left, MlaskalLval &op, MlaskalLval &right)
+	{
+		icblock_append_delete(left.code_, right.code_);
+		out.code_ = left.code_;
+
+		switch (op.dtge_)
+		{
+		case DUTOKGE_ASTERISK:
+			out.code_->append_instruction(new ai::MULI());
+			break;
+		case DUTOKGE_SOLIDUS:
+			break;
+		case DUTOKGE_DIV:
+			break;
+		case DUTOKGE_MOD:
+			break;
+		case DUTOKGE_PLUS:
+			break;
+		case DUTOKGE_MINUS:
+			break;
+		}
+	}
+	
+	
+	void add_conversion(mlc::icblock_pointer code, int line, mlc::type_pointer lt, mlc::type_pointer rt)
+	{
+		if (lt->cat() == type_category::TCAT_INT && rt->cat() == type_category::TCAT_REAL)
+		{	// conversion from REAL to INTEGER
+			code->append_instruction(new ai::CVRTRI());
+			error(DUERR_CONVERSION, line);
+		}
+		else if (lt->cat() == type_category::TCAT_REAL && rt->cat() == type_category::TCAT_INT)
+		{	// conversion from INTEGER to REAL
+			code->append_instruction(new ai::CVRTIR());
+			error(DUERR_CONVERSION, line);
+		}
+		else if (!identical_type(lt, rt))
+		{	// conversion is not allowed
+			error(DUERR_CANNOTCONVERT, line);
+		}
+	}
+	void assign(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &expr)
+	{
+		icblock_pointer block = expr.code_;
+		out.code_ = block;
+
+		/* --> variable, function identifier */
+		// find assigned symbol
+		auto sp = ctx->tab->find_symbol(id.id_ci_);
+		// find out type of the assigned symbol
+		id.type_ = get_symbol_type(ctx, id.id_ci_);
+			
+		// possible conversion in the assignment
+		// it is also checked whether assignment is possible
+		add_conversion(block, id_line, id.type_, expr.type_);
+
+		type_category tcat = id.type_->cat();
+		if (sp->kind() == symbol_kind::SKIND_GLOBAL_VARIABLE)
+		{	// global variable assignment - for each type different kind of instruction
+			stack_address adr = sp->access_typed()->access_global_variable()->address();
+			if (tcat == type_category::TCAT_REAL)
+				block->append_instruction(new ai::GSTR(adr));
+			else if (tcat == type_category::TCAT_INT)
+				block->append_instruction(new ai::GSTI(adr));
+			else if (tcat == type_category::TCAT_STR)
+				block->append_instruction(new ai::GSTS(adr));
+		}
+		else if (sp->kind() == symbol_kind::SKIND_LOCAL_VARIABLE)
+		{	// local variable assignment - for each type different kind of instruction
+			stack_address adr = sp->access_typed()->access_local_variable()->address();
+			if (tcat == type_category::TCAT_REAL)
+				block->append_instruction(new ai::LSTR(adr));
+			else if (tcat == type_category::TCAT_INT)
+				block->append_instruction(new ai::LSTI(adr));
+			else if (tcat == type_category::TCAT_STR)
+				block->append_instruction(new ai::LSTS(adr));
+		}
+		else if (sp->kind() == symbol_kind::SKIND_FUNCTION)
+		{
+			
+		}
+		else
+		{
+			error(DUERR_NOTVAR, id_line, *id.id_ci_);
+			return;
+		}
+	}
+	
 };
 
 /*****************************************/

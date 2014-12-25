@@ -84,11 +84,11 @@
 
 %%
 
-mlaskal:	  DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT
-		;
+mlaskal: DUTOK_PROGRAM DUTOK_IDENTIFIER DUTOK_SEMICOLON program_block DUTOK_DOT { set_block_code(ctx, $2, $4, block_type::program); }
+	;
 
 /* Block P*/
-program_block: block_label block_const block_type block_var block_proc_func block_begin_end
+program_block: block_label block_const block_type block_var block_proc_func block_begin_end { append_code_block($$, $6); }
 	;
 block_proc_func: 
 	| proc_func_defs DUTOK_SEMICOLON
@@ -131,7 +131,7 @@ var_def: identifiers DUTOK_COLON type { var_declare(ctx, $1, @3, $3); }
 var_defs: var_def
 	| var_defs DUTOK_SEMICOLON var_def
 	;
-block_begin_end: DUTOK_BEGIN stmts DUTOK_END { block_leave(ctx, @2); }
+block_begin_end: DUTOK_BEGIN stmts DUTOK_END { append_code_block($$, $2); block_leave(ctx, @2); }
 /* End of block */
 
 /* Statement */
@@ -151,7 +151,7 @@ u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
 	;
 /* the rest of statement definition except "if" and "while" without leading label */
 stmt_rest: /* empty */
-	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr					/* --> variable, function identifier */
+	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr { assign(ctx, $$, @1, $1, $3); }/* --> variable, function identifier */
 	| array_var DUTOK_ASSIGN expr							/* --> array variable */
 	| DUTOK_IDENTIFIER										/* --> procedure identifier */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	/* --> procedure identifier */
@@ -162,7 +162,7 @@ stmt_rest: /* empty */
 	;
 /* non-empty list of statements separated by a semicolon */
 stmts: stmt
-	| stmts DUTOK_SEMICOLON stmt
+	| stmts DUTOK_SEMICOLON stmt		{ append_code_block($1, $3); }
 	;
 /* non-empty list of expressions separated by a comma */
 real_params: expr
@@ -171,36 +171,36 @@ real_params: expr
 /* End of statement */
 
 /* Expression */
-expr: simple_expr
+expr: simple_expr								
 	| simple_expr DUTOK_OPER_REL simple_expr
 	| simple_expr DUTOK_EQ simple_expr
 	;
 exprs: expr
 	| exprs DUTOK_COMMA expr
 	;
-simple_expr: terms 
-	| DUTOK_OPER_SIGNADD terms
-	;
-term: factors
+simple_expr: terms								
+	| DUTOK_OPER_SIGNADD terms	{ unary_op(ctx, $$, $1, $2); }
 	;
 /* non-empty list of terms sepatated by +,-,or */
-terms: term
+terms: term										
 	| terms DUTOK_OPER_SIGNADD term
 	| terms DUTOK_OR term
 	;
-factor: DUTOK_IDENTIFIER	/* --> unsigned constant, variable, function identifier */
-	| DUTOK_UINT			/* --> unsigned constant identifier */
-	| DUTOK_REAL			/* --> unsigned constant identifier */
-	| DUTOK_STRING			/* --> unsigned constant identifier */
-	| array_var
+term: factors									
+	;
+/* non-empty list of factors separated by *,/,div,mod,and */
+factors: factor									
+	| factors DUTOK_OPER_MUL factor				{ mul_factor($$, $1, $2, $3); }
+	;
+factor:DUTOK_IDENTIFIER	{ load_value(ctx, $$, $1, const_type::identifier); }	/* --> unsigned constant, variable, function identifier */
+	| DUTOK_UINT		{ load_value(ctx, $$, $1, const_type::integer); }	/* --> unsigned constant identifier */
+	| DUTOK_REAL		{ load_value(ctx, $$, $1, const_type::real);	}		/* --> unsigned constant identifier */
+	| DUTOK_STRING		{ load_value(ctx, $$, $1, const_type::string); }		/* --> unsigned constant identifier */
+	| array_var												/* --> array identifier, ordinal expressions */
 	/*| DUTOK_IDENTIFIER DUTOK_LSBRA exprs DUTOK_RSBRA		/* --> array identifier, ordinal expressions */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	/* --> function identifier */
 	| DUTOK_LPAR expr DUTOK_RPAR
 	| DUTOK_NOT factor
-	;
-/* non-empty list of factors separated by *,/,div,mod,and */
-factors: factor
-	| factors DUTOK_OPER_MUL factor
 	;
 array_var: DUTOK_IDENTIFIER idxs		/* --> array identifier, ordinal expressions */
 	;
