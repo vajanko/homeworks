@@ -254,6 +254,55 @@ namespace mlc {
 		}
 	}
 
+	void load_identifier(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &val)
+	{
+		auto sp = ctx->tab->find_symbol(val.id_ci_);
+		out.type_ = get_symbol_type(ctx, val.id_ci_);
+
+		type_category tcat = out.type_->cat();
+		if (sp->kind() == symbol_kind::SKIND_GLOBAL_VARIABLE)
+		{	// global variable load - for each type different kind of instruction
+			stack_address adr = sp->access_typed()->access_global_variable()->address();
+			if (tcat == type_category::TCAT_REAL)
+				out.code_->append_instruction(new ai::GLDR(adr));
+			else if (tcat == type_category::TCAT_INT)
+				out.code_->append_instruction(new ai::GLDI(adr));
+			else if (tcat == type_category::TCAT_STR)
+				out.code_->append_instruction(new ai::GLDS(adr));
+			else if (tcat == type_category::TCAT_BOOL)
+				out.code_->append_instruction(new ai::GLDB(adr));
+		}
+		else if (sp->kind() == symbol_kind::SKIND_LOCAL_VARIABLE)
+		{	// local variable load - for each type different kind of instruction
+			stack_address adr = sp->access_typed()->access_local_variable()->address();
+			if (tcat == type_category::TCAT_REAL)
+				out.code_->append_instruction(new ai::LLDR(adr));
+			else if (tcat == type_category::TCAT_INT)
+				out.code_->append_instruction(new ai::LLDI(adr));
+			else if (tcat == type_category::TCAT_STR)
+				out.code_->append_instruction(new ai::LLDS(adr));
+			else if (tcat == type_category::TCAT_BOOL)
+				out.code_->append_instruction(new ai::LLDB(adr));
+		}
+		else if (sp->kind() == symbol_kind::SKIND_CONST)
+		{
+			auto con = sp->access_typed()->access_const();
+			if (tcat == type_category::TCAT_REAL)
+				out.code_->append_instruction(new ai::LDLITR(con->access_real_const()->real_value()));
+			else if (tcat == type_category::TCAT_INT)
+				out.code_->append_instruction(new ai::LDLITI(con->access_int_const()->int_value()));
+			else if (tcat == type_category::TCAT_STR)
+				out.code_->append_instruction(new ai::LDLITS(con->access_str_const()->str_value()));
+			else if (tcat == type_category::TCAT_BOOL)
+				out.code_->append_instruction(new ai::LDLITB(con->access_bool_const()->bool_value()));
+		}
+		// TODO? function return value load
+		else
+		{
+			error(DUERR_NOTVAR, 0, *val.id_ci_);	// TODO: line number
+			return;
+		}
+	}
 	/**
 	 * type_ is assigned with the type of constant
 	 */
@@ -264,7 +313,7 @@ namespace mlc {
 		switch (type)
 		{
 		case mlc::identifier:
-			out.type_ = get_symbol_type(ctx, val.id_ci_);
+			load_identifier(ctx, out, val);
 			break;
 		case mlc::boolean:
 			out.code_->append_instruction(new ai::LDLITB(val.bool_val_));
@@ -403,6 +452,8 @@ namespace mlc {
 				block->append_instruction(new ai::GSTI(adr));
 			else if (tcat == type_category::TCAT_STR)
 				block->append_instruction(new ai::GSTS(adr));
+			else if (tcat == type_category::TCAT_BOOL)
+				out.code_->append_instruction(new ai::GSTB(adr));
 		}
 		else if (sp->kind() == symbol_kind::SKIND_LOCAL_VARIABLE)
 		{	// local variable assignment - for each type different kind of instruction
@@ -413,6 +464,8 @@ namespace mlc {
 				block->append_instruction(new ai::LSTI(adr));
 			else if (tcat == type_category::TCAT_STR)
 				block->append_instruction(new ai::LSTS(adr));
+			else if (tcat == type_category::TCAT_BOOL)
+				out.code_->append_instruction(new ai::LSTB(adr));
 		}
 		else if (sp->kind() == symbol_kind::SKIND_FUNCTION)
 		{
