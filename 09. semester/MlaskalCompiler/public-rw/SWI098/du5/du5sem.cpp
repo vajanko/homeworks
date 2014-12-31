@@ -406,8 +406,6 @@ namespace mlc {
 
 		if (identical_type(l_type, str_type) && identical_type(r_type, str_type))
 		{	// string x string -> string
-			/*icblock_append_delete(left.code_, right.code_);
-			right.code_ = NULL;*/
 			append_code_block(left, right);
 			out.code_ = left.code_;
 
@@ -426,8 +424,6 @@ namespace mlc {
 		else if (identical_type(l_type, int_type) && identical_type(r_type, int_type) &&
 			op.dtge_ != DUTOKGE_SOLIDUS)
 		{	// integer x integer -> integer
-			/*icblock_append_delete(left.code_, right.code_);
-			right.code_ = NULL;*/
 			append_code_block(left, right);
 			out.code_ = left.code_;
 
@@ -471,8 +467,6 @@ namespace mlc {
 				left.code_->append_instruction(new ai::CVRTIR());
 			}
 
-			/*icblock_append_delete(left.code_, right.code_);
-			right.code_ = NULL;*/
 			append_code_block(left, right);
 			out.code_ = left.code_;
 
@@ -646,18 +640,18 @@ namespace mlc {
 			}
 
 			// evaluate subprogram arguments if any
-			if (real_params.code_ != NULL) {
-				/*icblock_append_delete(out.code_, real_params.code_);
-				real_params.code_ = NULL;*/
+			if (real_params.code_ != NULL)
 				append_code_block(out, real_params);
-			}
 
 			// call subprogram
 			out.code_->append_instruction(new ai::CALL(sp->access_subprogram()->code()));
 			
 			// clean variables used by the subprogram
 			auto params = sp->access_subprogram()->parameters();
-			for (auto param = params->begin(); param != params->end(); ++param)
+			std::vector<mlc::parameter_entry> rev_params(params->begin(), params->end());
+			
+			//for (auto param = params->begin(); param != params->end(); ++param)
+			for (auto param = rev_params.rbegin(); param != rev_params.rend(); ++param)
 			{
 				if (param->partype == parameter_mode::PMODE_BY_VALUE)
 				{

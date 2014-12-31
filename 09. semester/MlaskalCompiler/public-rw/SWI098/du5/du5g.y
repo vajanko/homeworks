@@ -197,7 +197,6 @@ factor:DUTOK_IDENTIFIER	{ load_value(ctx, $$, @1, $1, const_type::identifier); }
 	| DUTOK_REAL		{ load_value(ctx, $$, @1, $1, const_type::real);	}		/* --> unsigned constant identifier */
 	| DUTOK_STRING		{ load_value(ctx, $$, @1, $1, const_type::string); }		/* --> unsigned constant identifier */
 	| array_var												/* --> array identifier, ordinal expressions */
-	/*| DUTOK_IDENTIFIER DUTOK_LSBRA exprs DUTOK_RSBRA		/* --> array identifier, ordinal expressions */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	{ subprogram_call(ctx, $$, @1, $1, $3); } /* --> function identifier */
 	| DUTOK_LPAR expr DUTOK_RPAR { $$.type_ = $2.type_; $$.code_ = $2.code_; }
 	| DUTOK_NOT factor	{ unary_not(ctx, $$, @1, $1, $2); }
