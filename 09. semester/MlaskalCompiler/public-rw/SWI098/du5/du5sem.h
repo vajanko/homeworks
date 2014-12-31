@@ -55,13 +55,13 @@ namespace mlc {
 	* Add declaration of a procedure to the semantic tables. proc is procedure identifier and
 	* it is exptected that params has field param_list_ properly assigned with procedure parameters.
 	*/
-	void procedure_declare(MlaskalCtx *ctx, int proc_line, MlaskalLval &proc, MlaskalLval &params);
+	void procedure_declare(MlaskalCtx *ctx, MlaskalLval &out, int proc_line, MlaskalLval &proc, MlaskalLval &params);
 	/**
 	* Add declaration of a function to the semantic tables. fnc is function identifier, it is expected that
 	* params has field param_list_ properly assigned with function parameters. type is function return type identifier,
 	* it must already exist at this point and it must by a scalar type.
 	*/
-	void function_declare(MlaskalCtx *ctx, int fnc_line, MlaskalLval &fnc, MlaskalLval &params, int type_line, MlaskalLval &type);
+	void function_declare(MlaskalCtx *ctx, MlaskalLval &out, int fnc_line, MlaskalLval &fnc, MlaskalLval &params, int type_line, MlaskalLval &type);
 	/**
 	* Add one parameter section to the list of parameters stored in out value. ids contains a list of identifiers of the same type
 	* and all are passed either by value or by reference. type if parameter section type identifier ant must already exit.

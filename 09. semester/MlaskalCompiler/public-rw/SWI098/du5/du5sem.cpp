@@ -34,12 +34,13 @@ namespace mlc {
 		return sp->access_typed()->type();
 	}
 
-	void procedure_declare(MlaskalCtx *ctx, int proc_line, MlaskalLval &proc, MlaskalLval &params)
+	void procedure_declare(MlaskalCtx *ctx, MlaskalLval &out, int proc_line, MlaskalLval &proc, MlaskalLval &params)
 	{
 		ctx->tab->add_proc(proc_line, proc.id_ci_, params.param_list_);
 		ctx->tab->enter(proc_line, proc.id_ci_);
+		out.id_ci_ = proc.id_ci_;
 	}
-	void function_declare(MlaskalCtx *ctx, int fnc_line, MlaskalLval &fnc, MlaskalLval &params, int type_line, MlaskalLval &type)
+	void function_declare(MlaskalCtx *ctx, MlaskalLval &out, int fnc_line, MlaskalLval &fnc, MlaskalLval &params, int type_line, MlaskalLval &type)
 	{
 		/* --> scalar type identifier */
 		auto sp = ctx->tab->find_symbol(type.id_ci_);
@@ -56,6 +57,7 @@ namespace mlc {
 
 		ctx->tab->add_fnc(fnc_line, fnc.id_ci_, tp, params.param_list_);
 		ctx->tab->enter(fnc_line, fnc.id_ci_);
+		out.id_ci_ = fnc.id_ci_;
 	}
 	void block_leave(MlaskalCtx *ctx, int line)
 	{	// do not leave at the end of a program
@@ -237,7 +239,8 @@ namespace mlc {
 			ctx->tab->set_main_code(id.id_ci_, code.code_);
 			break;
 		case mlc::subprogram:
-			//ctx->tab->set_subprogram_code(id.id_ci_, code.code_);
+			ctx->tab->set_subprogram_code(id.id_ci_, code.code_);
+			code.code_ = NULL;
 			break;
 		}
 	}
@@ -245,11 +248,15 @@ namespace mlc {
 	{
 		if (out.code_ == NULL)
 		{
+			if (in.code_ == NULL)
+				in.code_ = icblock_create();
+
 			out.code_ = in.code_;
 		}
 		else if (in.code_ != NULL)
 		{
-			icblock_append_delete(out.code_, in.code_);
+			if (out.code_ != in.code_)
+				icblock_append_delete(out.code_, in.code_);
 			in.code_ = NULL;
 		}
 	}
@@ -528,11 +535,13 @@ namespace mlc {
 			else if (tcat == type_category::TCAT_STR)
 				block->append_instruction(new ai::GSTS(adr));
 			else if (tcat == type_category::TCAT_BOOL)
-				out.code_->append_instruction(new ai::GSTB(adr));
+				block->append_instruction(new ai::GSTB(adr));
 		}
 		else if (sp->kind() == symbol_kind::SKIND_LOCAL_VARIABLE)
 		{	// local variable assignment - for each type different kind of instruction
 			stack_address adr = sp->access_typed()->access_local_variable()->address();
+
+			// TODO: use switch here instead
 			if (tcat == type_category::TCAT_REAL)
 				block->append_instruction(new ai::LSTR(adr));
 			else if (tcat == type_category::TCAT_INT)
@@ -540,11 +549,29 @@ namespace mlc {
 			else if (tcat == type_category::TCAT_STR)
 				block->append_instruction(new ai::LSTS(adr));
 			else if (tcat == type_category::TCAT_BOOL)
-				out.code_->append_instruction(new ai::LSTB(adr));
+				block->append_instruction(new ai::LSTB(adr));
 		}
-		else if (sp->kind() == symbol_kind::SKIND_FUNCTION)
+		else if (sp->kind() == symbol_kind::SKIND_FUNCTION && ctx->tab->nested() &&
+			ctx->tab->my_function_name() == id.id_ci_)
 		{
-			
+			// identifier is a function name, we are currently nested in the function block
+			// and the nested function block is my function (not any other function)
+			stack_address adr = ctx->tab->my_return_address();
+			switch (tcat)
+			{
+			case mlc::TCAT_BOOL:
+				block->append_instruction(new ai::LSTB(adr));
+				break;
+			case mlc::TCAT_INT:
+				block->append_instruction(new ai::LSTI(adr));
+				break;
+			case mlc::TCAT_REAL:
+				block->append_instruction(new ai::LSTR(adr));
+				break;
+			case mlc::TCAT_STR:
+				block->append_instruction(new ai::LSTS(adr));
+				break;
+			}
 		}
 		else
 		{

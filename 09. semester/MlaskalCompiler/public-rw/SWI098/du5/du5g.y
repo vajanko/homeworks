@@ -93,8 +93,8 @@ program_block: block_label block_const block_type block_var block_proc_func bloc
 block_proc_func: 
 	| proc_func_defs DUTOK_SEMICOLON
 	;
-proc_func_def: proc DUTOK_SEMICOLON block 
-	| func DUTOK_SEMICOLON block
+proc_func_def: proc DUTOK_SEMICOLON block { set_block_code(ctx, $1, $3, block_type::subprogram); }
+	| func DUTOK_SEMICOLON block	{ set_block_code(ctx, $1, $3, block_type::subprogram); }
 	;
 proc_func_defs: proc_func_def
 	| proc_func_defs DUTOK_SEMICOLON proc_func_def 
@@ -102,7 +102,7 @@ proc_func_defs: proc_func_def
 /* End of block P*/
 
 /* Block */
-block: block_label block_const block_type block_var block_begin_end
+block: block_label block_const block_type block_var block_begin_end	{ append_code_block($$, $5); }
 	;
 block_label: /* empty */
 	| DUTOK_LABEL uints DUTOK_SEMICOLON
@@ -229,10 +229,10 @@ range: ord_const DUTOK_DOTDOT ord_const { range_declare(ctx, $$, $1, @3, $3); }
 
 /* Procedure - function */
 /* procedure header */
-proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params { procedure_declare(ctx, @1, $2, $3); }
+proc: DUTOK_PROCEDURE DUTOK_IDENTIFIER params { procedure_declare(ctx, $$, @1, $2, $3); }
 	;
 /* function header */
-func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER { function_declare(ctx, @1, $2, $3, @5, $5); } /* --> scalar type identifier */
+func: DUTOK_FUNCTION DUTOK_IDENTIFIER params DUTOK_COLON DUTOK_IDENTIFIER { function_declare(ctx, $$, @1, $2, $3, @5, $5); } /* --> scalar type identifier */
 	;
 /* procedure or function parameters possibly without parentesis and any parameters */
 params: { $$.param_list_ = create_parameter_list(); }	/* empty parameters without parentesis */
