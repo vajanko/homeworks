@@ -224,10 +224,10 @@ namespace mlc {
 	}
 
 
-	/*void test(MlaskalCtx *ctx, MlaskalLval &lval)
+	void test(MlaskalCtx *ctx, MlaskalLval &lval)
 	{
 
-	}*/
+	}
 
 
 	/*  */
@@ -240,9 +240,10 @@ namespace mlc {
 			break;
 		case mlc::subprogram:
 			ctx->tab->set_subprogram_code(id.id_ci_, code.code_);
-			code.code_ = NULL;
 			break;
 		}
+		// variable is reused and otherwise this is uninitialized
+		code.code_ = NULL;
 	}
 	void append_code_block(MlaskalLval &out, MlaskalLval &in)
 	{
@@ -397,6 +398,8 @@ namespace mlc {
 		auto l_type = left.type_;
 		auto r_type = right.type_;
 
+		// TODO: boolean x boolean -> boolean
+
 		if (identical_type(l_type, str_type) && identical_type(r_type, str_type))
 		{	// string x string -> string
 			icblock_append_delete(left.code_, right.code_);
@@ -491,7 +494,6 @@ namespace mlc {
 		}
 	}
 	
-	
 	void store_conversion(mlc::icblock_pointer code, int line, mlc::type_pointer lt, mlc::type_pointer rt)
 	{
 		if (lt->cat() == type_category::TCAT_INT && rt->cat() == type_category::TCAT_REAL)
@@ -580,43 +582,88 @@ namespace mlc {
 		}
 	}
 	
-	void procedure_call(MlaskalCtx *ctx, MlaskalLval &out, int proc_line, MlaskalLval &proc)
+
+	void append_init_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::INITB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::INITI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::INITR());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::INITS());
+			break;
+		}
+	}
+	void append_dtor_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::DTORB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::DTORI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::DTORR());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::DTORS());
+			break;
+		}
+	}
+	void subprogram_call(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &real_params)
 	{
 		if (out.code_ == NULL)
 			out.code_ = icblock_create();
 
-		auto sp = ctx->tab->find_symbol(proc.id_ci_);
+		auto sp = ctx->tab->find_symbol(id.id_ci_);
 
-		if (sp->kind() == symbol_kind::SKIND_PROCEDURE)
+		if (sp->kind() == symbol_kind::SKIND_PROCEDURE || sp->kind() == symbol_kind::SKIND_FUNCTION)
 		{
+			if (sp->kind() == symbol_kind::SKIND_FUNCTION)
+			{
+				out.type_ = sp->access_typed()->type();
+				// allocate space for return type
+				append_init_ins(out.code_, out.type_);
+			}
+
+			// evaluate subprogram arguments if any
+			if (real_params.code_ != NULL)
+				icblock_append_delete(out.code_, real_params.code_);
+
+			// call subprogram
 			out.code_->append_instruction(new ai::CALL(sp->access_subprogram()->code()));
 			
+			// clean variables used by the subprogram
 			auto params = sp->access_subprogram()->parameters();
 			for (auto param = params->begin(); param != params->end(); ++param)
 			{
 				if (param->partype == parameter_mode::PMODE_BY_VALUE)
 				{
-					switch (param->ltype->cat())
-					{
-					case type_category::TCAT_BOOL:
-						out.code_->append_instruction(new ai::DTORB());
-						break;
-					case type_category::TCAT_INT:
-						out.code_->append_instruction(new ai::DTORI());
-						break;
-					case type_category::TCAT_REAL:
-						out.code_->append_instruction(new ai::DTORR());
-						break;
-					case type_category::TCAT_STR:
-						out.code_->append_instruction(new ai::DTORS());
-						break;
-					}
+					append_dtor_ins(out.code_, param->ltype);
+				}
+				else if (param->partype == parameter_mode::PMODE_BY_REFERENCE)
+				{
+					// TODO: ...
+				}
+				else
+				{
+					// TODO: error
 				}
 			}
 		}
 		else
 		{
-			// TODO: error
+			// trying to call variable, constant or other identifier
+			error(DUERR_NOTPROC, id_line, *id.id_ci_);
 		}
 	}
 };

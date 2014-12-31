@@ -108,7 +108,7 @@ namespace mlc {
 	void const_load_and_calculate(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &sig, int id_line, MlaskalLval &id);
 
 	/* testing method for debug purpose */
-	//void test(MlaskalCtx *ctx, MlaskalLval &lval);
+	void test(MlaskalCtx *ctx, MlaskalLval &lval);
 
 
 	/**/
@@ -123,7 +123,7 @@ namespace mlc {
 	void unary_not(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val);
 	void binary_op(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &left, int op_line, MlaskalLval &op, MlaskalLval &right);
 
-	void procedure_call(MlaskalCtx *ctx, MlaskalLval &out, int proc_line, MlaskalLval &proc);
+	void subprogram_call(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &real_params);
 }
 
 #endif
