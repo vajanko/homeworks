@@ -648,10 +648,8 @@ namespace mlc {
 			
 			// clean variables used by the subprogram
 			auto params = sp->access_subprogram()->parameters();
-			std::vector<mlc::parameter_entry> rev_params(params->begin(), params->end());
-			
-			//for (auto param = params->begin(); param != params->end(); ++param)
-			for (auto param = rev_params.rbegin(); param != rev_params.rend(); ++param)
+			std::vector<mlc::parameter_entry> params_wrap(params->begin(), params->end());
+			for (auto param = params_wrap.rbegin(); param != params_wrap.rend(); ++param)
 			{
 				if (param->partype == parameter_mode::PMODE_BY_VALUE)
 				{
