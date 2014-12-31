@@ -256,13 +256,13 @@ namespace mlc {
 		}
 		else if (in.code_ != NULL)
 		{
-			if (out.code_ != in.code_)
+			if (out.code_ != in.code_ && !in.code_->empty())
 				icblock_append_delete(out.code_, in.code_);
 			in.code_ = NULL;
 		}
 	}
 
-	void load_identifier(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &val)
+	void load_identifier(MlaskalCtx *ctx, MlaskalLval &out, int val_line, MlaskalLval &val)
 	{
 		auto sp = ctx->tab->find_symbol(val.id_ci_);
 		out.type_ = get_symbol_type(ctx, val.id_ci_);
@@ -305,23 +305,27 @@ namespace mlc {
 				out.code_->append_instruction(new ai::LDLITB(con->access_bool_const()->bool_value()));
 		}
 		// TODO? function return value load
+		else if (sp->kind() == symbol_kind::SKIND_FUNCTION)
+		{	// function without parameters
+			subprogram_call(ctx, out, val_line, val, val);
+		}
 		else
 		{
-			error(DUERR_NOTVAR, 0, *val.id_ci_);	// TODO: line number
+			error(DUERR_NOTVAR, val_line, *val.id_ci_);
 			return;
 		}
 	}
 	/**
 	 * type_ is assigned with the type of constant
 	 */
-	void load_value(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &val, const_type type)
+	void load_value(MlaskalCtx *ctx, MlaskalLval &out, int val_line, MlaskalLval &val, const_type type)
 	{
 		out.code_ = icblock_create();
 
 		switch (type)
 		{
 		case mlc::identifier:
-			load_identifier(ctx, out, val);
+			load_identifier(ctx, out, val_line, val);
 			break;
 		case mlc::boolean:
 			out.code_->append_instruction(new ai::LDLITB(val.bool_val_));
@@ -402,7 +406,9 @@ namespace mlc {
 
 		if (identical_type(l_type, str_type) && identical_type(r_type, str_type))
 		{	// string x string -> string
-			icblock_append_delete(left.code_, right.code_);
+			/*icblock_append_delete(left.code_, right.code_);
+			right.code_ = NULL;*/
+			append_code_block(left, right);
 			out.code_ = left.code_;
 
 			switch (op.dtge_)
@@ -420,7 +426,9 @@ namespace mlc {
 		else if (identical_type(l_type, int_type) && identical_type(r_type, int_type) &&
 			op.dtge_ != DUTOKGE_SOLIDUS)
 		{	// integer x integer -> integer
-			icblock_append_delete(left.code_, right.code_);
+			/*icblock_append_delete(left.code_, right.code_);
+			right.code_ = NULL;*/
+			append_code_block(left, right);
 			out.code_ = left.code_;
 
 			switch (op.dtge_)
@@ -463,7 +471,9 @@ namespace mlc {
 				left.code_->append_instruction(new ai::CVRTIR());
 			}
 
-			icblock_append_delete(left.code_, right.code_);
+			/*icblock_append_delete(left.code_, right.code_);
+			right.code_ = NULL;*/
+			append_code_block(left, right);
 			out.code_ = left.code_;
 
 			switch (op.dtge_)
@@ -636,8 +646,11 @@ namespace mlc {
 			}
 
 			// evaluate subprogram arguments if any
-			if (real_params.code_ != NULL)
-				icblock_append_delete(out.code_, real_params.code_);
+			if (real_params.code_ != NULL) {
+				/*icblock_append_delete(out.code_, real_params.code_);
+				real_params.code_ = NULL;*/
+				append_code_block(out, real_params);
+			}
 
 			// call subprogram
 			out.code_->append_instruction(new ai::CALL(sp->access_subprogram()->code()));
