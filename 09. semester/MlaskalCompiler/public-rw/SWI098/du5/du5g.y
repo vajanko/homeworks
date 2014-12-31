@@ -153,8 +153,8 @@ u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
 stmt_rest: /* empty */
 	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr { store_identifier(ctx, $$, @1, $1, $3); }/* --> variable, function identifier */
 	| array_var DUTOK_ASSIGN expr							/* --> array variable */
-	| DUTOK_IDENTIFIER										/* --> procedure identifier */
-	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	/* --> procedure identifier */
+	| DUTOK_IDENTIFIER					{ procedure_call(ctx, $$, @1, $1); }	/* --> procedure identifier */
+	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	{ procedure_call(ctx, $$, @1, $1); }	/* --> procedure identifier */
 	| DUTOK_GOTO DUTOK_UINT
 	| DUTOK_BEGIN stmts DUTOK_END
 	| DUTOK_REPEAT stmts DUTOK_UNTIL expr					/* --> boolean expression */

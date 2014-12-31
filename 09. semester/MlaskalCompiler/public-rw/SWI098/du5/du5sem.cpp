@@ -363,7 +363,9 @@ namespace mlc {
 				error(DUERR_SYNTAX, op_line, "'-' operator before non-integral expression");
 			}
 			break;
-			// todo: NOT
+		default:
+			error(DUERR_SYNTAX, op_line, "unknown unary operator");
+			break;
 		}
 	}
 	void unary_not(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val)
@@ -399,8 +401,7 @@ namespace mlc {
 				out.code_->append_instruction(new ai::ADDS());
 				break;
 			default:
-				// operator is undefined for given operands
-				error(DUERR_CANNOTCONVERT, op_line);
+				error(DUERR_SYNTAX, op_line, "unknown binary operator for 'string' type");
 				break;
 			}
 
@@ -431,13 +432,14 @@ namespace mlc {
 				break;
 			default:
 				// operator is undefined for given operands - SOLIDUS
-				error(DUERR_CANNOTCONVERT, op_line);
+				error(DUERR_SYNTAX, op_line, "unknown binary operator for 'integer' type");
 				break;
 			}
 
 			out.type_ = int_type;
 		}
-		else
+		else if ((identical_type(l_type, real_type) || identical_type(l_type, int_type)) &&
+			(identical_type(r_type, real_type) || identical_type(r_type, int_type)))
 		{
 			// real/integer x real/integer -> real
 
@@ -476,6 +478,10 @@ namespace mlc {
 
 			out.type_ = real_type;
 		}
+		else
+		{
+			error(DUERR_SYNTAX, op_line, "unknown binary operator");
+		}
 	}
 	
 	
@@ -487,9 +493,9 @@ namespace mlc {
 			error(DUERR_CONVERSION, line);
 		}
 		else if (lt->cat() == type_category::TCAT_REAL && rt->cat() == type_category::TCAT_INT)
-		{	// conversion from INTEGER to REAL
+		{	// conversion from INTEGER to REAL - no warnning !!!
 			code->append_instruction(new ai::CVRTIR());
-			error(DUERR_CONVERSION, line);
+			// error(DUERR_CONVERSION, line);
 		}
 		else if (!identical_type(lt, rt))
 		{	// conversion is not allowed
@@ -547,6 +553,45 @@ namespace mlc {
 		}
 	}
 	
+	void procedure_call(MlaskalCtx *ctx, MlaskalLval &out, int proc_line, MlaskalLval &proc)
+	{
+		if (out.code_ == NULL)
+			out.code_ = icblock_create();
+
+		auto sp = ctx->tab->find_symbol(proc.id_ci_);
+
+		if (sp->kind() == symbol_kind::SKIND_PROCEDURE)
+		{
+			out.code_->append_instruction(new ai::CALL(sp->access_subprogram()->code()));
+			
+			auto params = sp->access_subprogram()->parameters();
+			for (auto param = params->begin(); param != params->end(); ++param)
+			{
+				if (param->partype == parameter_mode::PMODE_BY_VALUE)
+				{
+					switch (param->ltype->cat())
+					{
+					case type_category::TCAT_BOOL:
+						out.code_->append_instruction(new ai::DTORB());
+						break;
+					case type_category::TCAT_INT:
+						out.code_->append_instruction(new ai::DTORI());
+						break;
+					case type_category::TCAT_REAL:
+						out.code_->append_instruction(new ai::DTORR());
+						break;
+					case type_category::TCAT_STR:
+						out.code_->append_instruction(new ai::DTORS());
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			// TODO: error
+		}
+	}
 };
 
 /*****************************************/

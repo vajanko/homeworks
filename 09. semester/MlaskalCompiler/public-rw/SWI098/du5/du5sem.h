@@ -122,6 +122,8 @@ namespace mlc {
 	void unary_op(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val);
 	void unary_not(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val);
 	void binary_op(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &left, int op_line, MlaskalLval &op, MlaskalLval &right);
+
+	void procedure_call(MlaskalCtx *ctx, MlaskalLval &out, int proc_line, MlaskalLval &proc);
 }
 
 #endif
