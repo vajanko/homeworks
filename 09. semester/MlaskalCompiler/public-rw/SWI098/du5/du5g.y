@@ -192,10 +192,10 @@ term: factors
 factors: factor
 	| factors DUTOK_OPER_MUL factor				{ binary_op(ctx, $$, $1, @2, $2, $3); }
 	;
-factor:DUTOK_IDENTIFIER	{ load_value(ctx, $$, @1, $1, const_type::identifier); }	/* --> unsigned constant, variable, function identifier */
-	| DUTOK_UINT		{ load_value(ctx, $$, @1, $1, const_type::integer); }		/* --> unsigned constant identifier */
-	| DUTOK_REAL		{ load_value(ctx, $$, @1, $1, const_type::real);	}		/* --> unsigned constant identifier */
-	| DUTOK_STRING		{ load_value(ctx, $$, @1, $1, const_type::string); }		/* --> unsigned constant identifier */
+factor:DUTOK_IDENTIFIER	{ load_identifier(ctx, $$, @1, $1); }						/* --> unsigned constant, variable, function identifier */
+	| DUTOK_UINT		{ load_const_value(ctx, $$, $1, const_type::integer); }		/* --> unsigned constant identifier */
+	| DUTOK_REAL		{ load_const_value(ctx, $$, $1, const_type::real);	}		/* --> unsigned constant identifier */
+	| DUTOK_STRING		{ load_const_value(ctx, $$, $1, const_type::string); }		/* --> unsigned constant identifier */
 	| array_var												/* --> array identifier, ordinal expressions */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	{ subprogram_call(ctx, $$, @1, $1, $3); } /* --> function identifier */
 	| DUTOK_LPAR expr DUTOK_RPAR { $$.type_ = $2.type_; $$.code_ = $2.code_; }
@@ -204,10 +204,10 @@ factor:DUTOK_IDENTIFIER	{ load_value(ctx, $$, @1, $1, const_type::identifier); }
 array_var: DUTOK_IDENTIFIER idxs		/* --> array identifier, ordinal expressions */
 	;
 /* array indexer */
-idx: DUTOK_LSBRA exprs DUTOK_RSBRA		/* ordinal expressions */
-	;
 idxs: idx
 	| idxs idx
+	;
+idx: DUTOK_LSBRA exprs DUTOK_RSBRA		{ load_element_value(ctx, $$, @2, $2); }	/* ordinal expressions */
 	;
 /* End of expression */
 

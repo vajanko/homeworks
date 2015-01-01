@@ -28,11 +28,11 @@ namespace mlc {
 	/**
 	 *  Gets type of an identifier (variable, function, constant)
 	 */
-	type_pointer get_symbol_type(MlaskalCtx *ctx, mlc::ls_id_type::const_pointer id)
+	/*type_pointer get_symbol_type(MlaskalCtx *ctx, mlc::ls_id_type::const_pointer id)
 	{
 		auto sp = ctx->tab->find_symbol(id);
 		return sp->access_typed()->type();
-	}
+	}*/
 
 	void procedure_declare(MlaskalCtx *ctx, MlaskalLval &out, int proc_line, MlaskalLval &proc, MlaskalLval &params)
 	{
@@ -135,11 +135,7 @@ namespace mlc {
 	{
 		out.identifiers_.push_back(in.id_ci_);
 	}
-	/*void identifier_copy(MlaskalLval &out_lval, MlaskalLval &in_lval)
-	{
-	out_lval.identifiers_.insert(out_lval.identifiers_.end(), in_lval.identifiers_.begin(), in_lval.identifiers_.end());
-	}*/
-
+	
 	void const_declare(MlaskalCtx *ctx, int line, MlaskalLval &name, MlaskalLval &value)
 	{
 		switch (value.const_type_)
@@ -229,9 +225,176 @@ namespace mlc {
 
 	}
 
+	/**
+	* Append INIT instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_init_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::INITB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::INITI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::INITR());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::INITS());
+			break;
+		}
+	}
+	/**
+	* Append DTOR instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_dtor_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::DTORB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::DTORI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::DTORR());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::DTORS());
+			break;
+		}
+	}
+	/**
+	* Append GLD instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_gld_ins(mlc::icblock_pointer block, mlc::type_pointer tp, mlc::stack_address adr)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::GLDB(adr));
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::GLDI(adr));
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::GLDR(adr));
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::GLDS(adr));
+			break;
+		}
+	}
+	/**
+	* Append LLD instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_lld_ins(mlc::icblock_pointer block, mlc::type_pointer tp, mlc::stack_address adr)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::LLDB(adr));
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::LLDI(adr));
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::LLDR(adr));
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::LLDS(adr));
+			break;
+		}
+	}
+	/**
+	* Append LDLIT instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_ldlit_ins(mlc::icblock_pointer block, mlc::type_pointer tp, mlc::const_symbol_reference con)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::LDLITB(con->access_bool_const()->bool_value()));
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::LDLITI(con->access_int_const()->int_value()));
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::LDLITR(con->access_real_const()->real_value()));
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::LDLITS(con->access_str_const()->str_value()));
+			break;
+		}
+	}
+	/**
+	* Append GST instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_gst_ins(mlc::icblock_pointer block, mlc::type_pointer tp, mlc::stack_address adr)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::GSTB(adr));
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::GSTI(adr));
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::GSTR(adr));
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::GSTS(adr));
+			break;
+		}
+	}
+	/**
+	* Append LST instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_lst_ins(mlc::icblock_pointer block, mlc::type_pointer tp, mlc::stack_address adr)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::LSTB(adr));
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::LSTI(adr));
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::LSTR(adr));
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::LSTS(adr));
+			break;
+		}
+	}
+	
 
-	/*  */
-	void set_block_code(MlaskalCtx *ctx, MlaskalLval &id, MlaskalLval &code, block_type type)
+	/**
+	 * Create new icblock in the provided MlaskalLval instance of does not exit yet.
+	 */
+	void create_block_if_empty(MlaskalLval &lval)
+	{
+		if (lval.code_ == NULL)
+			lval.code_ = icblock_create();
+	}
+	/**
+	 * Associate program or subprogram (function or procedure) with its code. The association is made
+	 * with the identifier - program, funtion or procedure name. The code_ field of MlaskalLval instance
+	 * is cleared.
+	 */
+	void set_block_code(MlaskalCtx *ctx, MlaskalLval &id, MlaskalLval &code, mlc::block_type type)
 	{
 		switch (type)
 		{
@@ -242,6 +405,7 @@ namespace mlc {
 			ctx->tab->set_subprogram_code(id.id_ci_, code.code_);
 			break;
 		}
+
 		// variable is reused and otherwise this is uninitialized
 		code.code_ = NULL;
 	}
@@ -249,8 +413,7 @@ namespace mlc {
 	{
 		if (out.code_ == NULL)
 		{
-			if (in.code_ == NULL)
-				in.code_ = icblock_create();
+			create_block_if_empty(in);
 
 			out.code_ = in.code_;
 		}
@@ -261,73 +424,50 @@ namespace mlc {
 			in.code_ = NULL;
 		}
 	}
-
+	/**
+	 * Append instruction(s) which load value of an identifier. This can be global/local variable identifier,
+	 * constant identifier or function without parameters identifier. type_ field is assigned with the type 
+	 * value represented by the identifier.
+	 */
 	void load_identifier(MlaskalCtx *ctx, MlaskalLval &out, int val_line, MlaskalLval &val)
 	{
-		auto sp = ctx->tab->find_symbol(val.id_ci_);
-		out.type_ = get_symbol_type(ctx, val.id_ci_);
+		create_block_if_empty(out);
 
-		type_category tcat = out.type_->cat();
-		if (sp->kind() == symbol_kind::SKIND_GLOBAL_VARIABLE)
-		{	// global variable load - for each type different kind of instruction
-			stack_address adr = sp->access_typed()->access_global_variable()->address();
-			if (tcat == type_category::TCAT_REAL)
-				out.code_->append_instruction(new ai::GLDR(adr));
-			else if (tcat == type_category::TCAT_INT)
-				out.code_->append_instruction(new ai::GLDI(adr));
-			else if (tcat == type_category::TCAT_STR)
-				out.code_->append_instruction(new ai::GLDS(adr));
-			else if (tcat == type_category::TCAT_BOOL)
-				out.code_->append_instruction(new ai::GLDB(adr));
-		}
-		else if (sp->kind() == symbol_kind::SKIND_LOCAL_VARIABLE)
-		{	// local variable load - for each type different kind of instruction
-			stack_address adr = sp->access_typed()->access_local_variable()->address();
-			if (tcat == type_category::TCAT_REAL)
-				out.code_->append_instruction(new ai::LLDR(adr));
-			else if (tcat == type_category::TCAT_INT)
-				out.code_->append_instruction(new ai::LLDI(adr));
-			else if (tcat == type_category::TCAT_STR)
-				out.code_->append_instruction(new ai::LLDS(adr));
-			else if (tcat == type_category::TCAT_BOOL)
-				out.code_->append_instruction(new ai::LLDB(adr));
-		}
-		else if (sp->kind() == symbol_kind::SKIND_CONST)
+		auto sp = ctx->tab->find_symbol(val.id_ci_);
+		out.type_ = sp->access_typed()->type();
+		
+		switch (sp->kind())
 		{
-			auto con = sp->access_typed()->access_const();
-			if (tcat == type_category::TCAT_REAL)
-				out.code_->append_instruction(new ai::LDLITR(con->access_real_const()->real_value()));
-			else if (tcat == type_category::TCAT_INT)
-				out.code_->append_instruction(new ai::LDLITI(con->access_int_const()->int_value()));
-			else if (tcat == type_category::TCAT_STR)
-				out.code_->append_instruction(new ai::LDLITS(con->access_str_const()->str_value()));
-			else if (tcat == type_category::TCAT_BOOL)
-				out.code_->append_instruction(new ai::LDLITB(con->access_bool_const()->bool_value()));
-		}
-		// TODO? function return value load
-		else if (sp->kind() == symbol_kind::SKIND_FUNCTION)
-		{	// function without parameters
+		case symbol_kind::SKIND_GLOBAL_VARIABLE:
+			append_gld_ins(out.code_, out.type_, sp->access_typed()->access_global_variable()->address());
+			break;
+		case symbol_kind::SKIND_LOCAL_VARIABLE:
+			append_lld_ins(out.code_, out.type_, sp->access_typed()->access_local_variable()->address());
+			break;
+		case symbol_kind::SKIND_CONST:
+			append_ldlit_ins(out.code_, out.type_, sp->access_typed()->access_const());
+			break;
+		case symbol_kind::SKIND_FUNCTION:
+			// function without parameters
 			subprogram_call(ctx, out, val_line, val, val);
-		}
-		else
-		{
+			break;
+		default:
 			error(DUERR_NOTVAR, val_line, *val.id_ci_);
-			return;
+			break;
 		}
 	}
 	/**
-	 * type_ is assigned with the type of constant
+	 * Append LDLIT instruction which loads value of a constant used in the program. !!! This does not include
+	 * the case of constant identifer or function !!!. type_ field is assigned with the type of constant.
 	 */
-	void load_value(MlaskalCtx *ctx, MlaskalLval &out, int val_line, MlaskalLval &val, const_type type)
+	void load_const_value(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &val, const_type type)
 	{
-		out.code_ = icblock_create();
+		create_block_if_empty(out);
 
 		switch (type)
 		{
-		case mlc::identifier:
-			load_identifier(ctx, out, val_line, val);
-			break;
 		case mlc::boolean:
+			// this is probably unnecessary because boolean value can be only specified by an identifier
 			out.code_->append_instruction(new ai::LDLITB(val.bool_val_));
 			out.type_ = ctx->tab->logical_bool();
 			break;
@@ -344,6 +484,33 @@ namespace mlc {
 			out.type_ = ctx->tab->logical_string();
 			break;
 		}
+	}
+	void load_element_value(MlaskalCtx *ctx, MlaskalLval &out, int val_line, MlaskalLval &val)
+	{
+		/*if (out.code_ == NULL)
+			out.code_ = icblock_create();
+
+		auto sp = ctx->tab->find_symbol(val.id_ci_);
+		auto tp = sp->access_typed()->type();
+
+		switch (sp->kind())
+		{
+		case symbol_kind::SKIND_LOCAL_VARIABLE:
+			stack_address adr = sp->access_typed()->access_local_variable()->address();
+			out.code_->append_instruction(new ai::LLDP(adr));
+			append_code_block(out, val);
+			out.code_->append_instruction(new ai::ADDP());
+			break;
+		case symbol_kind::SKIND_GLOBAL_VARIABLE:
+			stack_address adr = sp->access_typed()->access_global_variable()->address();
+			
+			break;
+		}*/
+
+		//out.code_->append_instruction(new ai::XLDI())
+		/*new ai::XSTB();
+		new ai::LREF();
+		new ai::ADDP();*/
 	}
 	
 	void unary_op(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val)
@@ -517,116 +684,44 @@ namespace mlc {
 	}
 	void store_identifier(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &expr)
 	{
-		icblock_pointer block = expr.code_;
-		out.code_ = block;
+		//icblock_pointer block = expr.code_;
+		out.code_ = expr.code_;
 
 		/* --> variable, function identifier */
 		// find assigned symbol
 		auto sp = ctx->tab->find_symbol(id.id_ci_);
 		// find out type of the assigned symbol
-		id.type_ = get_symbol_type(ctx, id.id_ci_);
+		id.type_ = sp->access_typed()->type();
 			
 		// possible conversion in the assignment
 		// it is also checked whether assignment is possible
-		store_conversion(block, id_line, id.type_, expr.type_);
+		store_conversion(out.code_, id_line, id.type_, expr.type_);
 
-		type_category tcat = id.type_->cat();
-		if (sp->kind() == symbol_kind::SKIND_GLOBAL_VARIABLE)
-		{	// global variable assignment - for each type different kind of instruction
-			stack_address adr = sp->access_typed()->access_global_variable()->address();
-			if (tcat == type_category::TCAT_REAL)
-				block->append_instruction(new ai::GSTR(adr));
-			else if (tcat == type_category::TCAT_INT)
-				block->append_instruction(new ai::GSTI(adr));
-			else if (tcat == type_category::TCAT_STR)
-				block->append_instruction(new ai::GSTS(adr));
-			else if (tcat == type_category::TCAT_BOOL)
-				block->append_instruction(new ai::GSTB(adr));
-		}
-		else if (sp->kind() == symbol_kind::SKIND_LOCAL_VARIABLE)
-		{	// local variable assignment - for each type different kind of instruction
-			stack_address adr = sp->access_typed()->access_local_variable()->address();
-
-			// TODO: use switch here instead
-			if (tcat == type_category::TCAT_REAL)
-				block->append_instruction(new ai::LSTR(adr));
-			else if (tcat == type_category::TCAT_INT)
-				block->append_instruction(new ai::LSTI(adr));
-			else if (tcat == type_category::TCAT_STR)
-				block->append_instruction(new ai::LSTS(adr));
-			else if (tcat == type_category::TCAT_BOOL)
-				block->append_instruction(new ai::LSTB(adr));
-		}
-		else if (sp->kind() == symbol_kind::SKIND_FUNCTION && ctx->tab->nested() &&
-			ctx->tab->my_function_name() == id.id_ci_)
+		switch (sp->kind())
 		{
-			// identifier is a function name, we are currently nested in the function block
-			// and the nested function block is my function (not any other function)
-			stack_address adr = ctx->tab->my_return_address();
-			switch (tcat)
+		case symbol_kind::SKIND_GLOBAL_VARIABLE:
+			append_gst_ins(out.code_, id.type_, sp->access_typed()->access_global_variable()->address());
+			break;
+		case symbol_kind::SKIND_LOCAL_VARIABLE:
+			append_lst_ins(out.code_, id.type_, sp->access_typed()->access_local_variable()->address());
+			break;
+		case symbol_kind::SKIND_FUNCTION:
+			if (ctx->tab->nested() && ctx->tab->my_function_name() == id.id_ci_)
 			{
-			case mlc::TCAT_BOOL:
-				block->append_instruction(new ai::LSTB(adr));
-				break;
-			case mlc::TCAT_INT:
-				block->append_instruction(new ai::LSTI(adr));
-				break;
-			case mlc::TCAT_REAL:
-				block->append_instruction(new ai::LSTR(adr));
-				break;
-			case mlc::TCAT_STR:
-				block->append_instruction(new ai::LSTS(adr));
+				append_lst_ins(out.code_, id.type_, ctx->tab->my_return_address());
 				break;
 			}
-		}
-		else
-		{
+			// else go to default branch
+		default:
 			error(DUERR_NOTVAR, id_line, *id.id_ci_);
-			return;
+			break;
 		}
 	}
 	
-
-	void append_init_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
-	{
-		switch (tp->cat())
-		{
-		case type_category::TCAT_BOOL:
-			block->append_instruction(new ai::INITB());
-			break;
-		case type_category::TCAT_INT:
-			block->append_instruction(new ai::INITI());
-			break;
-		case type_category::TCAT_REAL:
-			block->append_instruction(new ai::INITR());
-			break;
-		case type_category::TCAT_STR:
-			block->append_instruction(new ai::INITS());
-			break;
-		}
-	}
-	void append_dtor_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
-	{
-		switch (tp->cat())
-		{
-		case type_category::TCAT_BOOL:
-			block->append_instruction(new ai::DTORB());
-			break;
-		case type_category::TCAT_INT:
-			block->append_instruction(new ai::DTORI());
-			break;
-		case type_category::TCAT_REAL:
-			block->append_instruction(new ai::DTORR());
-			break;
-		case type_category::TCAT_STR:
-			block->append_instruction(new ai::DTORS());
-			break;
-		}
-	}
+	
 	void subprogram_call(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &real_params)
 	{
-		if (out.code_ == NULL)
-			out.code_ = icblock_create();
+		create_block_if_empty(out);
 
 		auto sp = ctx->tab->find_symbol(id.id_ci_);
 
@@ -646,7 +741,7 @@ namespace mlc {
 			// call subprogram
 			out.code_->append_instruction(new ai::CALL(sp->access_subprogram()->code()));
 			
-			// clean variables used by the subprogram
+			// dispose variables used by the subprogram in reverse order
 			auto params = sp->access_subprogram()->parameters();
 			std::vector<mlc::parameter_entry> params_wrap(params->begin(), params->end());
 			for (auto param = params_wrap.rbegin(); param != params_wrap.rend(); ++param)
@@ -657,11 +752,7 @@ namespace mlc {
 				}
 				else if (param->partype == parameter_mode::PMODE_BY_REFERENCE)
 				{
-					// TODO: ...
-				}
-				else
-				{
-					// TODO: error
+					// TODO: du6
 				}
 			}
 		}

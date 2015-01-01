@@ -113,10 +113,12 @@ namespace mlc {
 
 	/**/
 
-	void set_block_code(MlaskalCtx *ctx, MlaskalLval &id, MlaskalLval &code, block_type type);
+	void set_block_code(MlaskalCtx *ctx, MlaskalLval &id, MlaskalLval &code, mlc::block_type type);
 	void append_code_block(MlaskalLval &out, MlaskalLval &in);
 
-	void load_value(MlaskalCtx *ctx, MlaskalLval &out, int val_line, MlaskalLval &val, const_type type);
+	void load_const_value(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &val, mlc::const_type type);
+	void load_identifier(MlaskalCtx *ctx, MlaskalLval &out, int val_line, MlaskalLval &val);
+	void load_element_value(MlaskalCtx *ctx, MlaskalLval &out, int val_line, MlaskalLval &val);
 	void store_identifier(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &expr);
 
 	void unary_op(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val);
