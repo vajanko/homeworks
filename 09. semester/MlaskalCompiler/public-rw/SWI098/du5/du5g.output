@@ -79,17 +79,17 @@ Grammar
    52     | simple_expr DUTOK_OPER_REL simple_expr
    53     | simple_expr DUTOK_EQ simple_expr
 
-   54 exprs: expr
-   55      | exprs DUTOK_COMMA expr
+   54 simple_expr: terms
+   55            | DUTOK_OPER_SIGNADD terms
 
-   56 simple_expr: terms
-   57            | DUTOK_OPER_SIGNADD terms
+   56 terms: term
+   57      | terms DUTOK_OPER_SIGNADD term
+   58      | terms DUTOK_OR term
 
-   58 term: factors
+   59 term: factors
 
-   59 terms: term
-   60      | terms DUTOK_OPER_SIGNADD term
-   61      | terms DUTOK_OR term
+   60 factors: factor
+   61        | factors DUTOK_OPER_MUL factor
 
    62 factor: DUTOK_IDENTIFIER
    63       | DUTOK_UINT
@@ -100,15 +100,15 @@ Grammar
    68       | DUTOK_LPAR expr DUTOK_RPAR
    69       | DUTOK_NOT factor
 
-   70 factors: factor
-   71        | factors DUTOK_OPER_MUL factor
+   70 array_var: DUTOK_IDENTIFIER idxs
 
-   72 array_var: DUTOK_IDENTIFIER idxs
+   71 idxs: idx
+   72     | idxs idx
 
    73 idx: DUTOK_LSBRA exprs DUTOK_RSBRA
 
-   74 idxs: idx
-   75     | idxs idx
+   74 exprs: expr
+   75      | exprs DUTOK_COMMA expr
 
    76 type: DUTOK_IDENTIFIER
    77     | range
@@ -181,16 +181,16 @@ DUTOK_DO (274) 31 36 37 46
 DUTOK_REPEAT (275) 45
 DUTOK_UNTIL (276) 45
 DUTOK_FOR (277) 37 46
-DUTOK_OR (278) 61
+DUTOK_OR (278) 58
 DUTOK_NOT (279) 69
-DUTOK_IDENTIFIER (280) 1 14 19 37 39 41 42 46 62 67 72 76 81 84 85
+DUTOK_IDENTIFIER (280) 1 14 19 37 39 41 42 46 62 67 70 76 81 84 85
     91 92 93 94 101 102 105 106
 DUTOK_UINT (281) 32 43 63 95 96 103 104 107 108
 DUTOK_REAL (282) 64 97 98
 DUTOK_STRING (283) 65 99
 DUTOK_SEMICOLON (284) 1 4 5 6 8 11 13 16 18 21 23 26 48 90
 DUTOK_DOT (285) 1
-DUTOK_COMMA (286) 50 55 80 106 108
+DUTOK_COMMA (286) 50 75 80 106 108
 DUTOK_EQ (287) 14 19 53
 DUTOK_COLON (288) 24 32 85 91 92
 DUTOK_LPAR (289) 42 67 68 87 88
@@ -200,8 +200,8 @@ DUTOK_LSBRA (292) 73 78
 DUTOK_RSBRA (293) 73 78
 DUTOK_ASSIGN (294) 37 39 40 46
 DUTOK_OPER_REL (295) 52
-DUTOK_OPER_SIGNADD (296) 57 60 94 96 98 102 104
-DUTOK_OPER_MUL (297) 71
+DUTOK_OPER_SIGNADD (296) 55 57 94 96 98 102 104
+DUTOK_OPER_MUL (297) 61
 DUTOK_FOR_DIRECTION (298) 37 46
 
 
@@ -257,25 +257,25 @@ real_params (67)
     on left: 49 50, on right: 42 50 67
 expr (68)
     on left: 51 52 53, on right: 30 31 34 35 36 37 39 40 45 46 49 50
-    54 55 68
-exprs (69)
-    on left: 54 55, on right: 55 73
-simple_expr (70)
-    on left: 56 57, on right: 51 52 53
+    68 74 75
+simple_expr (69)
+    on left: 54 55, on right: 51 52 53
+terms (70)
+    on left: 56 57 58, on right: 54 55 57 58
 term (71)
-    on left: 58, on right: 59 60 61
-terms (72)
-    on left: 59 60 61, on right: 56 57 60 61
+    on left: 59, on right: 56 57 58
+factors (72)
+    on left: 60 61, on right: 59 61
 factor (73)
-    on left: 62 63 64 65 66 67 68 69, on right: 69 70 71
-factors (74)
-    on left: 70 71, on right: 58 71
-array_var (75)
-    on left: 72, on right: 40 66
+    on left: 62 63 64 65 66 67 68 69, on right: 60 61 69
+array_var (74)
+    on left: 70, on right: 40 66
+idxs (75)
+    on left: 71 72, on right: 70 72
 idx (76)
-    on left: 73, on right: 74 75
-idxs (77)
-    on left: 74 75, on right: 72 75
+    on left: 73, on right: 71 72
+exprs (77)
+    on left: 74 75, on right: 73 75
 type (78)
     on left: 76 77 78, on right: 19 24 78
 ord_types (79)
@@ -957,7 +957,7 @@ state 65
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
    47 stmts: . stmt
    48      | . stmts DUTOK_SEMICOLON stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -1171,7 +1171,7 @@ state 80
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
    47 stmts: . stmt
    48      | . stmts DUTOK_SEMICOLON stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -1207,12 +1207,14 @@ state 82
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -1221,9 +1223,7 @@ state 82
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -1235,10 +1235,10 @@ state 82
 
     expr         go to state 119
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -1249,12 +1249,14 @@ state 83
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -1263,9 +1265,7 @@ state 83
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -1277,10 +1277,10 @@ state 83
 
     expr         go to state 126
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -1308,7 +1308,7 @@ state 84
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
    47 stmts: . stmt
    48      | . stmts DUTOK_SEMICOLON stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -1342,10 +1342,10 @@ state 86
    39 stmt_rest: DUTOK_IDENTIFIER . DUTOK_ASSIGN expr
    41          | DUTOK_IDENTIFIER .  [DUTOK_END, DUTOK_ELSE, DUTOK_UNTIL, DUTOK_SEMICOLON]
    42          | DUTOK_IDENTIFIER . DUTOK_LPAR real_params DUTOK_RPAR
-   72 array_var: DUTOK_IDENTIFIER . idxs
+   70 array_var: DUTOK_IDENTIFIER . idxs
+   71 idxs: . idx
+   72     | . idxs idx
    73 idx: . DUTOK_LSBRA exprs DUTOK_RSBRA
-   74 idxs: . idx
-   75     | . idxs idx
 
     DUTOK_LPAR    shift, and go to state 129
     DUTOK_LSBRA   shift, and go to state 130
@@ -1353,8 +1353,8 @@ state 86
 
     $default  reduce using rule 41 (stmt_rest)
 
-    idx   go to state 132
-    idxs  go to state 133
+    idxs  go to state 132
+    idx   go to state 133
 
 
 state 87
@@ -1565,7 +1565,7 @@ state 112
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
    69       | DUTOK_NOT . factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT         shift, and go to state 112
     DUTOK_IDENTIFIER  shift, and go to state 113
@@ -1582,18 +1582,18 @@ state 113
 
    62 factor: DUTOK_IDENTIFIER .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_OR, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_OPER_SIGNADD, DUTOK_OPER_MUL, DUTOK_FOR_DIRECTION]
    67       | DUTOK_IDENTIFIER . DUTOK_LPAR real_params DUTOK_RPAR
-   72 array_var: DUTOK_IDENTIFIER . idxs
+   70 array_var: DUTOK_IDENTIFIER . idxs
+   71 idxs: . idx
+   72     | . idxs idx
    73 idx: . DUTOK_LSBRA exprs DUTOK_RSBRA
-   74 idxs: . idx
-   75     | . idxs idx
 
     DUTOK_LPAR   shift, and go to state 148
     DUTOK_LSBRA  shift, and go to state 130
 
     $default  reduce using rule 62 (factor)
 
-    idx   go to state 132
-    idxs  go to state 133
+    idxs  go to state 132
+    idx   go to state 133
 
 
 state 114
@@ -1622,12 +1622,14 @@ state 117
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -1637,9 +1639,7 @@ state 117
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    68       | DUTOK_LPAR . expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -1651,20 +1651,22 @@ state 117
 
     expr         go to state 149
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
 state 118
 
-   57 simple_expr: DUTOK_OPER_SIGNADD . terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   55 simple_expr: DUTOK_OPER_SIGNADD . terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -1673,9 +1675,7 @@ state 118
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT         shift, and go to state 112
     DUTOK_IDENTIFIER  shift, and go to state 113
@@ -1684,10 +1684,10 @@ state 118
     DUTOK_STRING      shift, and go to state 116
     DUTOK_LPAR        shift, and go to state 117
 
-    term       go to state 121
     terms      go to state 150
-    factor     go to state 123
-    factors    go to state 124
+    term       go to state 122
+    factors    go to state 123
+    factor     go to state 124
     array_var  go to state 125
 
 
@@ -1714,38 +1714,38 @@ state 120
 
 state 121
 
-   59 terms: term .
-
-    $default  reduce using rule 59 (terms)
-
-
-state 122
-
-   56 simple_expr: terms .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_FOR_DIRECTION]
-   60 terms: terms . DUTOK_OPER_SIGNADD term
-   61      | terms . DUTOK_OR term
+   54 simple_expr: terms .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_FOR_DIRECTION]
+   57 terms: terms . DUTOK_OPER_SIGNADD term
+   58      | terms . DUTOK_OR term
 
     DUTOK_OR            shift, and go to state 154
     DUTOK_OPER_SIGNADD  shift, and go to state 155
 
-    $default  reduce using rule 56 (simple_expr)
+    $default  reduce using rule 54 (simple_expr)
+
+
+state 122
+
+   56 terms: term .
+
+    $default  reduce using rule 56 (terms)
 
 
 state 123
 
-   70 factors: factor .
+   59 term: factors .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_OR, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_OPER_SIGNADD, DUTOK_FOR_DIRECTION]
+   61 factors: factors . DUTOK_OPER_MUL factor
 
-    $default  reduce using rule 70 (factors)
+    DUTOK_OPER_MUL  shift, and go to state 156
+
+    $default  reduce using rule 59 (term)
 
 
 state 124
 
-   58 term: factors .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_OR, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_OPER_SIGNADD, DUTOK_FOR_DIRECTION]
-   71 factors: factors . DUTOK_OPER_MUL factor
+   60 factors: factor .
 
-    DUTOK_OPER_MUL  shift, and go to state 156
-
-    $default  reduce using rule 58 (term)
+    $default  reduce using rule 60 (factors)
 
 
 state 125
@@ -1788,12 +1788,14 @@ state 129
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -1802,9 +1804,7 @@ state 129
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -1817,10 +1817,10 @@ state 129
     real_params  go to state 160
     expr         go to state 161
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -1829,14 +1829,14 @@ state 130
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   54 exprs: . expr
-   55      | . exprs DUTOK_COMMA expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -1845,10 +1845,10 @@ state 130
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
    73 idx: DUTOK_LSBRA . exprs DUTOK_RSBRA
+   74 exprs: . expr
+   75      | . exprs DUTOK_COMMA expr
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -1859,13 +1859,13 @@ state 130
     DUTOK_OPER_SIGNADD  shift, and go to state 118
 
     expr         go to state 162
-    exprs        go to state 163
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
+    exprs        go to state 163
 
 
 state 131
@@ -1874,12 +1874,14 @@ state 131
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -1888,9 +1890,7 @@ state 131
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -1902,31 +1902,31 @@ state 131
 
     expr         go to state 164
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
 state 132
 
-   74 idxs: idx .
+   70 array_var: DUTOK_IDENTIFIER idxs .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_OR, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_ASSIGN, DUTOK_OPER_REL, DUTOK_OPER_SIGNADD, DUTOK_OPER_MUL, DUTOK_FOR_DIRECTION]
+   72 idxs: idxs . idx
+   73 idx: . DUTOK_LSBRA exprs DUTOK_RSBRA
 
-    $default  reduce using rule 74 (idxs)
+    DUTOK_LSBRA  shift, and go to state 130
+
+    $default  reduce using rule 70 (array_var)
+
+    idx  go to state 165
 
 
 state 133
 
-   72 array_var: DUTOK_IDENTIFIER idxs .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_OR, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_ASSIGN, DUTOK_OPER_REL, DUTOK_OPER_SIGNADD, DUTOK_OPER_MUL, DUTOK_FOR_DIRECTION]
-   73 idx: . DUTOK_LSBRA exprs DUTOK_RSBRA
-   75 idxs: idxs . idx
+   71 idxs: idx .
 
-    DUTOK_LSBRA  shift, and go to state 130
-
-    $default  reduce using rule 72 (array_var)
-
-    idx  go to state 165
+    $default  reduce using rule 71 (idxs)
 
 
 state 134
@@ -1941,7 +1941,7 @@ state 134
    44          | . DUTOK_BEGIN stmts DUTOK_END
    45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -1984,7 +1984,7 @@ state 136
    45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
    48 stmts: stmts DUTOK_SEMICOLON . stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -2010,12 +2010,14 @@ state 137
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2024,9 +2026,7 @@ state 137
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -2038,10 +2038,10 @@ state 137
 
     expr         go to state 169
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -2154,12 +2154,14 @@ state 148
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2169,9 +2171,7 @@ state 148
    67       | DUTOK_IDENTIFIER DUTOK_LPAR . real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -2184,10 +2184,10 @@ state 148
     real_params  go to state 176
     expr         go to state 161
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -2200,14 +2200,14 @@ state 149
 
 state 150
 
-   57 simple_expr: DUTOK_OPER_SIGNADD terms .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_FOR_DIRECTION]
-   60 terms: terms . DUTOK_OPER_SIGNADD term
-   61      | terms . DUTOK_OR term
+   55 simple_expr: DUTOK_OPER_SIGNADD terms .  [DUTOK_END, DUTOK_THEN, DUTOK_ELSE, DUTOK_DO, DUTOK_UNTIL, DUTOK_SEMICOLON, DUTOK_COMMA, DUTOK_EQ, DUTOK_RPAR, DUTOK_RSBRA, DUTOK_OPER_REL, DUTOK_FOR_DIRECTION]
+   57 terms: terms . DUTOK_OPER_SIGNADD term
+   58      | terms . DUTOK_OR term
 
     DUTOK_OR            shift, and go to state 154
     DUTOK_OPER_SIGNADD  shift, and go to state 155
 
-    $default  reduce using rule 57 (simple_expr)
+    $default  reduce using rule 55 (simple_expr)
 
 
 state 151
@@ -2234,7 +2234,7 @@ state 151
    44          | . DUTOK_BEGIN stmts DUTOK_END
    45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -2257,12 +2257,14 @@ state 151
 state 152
 
    53 expr: simple_expr DUTOK_EQ . simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2271,9 +2273,7 @@ state 152
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -2284,22 +2284,24 @@ state 152
     DUTOK_OPER_SIGNADD  shift, and go to state 118
 
     simple_expr  go to state 180
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
 state 153
 
    52 expr: simple_expr DUTOK_OPER_REL . simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2308,9 +2310,7 @@ state 153
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -2321,17 +2321,19 @@ state 153
     DUTOK_OPER_SIGNADD  shift, and go to state 118
 
     simple_expr  go to state 181
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
 state 154
 
-   58 term: . factors
-   61 terms: terms DUTOK_OR . term
+   58 terms: terms DUTOK_OR . term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2340,9 +2342,7 @@ state 154
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT         shift, and go to state 112
     DUTOK_IDENTIFIER  shift, and go to state 113
@@ -2352,15 +2352,17 @@ state 154
     DUTOK_LPAR        shift, and go to state 117
 
     term       go to state 182
-    factor     go to state 123
-    factors    go to state 124
+    factors    go to state 123
+    factor     go to state 124
     array_var  go to state 125
 
 
 state 155
 
-   58 term: . factors
-   60 terms: terms DUTOK_OPER_SIGNADD . term
+   57 terms: terms DUTOK_OPER_SIGNADD . term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2369,9 +2371,7 @@ state 155
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT         shift, and go to state 112
     DUTOK_IDENTIFIER  shift, and go to state 113
@@ -2381,13 +2381,14 @@ state 155
     DUTOK_LPAR        shift, and go to state 117
 
     term       go to state 183
-    factor     go to state 123
-    factors    go to state 124
+    factors    go to state 123
+    factor     go to state 124
     array_var  go to state 125
 
 
 state 156
 
+   61 factors: factors DUTOK_OPER_MUL . factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2396,8 +2397,7 @@ state 156
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   71 factors: factors DUTOK_OPER_MUL . factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT         shift, and go to state 112
     DUTOK_IDENTIFIER  shift, and go to state 113
@@ -2431,7 +2431,7 @@ state 157
    44          | . DUTOK_BEGIN stmts DUTOK_END
    45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -2456,12 +2456,14 @@ state 158
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2470,9 +2472,7 @@ state 158
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -2484,10 +2484,10 @@ state 158
 
     expr         go to state 187
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -2498,12 +2498,14 @@ state 159
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2512,9 +2514,7 @@ state 159
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -2526,10 +2526,10 @@ state 159
 
     expr         go to state 188
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -2551,15 +2551,15 @@ state 161
 
 state 162
 
-   54 exprs: expr .
+   74 exprs: expr .
 
-    $default  reduce using rule 54 (exprs)
+    $default  reduce using rule 74 (exprs)
 
 
 state 163
 
-   55 exprs: exprs . DUTOK_COMMA expr
    73 idx: DUTOK_LSBRA exprs . DUTOK_RSBRA
+   75 exprs: exprs . DUTOK_COMMA expr
 
     DUTOK_COMMA  shift, and go to state 191
     DUTOK_RSBRA  shift, and go to state 192
@@ -2574,9 +2574,9 @@ state 164
 
 state 165
 
-   75 idxs: idxs idx .
+   72 idxs: idxs idx .
 
-    $default  reduce using rule 75 (idxs)
+    $default  reduce using rule 72 (idxs)
 
 
 state 166
@@ -2723,23 +2723,23 @@ state 181
 
 state 182
 
-   61 terms: terms DUTOK_OR term .
+   58 terms: terms DUTOK_OR term .
 
-    $default  reduce using rule 61 (terms)
+    $default  reduce using rule 58 (terms)
 
 
 state 183
 
-   60 terms: terms DUTOK_OPER_SIGNADD term .
+   57 terms: terms DUTOK_OPER_SIGNADD term .
 
-    $default  reduce using rule 60 (terms)
+    $default  reduce using rule 57 (terms)
 
 
 state 184
 
-   71 factors: factors DUTOK_OPER_MUL factor .
+   61 factors: factors DUTOK_OPER_MUL factor .
 
-    $default  reduce using rule 71 (factors)
+    $default  reduce using rule 61 (factors)
 
 
 state 185
@@ -2777,12 +2777,14 @@ state 189
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2791,9 +2793,7 @@ state 189
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -2805,10 +2805,10 @@ state 189
 
     expr         go to state 200
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -2824,13 +2824,14 @@ state 191
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   55 exprs: exprs DUTOK_COMMA . expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2839,9 +2840,8 @@ state 191
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
+   75 exprs: exprs DUTOK_COMMA . expr
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -2853,10 +2853,10 @@ state 191
 
     expr         go to state 201
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -2926,7 +2926,7 @@ state 198
    44          | . DUTOK_BEGIN stmts DUTOK_END
    45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -2952,12 +2952,14 @@ state 199
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -2966,9 +2968,7 @@ state 199
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -2980,10 +2980,10 @@ state 199
 
     expr         go to state 206
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -2996,9 +2996,9 @@ state 200
 
 state 201
 
-   55 exprs: exprs DUTOK_COMMA expr .
+   75 exprs: exprs DUTOK_COMMA expr .
 
-    $default  reduce using rule 55 (exprs)
+    $default  reduce using rule 75 (exprs)
 
 
 state 202
@@ -3007,12 +3007,14 @@ state 202
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -3021,9 +3023,7 @@ state 202
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -3035,10 +3035,10 @@ state 202
 
     expr         go to state 207
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -3099,7 +3099,7 @@ state 208
    45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
    46          | DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO . m_stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -3124,12 +3124,14 @@ state 209
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -3138,9 +3140,7 @@ state 209
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -3152,10 +3152,10 @@ state 209
 
     expr         go to state 212
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -3196,7 +3196,7 @@ state 213
    45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
    46          | DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO . m_stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -3220,12 +3220,14 @@ state 214
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -3234,9 +3236,7 @@ state 214
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -3248,10 +3248,10 @@ state 214
 
     expr         go to state 216
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -3261,12 +3261,14 @@ state 215
    51 expr: . simple_expr
    52     | . simple_expr DUTOK_OPER_REL simple_expr
    53     | . simple_expr DUTOK_EQ simple_expr
-   56 simple_expr: . terms
-   57            | . DUTOK_OPER_SIGNADD terms
-   58 term: . factors
-   59 terms: . term
-   60      | . terms DUTOK_OPER_SIGNADD term
-   61      | . terms DUTOK_OR term
+   54 simple_expr: . terms
+   55            | . DUTOK_OPER_SIGNADD terms
+   56 terms: . term
+   57      | . terms DUTOK_OPER_SIGNADD term
+   58      | . terms DUTOK_OR term
+   59 term: . factors
+   60 factors: . factor
+   61        | . factors DUTOK_OPER_MUL factor
    62 factor: . DUTOK_IDENTIFIER
    63       | . DUTOK_UINT
    64       | . DUTOK_REAL
@@ -3275,9 +3277,7 @@ state 215
    67       | . DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR
    68       | . DUTOK_LPAR expr DUTOK_RPAR
    69       | . DUTOK_NOT factor
-   70 factors: . factor
-   71        | . factors DUTOK_OPER_MUL factor
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_NOT           shift, and go to state 112
     DUTOK_IDENTIFIER    shift, and go to state 113
@@ -3289,10 +3289,10 @@ state 215
 
     expr         go to state 217
     simple_expr  go to state 120
-    term         go to state 121
-    terms        go to state 122
-    factor       go to state 123
-    factors      go to state 124
+    terms        go to state 121
+    term         go to state 122
+    factors      go to state 123
+    factor       go to state 124
     array_var    go to state 125
 
 
@@ -3326,7 +3326,7 @@ state 218
    44          | . DUTOK_BEGIN stmts DUTOK_END
    45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -3360,7 +3360,7 @@ state 219
    44          | . DUTOK_BEGIN stmts DUTOK_END
    45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81
@@ -3401,7 +3401,7 @@ state 221
    44          | . DUTOK_BEGIN stmts DUTOK_END
    45          | . DUTOK_REPEAT stmts DUTOK_UNTIL expr
    46          | . DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt
-   72 array_var: . DUTOK_IDENTIFIER idxs
+   70 array_var: . DUTOK_IDENTIFIER idxs
 
     DUTOK_BEGIN       shift, and go to state 80
     DUTOK_GOTO        shift, and go to state 81

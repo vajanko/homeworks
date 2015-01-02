@@ -475,9 +475,9 @@ static const yytype_uint16 yyprhs[] =
       65,    69,    71,    75,    76,    80,    84,    86,    90,    94,
       96,    98,   105,   110,   114,   116,   121,   128,   133,   142,
      143,   147,   151,   153,   158,   161,   165,   170,   179,   181,
-     185,   187,   191,   193,   197,   201,   203,   207,   209,   212,
-     214,   216,   220,   224,   226,   228,   230,   232,   234,   239,
-     243,   246,   248,   252,   255,   259,   261,   264,   266,   268,
+     185,   187,   191,   193,   197,   201,   203,   206,   208,   212,
+     216,   218,   220,   224,   226,   228,   230,   232,   234,   239,
+     243,   246,   249,   251,   254,   258,   260,   264,   266,   268,
      275,   277,   281,   283,   285,   289,   293,   299,   300,   303,
      307,   309,   313,   317,   322,   324,   327,   329,   332,   334,
      337,   339,   340,   342,   345,   347,   350,   352,   356,   358
@@ -500,19 +500,19 @@ static const yytype_int8 yyrhs[] =
       26,    33,    65,    -1,    65,    -1,    15,    68,    16,    62,
       -1,    15,    68,    16,    63,    17,    64,    -1,    18,    68,
       19,    64,    -1,    22,    25,    39,    68,    43,    68,    19,
-      64,    -1,    -1,    25,    39,    68,    -1,    75,    39,    68,
+      64,    -1,    -1,    25,    39,    68,    -1,    74,    39,    68,
       -1,    25,    -1,    25,    34,    67,    35,    -1,    14,    26,
       -1,     8,    66,     9,    -1,    20,    66,    21,    68,    -1,
       22,    25,    39,    68,    43,    68,    19,    63,    -1,    62,
       -1,    66,    29,    62,    -1,    68,    -1,    67,    31,    68,
-      -1,    70,    -1,    70,    40,    70,    -1,    70,    32,    70,
-      -1,    68,    -1,    69,    31,    68,    -1,    72,    -1,    41,
-      72,    -1,    74,    -1,    71,    -1,    72,    41,    71,    -1,
-      72,    23,    71,    -1,    25,    -1,    26,    -1,    27,    -1,
-      28,    -1,    75,    -1,    25,    34,    67,    35,    -1,    34,
-      68,    35,    -1,    24,    73,    -1,    73,    -1,    74,    42,
-      73,    -1,    25,    77,    -1,    37,    69,    38,    -1,    76,
-      -1,    77,    76,    -1,    25,    -1,    81,    -1,    12,    37,
+      -1,    69,    -1,    69,    40,    69,    -1,    69,    32,    69,
+      -1,    70,    -1,    41,    70,    -1,    71,    -1,    70,    41,
+      71,    -1,    70,    23,    71,    -1,    72,    -1,    73,    -1,
+      72,    42,    73,    -1,    25,    -1,    26,    -1,    27,    -1,
+      28,    -1,    74,    -1,    25,    34,    67,    35,    -1,    34,
+      68,    35,    -1,    24,    73,    -1,    25,    75,    -1,    76,
+      -1,    75,    76,    -1,    37,    77,    38,    -1,    68,    -1,
+      77,    31,    68,    -1,    25,    -1,    81,    -1,    12,    37,
       79,    38,    13,    78,    -1,    80,    -1,    79,    31,    80,
       -1,    25,    -1,    81,    -1,    88,    36,    88,    -1,    10,
       25,    84,    -1,    11,    25,    84,    33,    25,    -1,    -1,
@@ -533,12 +533,12 @@ static const yytype_uint16 yyrline[] =
      121,   123,   124,   126,   127,   129,   131,   132,   134,   138,
      139,   142,   143,   144,   145,   147,   148,   149,   150,   153,
      154,   155,   156,   157,   158,   159,   160,   161,   164,   165,
-     168,   169,   174,   175,   176,   178,   179,   181,   182,   184,
-     187,   188,   189,   191,   192,   193,   194,   195,   197,   198,
-     199,   202,   203,   205,   208,   210,   211,   216,   217,   218,
-     220,   221,   223,   224,   226,   232,   235,   238,   239,   240,
-     243,   244,   247,   248,   253,   254,   255,   256,   257,   258,
-     259,   261,   262,   263,   264,   265,   270,   271,   274,   275
+     168,   169,   174,   175,   176,   178,   179,   182,   183,   184,
+     186,   189,   190,   192,   193,   194,   195,   196,   197,   198,
+     199,   201,   204,   205,   207,   209,   210,   215,   216,   217,
+     219,   220,   222,   223,   225,   231,   234,   237,   238,   239,
+     242,   243,   246,   247,   252,   253,   254,   255,   256,   257,
+     258,   260,   261,   262,   263,   264,   269,   270,   273,   274
 };
 #endif
 
@@ -561,8 +561,8 @@ static const char *const yytname[] =
   "proc_func_defs", "block", "block_label", "block_const", "id_assign",
   "id_assigns", "block_type", "type_assign", "type_assigns", "block_var",
   "var_def", "var_defs", "block_begin_end", "stmt", "m_stmt", "u_stmt",
-  "stmt_rest", "stmts", "real_params", "expr", "exprs", "simple_expr",
-  "term", "terms", "factor", "factors", "array_var", "idx", "idxs", "type",
+  "stmt_rest", "stmts", "real_params", "expr", "simple_expr", "terms",
+  "term", "factors", "factor", "array_var", "idxs", "idx", "exprs", "type",
   "ord_types", "ord_type", "range", "proc", "func", "params",
   "formal_params", "params_section", "const", "ord_const", "identifiers",
   "uints", 0
@@ -590,9 +590,9 @@ static const yytype_uint8 yyr1[] =
       56,    57,    57,    58,    58,    59,    60,    60,    61,    62,
       62,    63,    63,    63,    63,    64,    64,    64,    64,    65,
       65,    65,    65,    65,    65,    65,    65,    65,    66,    66,
-      67,    67,    68,    68,    68,    69,    69,    70,    70,    71,
-      72,    72,    72,    73,    73,    73,    73,    73,    73,    73,
-      73,    74,    74,    75,    76,    77,    77,    78,    78,    78,
+      67,    67,    68,    68,    68,    69,    69,    70,    70,    70,
+      71,    72,    72,    73,    73,    73,    73,    73,    73,    73,
+      73,    74,    75,    75,    76,    77,    77,    78,    78,    78,
       79,    79,    80,    80,    81,    82,    83,    84,    84,    84,
       85,    85,    86,    86,    87,    87,    87,    87,    87,    87,
       87,    88,    88,    88,    88,    88,    89,    89,    90,    90
@@ -606,9 +606,9 @@ static const yytype_uint8 yyr2[] =
        3,     1,     3,     0,     3,     3,     1,     3,     3,     1,
        1,     6,     4,     3,     1,     4,     6,     4,     8,     0,
        3,     3,     1,     4,     2,     3,     4,     8,     1,     3,
-       1,     3,     1,     3,     3,     1,     3,     1,     2,     1,
-       1,     3,     3,     1,     1,     1,     1,     1,     4,     3,
-       2,     1,     3,     2,     3,     1,     2,     1,     1,     6,
+       1,     3,     1,     3,     3,     1,     2,     1,     3,     3,
+       1,     1,     3,     1,     1,     1,     1,     1,     4,     3,
+       2,     2,     1,     2,     3,     1,     3,     1,     1,     6,
        1,     3,     1,     1,     3,     3,     5,     0,     2,     3,
        1,     3,     3,     4,     1,     2,     1,     2,     1,     2,
        1,     0,     1,     2,     1,     2,     1,     3,     1,     3
@@ -631,15 +631,15 @@ static const yytype_uint8 yydefact[] =
       30,    34,     0,     0,     9,     6,    13,     7,    82,     0,
       80,    83,   102,    84,     0,    88,     0,    90,     0,     0,
        0,    44,     0,    63,    64,    65,    66,     0,     0,     0,
-      52,    60,    57,    71,    59,    67,     0,     0,     0,     0,
-       0,     0,    75,    73,    39,    28,    39,     0,    18,   101,
+      52,    55,    57,    60,    61,    67,     0,     0,     0,     0,
+       0,     0,    71,    72,    39,    28,    39,     0,    18,   101,
        0,     0,     0,    89,     0,    86,    45,    70,     0,     0,
-      58,    39,     0,     0,     0,     0,     0,    39,     0,     0,
-       0,    50,    55,     0,    40,    76,     0,    33,    49,    41,
+      56,    39,     0,     0,     0,     0,     0,    39,     0,     0,
+       0,    50,    75,     0,    40,    73,     0,    33,    49,    41,
       23,    81,   101,     0,    91,    92,     0,    69,    35,    29,
-      54,    53,    62,    61,    72,    32,    37,    46,     0,     0,
+      54,    53,    59,    58,    62,    32,    37,    46,     0,     0,
       43,     0,    74,     0,     0,    79,    93,    68,    39,     0,
-      51,    56,     0,    10,    31,    36,     0,     0,    39,     0,
+      51,    76,     0,    10,    31,    36,     0,     0,    39,     0,
       47,    38,     0,    39,     0,     0,     0,     0,    39,    39,
        0,    39
 };
@@ -649,8 +649,8 @@ static const yytype_int16 yydefgoto[] =
 {
       -1,     2,     7,    44,    45,    46,    95,    96,    13,    17,
       18,    20,    25,    26,    28,    39,    40,    66,    88,    89,
-      90,    91,    92,   160,   161,   163,   120,   121,   122,   123,
-     124,   125,   132,   133,    56,    99,   100,    57,    47,    48,
+      90,    91,    92,   160,   161,   120,   121,   122,   123,   124,
+     125,   132,   133,   163,    56,    99,   100,    57,    47,    48,
       78,   106,   107,    34,    58,    41,    10
 };
 
@@ -671,8 +671,8 @@ static const yytype_int16 yypact[] =
     -151,  -151,     4,   150,  -151,  -151,    77,  -151,   138,    50,
     -151,  -151,  -151,  -151,   140,  -151,    -8,  -151,   111,   157,
        9,  -151,   112,     5,  -151,  -151,  -151,    19,   112,   170,
-     -12,  -151,    -9,  -151,   137,  -151,   168,     1,   155,    19,
-      19,    19,  -151,   158,    41,  -151,    69,    19,    92,    39,
+     -12,    -9,  -151,   137,  -151,  -151,   168,     1,   155,    19,
+      19,    19,   158,  -151,    41,  -151,    69,    19,    92,    39,
      175,   126,    10,  -151,   165,  -151,  -151,  -151,    19,   161,
       -9,    69,    19,    19,   112,   112,   112,    69,    19,    19,
       93,  -151,  -151,    72,  -151,  -151,   166,  -151,  -151,  -151,
@@ -689,8 +689,8 @@ static const yytype_int16 yypgoto[] =
 {
     -151,  -151,  -151,  -151,   142,  -151,   164,   199,   110,   185,
     -151,    73,   173,  -151,    37,   169,  -151,    18,  -128,  -146,
-    -150,    79,    61,    66,   -80,  -151,    11,    12,    97,  -102,
-    -151,   -65,    83,  -151,   -58,  -151,    78,   -69,  -151,  -151,
+    -150,    79,    61,    66,   -80,    11,    97,    12,  -151,  -102,
+     -65,  -151,    84,  -151,   -58,  -151,    78,   -69,  -151,  -151,
      171,  -151,    76,  -151,   172,   -68,  -151
 };
 
@@ -751,7 +751,7 @@ static const yytype_int16 yycheck[] =
       26,    25,    25,    34,    33,    33,    16,    19,    13,    39,
       25,    25,    25,    17,    39,    37,    35,    19,    19,    39,
       16,    19,    43,    17,     5,    43,    96,   170,    23,    67,
-      37,   138,   194,   134,   148,   118,   133,   139,   142,    -1,
+      37,   138,   194,   134,   148,   118,   132,   139,   142,    -1,
       -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    60,
       -1,    -1,    -1,    69,    -1,    64,    -1,    -1,    -1,    -1,
       -1,    -1,    -1,    -1,    -1,    73
@@ -770,16 +770,16 @@ static const yytype_uint8 yystos[] =
       29,    31,    33,    25,    25,     8,    61,    29,    29,    29,
       37,    25,    26,    36,    59,    25,    78,    34,    84,    84,
        8,    14,    15,    18,    20,    22,    25,    26,    62,    63,
-      64,    65,    66,    75,    48,    50,    51,    50,    25,    79,
+      64,    65,    66,    74,    48,    50,    51,    50,    25,    79,
       80,    81,    25,    88,     7,    35,    85,    86,    89,    33,
       66,    26,    24,    25,    26,    27,    28,    34,    41,    68,
-      70,    71,    72,    73,    74,    75,    68,    66,    25,    34,
-      37,    39,    76,    77,    33,     9,    29,    39,    52,    31,
+      69,    70,    71,    72,    73,    74,    68,    66,    25,    34,
+      37,    39,    75,    76,    33,     9,    29,    39,    52,    31,
       38,    89,    29,    35,    33,    25,     9,    73,    34,    68,
-      72,    16,    32,    40,    23,    41,    42,    19,    21,    39,
-      67,    68,    68,    69,    68,    76,    22,    65,    62,    68,
+      70,    16,    32,    40,    23,    41,    42,    19,    21,    39,
+      67,    68,    68,    77,    68,    76,    22,    65,    62,    68,
       55,    80,    13,    33,    86,    25,    67,    35,    62,    63,
-      70,    70,    71,    71,    73,    63,    64,    68,    68,    31,
+      69,    69,    71,    71,    73,    63,    64,    68,    68,    31,
       35,    31,    38,    25,    58,    78,    25,    35,    17,    43,
       68,    68,    39,    61,    63,    64,    68,    68,    19,    43,
       63,    64,    68,    19,    15,    18,    68,    68,    16,    19,
@@ -1634,7 +1634,42 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 15:
+        case 2:
+
+/* Line 1455 of yacc.c  */
+#line 87 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { set_block_code(ctx, (yyvsp[(2) - (5)]), (yyvsp[(4) - (5)]), block_type::program); ;}
+    break;
+
+  case 3:
+
+/* Line 1455 of yacc.c  */
+#line 91 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { append_code_block((yyval), (yyvsp[(6) - (6)])); ;}
+    break;
+
+  case 6:
+
+/* Line 1455 of yacc.c  */
+#line 96 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { set_block_code(ctx, (yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), block_type::subprogram); ;}
+    break;
+
+  case 7:
+
+/* Line 1455 of yacc.c  */
+#line 97 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { set_block_code(ctx, (yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), block_type::subprogram); ;}
+    break;
+
+  case 10:
+
+/* Line 1455 of yacc.c  */
+#line 105 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { append_code_block((yyval), (yyvsp[(5) - (5)])); ;}
+    break;
+
+  case 15:
 
 /* Line 1455 of yacc.c  */
 #line 113 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
@@ -1659,230 +1694,384 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 134 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
-    { block_leave(ctx, (yylsp[(2) - (3)])); ;}
+    { append_code_block((yyval), (yyvsp[(2) - (3)])); block_leave(ctx, (yylsp[(2) - (3)])); ;}
+    break;
+
+  case 40:
+
+/* Line 1455 of yacc.c  */
+#line 154 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { store_identifier(ctx, (yyval), (yylsp[(1) - (3)]), (yyvsp[(1) - (3)]), (yyvsp[(3) - (3)])); ;}
+    break;
+
+  case 41:
+
+/* Line 1455 of yacc.c  */
+#line 155 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { store_element(ctx, (yyval), (yylsp[(1) - (3)]), (yyvsp[(1) - (3)]), (yyvsp[(3) - (3)])); ;}
+    break;
+
+  case 42:
+
+/* Line 1455 of yacc.c  */
+#line 156 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { subprogram_call(ctx, (yyval), (yylsp[(1) - (1)]), (yyvsp[(1) - (1)]), (yyvsp[(1) - (1)])); ;}
+    break;
+
+  case 43:
+
+/* Line 1455 of yacc.c  */
+#line 157 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { subprogram_call(ctx, (yyval), (yylsp[(1) - (4)]), (yyvsp[(1) - (4)]), (yyvsp[(3) - (4)])); ;}
+    break;
+
+  case 49:
+
+/* Line 1455 of yacc.c  */
+#line 165 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { append_code_block((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)])); ;}
+    break;
+
+  case 51:
+
+/* Line 1455 of yacc.c  */
+#line 169 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { append_code_block((yyval), (yyvsp[(3) - (3)])); ;}
+    break;
+
+  case 56:
+
+/* Line 1455 of yacc.c  */
+#line 179 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { unary_op(ctx, (yyval), (yylsp[(1) - (2)]), (yyvsp[(1) - (2)]), (yyvsp[(2) - (2)])); ;}
+    break;
+
+  case 58:
+
+/* Line 1455 of yacc.c  */
+#line 183 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { binary_op(ctx, (yyval), (yyvsp[(1) - (3)]), (yylsp[(2) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)])); ;}
+    break;
+
+  case 62:
+
+/* Line 1455 of yacc.c  */
+#line 190 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { binary_op(ctx, (yyval), (yyvsp[(1) - (3)]), (yylsp[(2) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)])); ;}
+    break;
+
+  case 63:
+
+/* Line 1455 of yacc.c  */
+#line 192 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { load_identifier(ctx, (yyval), (yylsp[(1) - (1)]), (yyvsp[(1) - (1)])); ;}
+    break;
+
+  case 64:
+
+/* Line 1455 of yacc.c  */
+#line 193 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { load_const_value(ctx, (yyval), (yyvsp[(1) - (1)]), const_type::integer); ;}
+    break;
+
+  case 65:
+
+/* Line 1455 of yacc.c  */
+#line 194 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { load_const_value(ctx, (yyval), (yyvsp[(1) - (1)]), const_type::real);	;}
+    break;
+
+  case 66:
+
+/* Line 1455 of yacc.c  */
+#line 195 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { load_const_value(ctx, (yyval), (yyvsp[(1) - (1)]), const_type::string); ;}
+    break;
+
+  case 67:
+
+/* Line 1455 of yacc.c  */
+#line 196 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { load_element(ctx, (yyval), (yylsp[(1) - (1)]), (yyvsp[(1) - (1)])); ;}
+    break;
+
+  case 68:
+
+/* Line 1455 of yacc.c  */
+#line 197 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { subprogram_call(ctx, (yyval), (yylsp[(1) - (4)]), (yyvsp[(1) - (4)]), (yyvsp[(3) - (4)])); ;}
+    break;
+
+  case 69:
+
+/* Line 1455 of yacc.c  */
+#line 198 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { (yyval).type_ = (yyvsp[(2) - (3)]).type_; (yyval).code_ = (yyvsp[(2) - (3)]).code_; ;}
+    break;
+
+  case 70:
+
+/* Line 1455 of yacc.c  */
+#line 199 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { unary_not(ctx, (yyval), (yylsp[(1) - (2)]), (yyvsp[(1) - (2)]), (yyvsp[(2) - (2)])); ;}
+    break;
+
+  case 71:
+
+/* Line 1455 of yacc.c  */
+#line 201 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { array_element(ctx, (yyval), (yylsp[(1) - (2)]), (yyvsp[(1) - (2)]), (yyvsp[(2) - (2)])); ;}
+    break;
+
+  case 73:
+
+/* Line 1455 of yacc.c  */
+#line 205 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { (yyval).exprs_->insert((yyval).exprs_->end(), (yyvsp[(2) - (2)]).exprs_->begin(), (yyvsp[(2) - (2)]).exprs_->end()); ;}
+    break;
+
+  case 74:
+
+/* Line 1455 of yacc.c  */
+#line 207 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { (yyval).code_ = (yyvsp[(2) - (3)]).code_; (yyval).type_ = (yyvsp[(2) - (3)]).type_; (yyval).exprs_ = (yyvsp[(2) - (3)]).exprs_; ;}
+    break;
+
+  case 75:
+
+/* Line 1455 of yacc.c  */
+#line 209 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { array_offset(ctx, (yyval), (yylsp[(1) - (1)]), (yyvsp[(1) - (1)])); ;}
+    break;
+
+  case 76:
+
+/* Line 1455 of yacc.c  */
+#line 210 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { array_offset(ctx, (yyval), (yylsp[(3) - (3)]), (yyvsp[(3) - (3)])); ;}
     break;
 
   case 77:
 
 /* Line 1455 of yacc.c  */
-#line 216 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 215 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { type_declare(ctx, (yyval), (yylsp[(1) - (1)]), (yyvsp[(1) - (1)])); ;}
     break;
 
   case 78:
 
 /* Line 1455 of yacc.c  */
-#line 217 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 216 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { (yyval).type_ = (yyvsp[(1) - (1)]).type_; ;}
     break;
 
   case 79:
 
 /* Line 1455 of yacc.c  */
-#line 218 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 217 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { array_declare(ctx, (yyval), (yyvsp[(3) - (6)]), (yyvsp[(6) - (6)])); ;}
     break;
 
   case 80:
 
 /* Line 1455 of yacc.c  */
-#line 220 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 219 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { range_add((yyval), (yyvsp[(1) - (1)])); ;}
     break;
 
   case 81:
 
 /* Line 1455 of yacc.c  */
-#line 221 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 220 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { range_add((yyval), (yyvsp[(3) - (3)])); ;}
     break;
 
   case 82:
 
 /* Line 1455 of yacc.c  */
-#line 223 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 222 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { type_declare_ordinal(ctx, (yyval), (yylsp[(1) - (1)]), (yyvsp[(1) - (1)])); ;}
     break;
 
   case 83:
 
 /* Line 1455 of yacc.c  */
-#line 224 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 223 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { (yyval).type_ = (yyvsp[(1) - (1)]).type_; ;}
     break;
 
   case 84:
 
 /* Line 1455 of yacc.c  */
-#line 226 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 225 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { range_declare(ctx, (yyval), (yyvsp[(1) - (3)]), (yylsp[(3) - (3)]), (yyvsp[(3) - (3)])); ;}
     break;
 
   case 85:
 
 /* Line 1455 of yacc.c  */
-#line 232 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
-    { procedure_declare(ctx, (yylsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)])); ;}
+#line 231 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { procedure_declare(ctx, (yyval), (yylsp[(1) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)])); ;}
     break;
 
   case 86:
 
 /* Line 1455 of yacc.c  */
-#line 235 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
-    { function_declare(ctx, (yylsp[(1) - (5)]), (yyvsp[(2) - (5)]), (yyvsp[(3) - (5)]), (yylsp[(5) - (5)]), (yyvsp[(5) - (5)])); ;}
+#line 234 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+    { function_declare(ctx, (yyval), (yylsp[(1) - (5)]), (yyvsp[(2) - (5)]), (yyvsp[(3) - (5)]), (yylsp[(5) - (5)]), (yyvsp[(5) - (5)])); ;}
     break;
 
   case 87:
 
 /* Line 1455 of yacc.c  */
-#line 238 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 237 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { (yyval).param_list_ = create_parameter_list(); ;}
     break;
 
   case 88:
 
 /* Line 1455 of yacc.c  */
-#line 239 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 238 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { (yyval).param_list_ = create_parameter_list(); ;}
     break;
 
   case 89:
 
 /* Line 1455 of yacc.c  */
-#line 240 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 239 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { (yyval).param_list_ = (yyvsp[(2) - (3)]).param_list_; ;}
     break;
 
   case 90:
 
 /* Line 1455 of yacc.c  */
-#line 243 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 242 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { (yyvsp[(1) - (1)]).param_list_ = (yyval).param_list_; ;}
     break;
 
   case 91:
 
 /* Line 1455 of yacc.c  */
-#line 244 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 243 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { (yyvsp[(1) - (3)]).param_list_->append_and_kill((yyvsp[(3) - (3)]).param_list_); (yyval).param_list_ = (yyvsp[(1) - (3)]).param_list_; ;}
     break;
 
   case 92:
 
 /* Line 1455 of yacc.c  */
-#line 247 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 246 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { parameter_add(ctx, (yyval), (yyvsp[(1) - (3)]), (yylsp[(3) - (3)]), (yyvsp[(3) - (3)]), param_type::value); ;}
     break;
 
   case 93:
 
 /* Line 1455 of yacc.c  */
-#line 248 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 247 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { parameter_add(ctx, (yyval), (yyvsp[(2) - (4)]), (yylsp[(4) - (4)]), (yyvsp[(4) - (4)]), param_type::reference); ;}
     break;
 
   case 94:
 
 /* Line 1455 of yacc.c  */
-#line 253 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 252 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { const_load(ctx, (yyval), (yylsp[(1) - (1)]), (yyvsp[(1) - (1)])); ;}
     break;
 
   case 95:
 
 /* Line 1455 of yacc.c  */
-#line 254 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 253 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { const_load_and_calculate(ctx, (yyval), (yyvsp[(1) - (2)]), (yylsp[(2) - (2)]), (yyvsp[(2) - (2)])); ;}
     break;
 
   case 96:
 
 /* Line 1455 of yacc.c  */
-#line 255 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 254 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { (yyval).const_type_ = const_type::integer; ;}
     break;
 
   case 97:
 
 /* Line 1455 of yacc.c  */
-#line 256 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 255 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { const_calculate(ctx, (yyval), (yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), const_type::integer);  ;}
     break;
 
   case 98:
 
 /* Line 1455 of yacc.c  */
-#line 257 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 256 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { (yyval).const_type_ = const_type::real; ;}
     break;
 
   case 99:
 
 /* Line 1455 of yacc.c  */
-#line 258 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 257 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { const_calculate(ctx, (yyval), (yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), const_type::real); ;}
     break;
 
   case 100:
 
 /* Line 1455 of yacc.c  */
-#line 259 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 258 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { (yyval).const_type_ = const_type::string; ;}
     break;
 
   case 102:
 
 /* Line 1455 of yacc.c  */
-#line 262 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 261 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { const_load(ctx, (yyval), (yylsp[(1) - (1)]), (yyvsp[(1) - (1)])); ;}
     break;
 
   case 103:
 
 /* Line 1455 of yacc.c  */
-#line 263 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 262 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { const_load_and_calculate(ctx, (yyval), (yyvsp[(1) - (2)]), (yylsp[(2) - (2)]), (yyvsp[(2) - (2)])); ;}
     break;
 
   case 105:
 
 /* Line 1455 of yacc.c  */
-#line 265 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 264 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { const_calculate(ctx, (yyval), (yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]), const_type::integer); ;}
     break;
 
   case 106:
 
 /* Line 1455 of yacc.c  */
-#line 270 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 269 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { identifier_add((yyval), (yyvsp[(1) - (1)])); ;}
     break;
 
   case 107:
 
 /* Line 1455 of yacc.c  */
-#line 271 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 270 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { identifier_add((yyval), (yyvsp[(3) - (3)])); ;}
     break;
 
   case 108:
 
 /* Line 1455 of yacc.c  */
-#line 274 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 273 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { ctx->tab->add_label_entry((yylsp[(1) - (1)]), (yyvsp[(1) - (1)]).int_ci_, new_label(ctx)); ;}
     break;
 
   case 109:
 
 /* Line 1455 of yacc.c  */
-#line 275 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 274 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
     { ctx->tab->add_label_entry((yylsp[(3) - (3)]), (yyvsp[(3) - (3)]).int_ci_, new_label(ctx)); ;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 1886 "du5g.cpp"
+#line 2075 "du5g.cpp"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2101,7 +2290,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 278 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
+#line 277 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
 
 
 static void yyerror(unsigned *line, MlaskalCtx *, const char *m)

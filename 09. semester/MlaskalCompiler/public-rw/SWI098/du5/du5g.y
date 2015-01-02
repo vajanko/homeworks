@@ -151,9 +151,9 @@ u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
 	;
 /* the rest of statement definition except "if" and "while" without leading label */
 stmt_rest: /* empty */
-	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr { store_identifier(ctx, $$, @1, $1, $3); }/* --> variable, function identifier */
-	| array_var DUTOK_ASSIGN expr							/* --> array variable */
-	| DUTOK_IDENTIFIER					{ subprogram_call(ctx, $$, @1, $1, $1); }	/* --> procedure identifier */
+	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr { store_identifier(ctx, $$, @1, $1, $3); } /* --> variable, function identifier */
+	| array_var DUTOK_ASSIGN expr		 { store_element(ctx, $$, @1, $1, $3); }	/* --> array variable */
+	| DUTOK_IDENTIFIER					 { subprogram_call(ctx, $$, @1, $1, $1); }	/* --> procedure identifier */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	{ subprogram_call(ctx, $$, @1, $1, $3); }	/* --> procedure identifier */
 	| DUTOK_GOTO DUTOK_UINT
 	| DUTOK_BEGIN stmts DUTOK_END
@@ -175,9 +175,6 @@ expr: simple_expr
 	| simple_expr DUTOK_OPER_REL simple_expr
 	| simple_expr DUTOK_EQ simple_expr
 	;
-exprs: expr
-	| exprs DUTOK_COMMA expr
-	;
 simple_expr: terms								
 	| DUTOK_OPER_SIGNADD terms					{ unary_op(ctx, $$, @1, $1, $2); }
 	;
@@ -196,18 +193,21 @@ factor:DUTOK_IDENTIFIER	{ load_identifier(ctx, $$, @1, $1); }						/* --> unsign
 	| DUTOK_UINT		{ load_const_value(ctx, $$, $1, const_type::integer); }		/* --> unsigned constant identifier */
 	| DUTOK_REAL		{ load_const_value(ctx, $$, $1, const_type::real);	}		/* --> unsigned constant identifier */
 	| DUTOK_STRING		{ load_const_value(ctx, $$, $1, const_type::string); }		/* --> unsigned constant identifier */
-	| array_var												/* --> array identifier, ordinal expressions */
+	| array_var			{ load_element(ctx, $$, @1, $1); }							/* --> array identifier, ordinal expressions */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	{ subprogram_call(ctx, $$, @1, $1, $3); } /* --> function identifier */
 	| DUTOK_LPAR expr DUTOK_RPAR { $$.type_ = $2.type_; $$.code_ = $2.code_; }
 	| DUTOK_NOT factor	{ unary_not(ctx, $$, @1, $1, $2); }
 	;
-array_var: DUTOK_IDENTIFIER idxs		/* --> array identifier, ordinal expressions */
+array_var: DUTOK_IDENTIFIER idxs	{ array_element(ctx, $$, @1, $1, $2); }	/* --> array identifier, ordinal expressions */
 	;
 /* array indexer */
 idxs: idx
-	| idxs idx
+	| idxs idx	{ $$.exprs_->insert($$.exprs_->end(), $2.exprs_->begin(), $2.exprs_->end()); }
 	;
-idx: DUTOK_LSBRA exprs DUTOK_RSBRA		{ load_element_value(ctx, $$, @2, $2); }	/* ordinal expressions */
+idx: DUTOK_LSBRA exprs DUTOK_RSBRA		{ $$.code_ = $2.code_; $$.type_ = $2.type_; $$.exprs_ = $2.exprs_; }	/* ordinal expressions */
+	;
+exprs: expr						{ array_offset(ctx, $$, @1, $1); }
+	| exprs DUTOK_COMMA expr	{ array_offset(ctx, $$, @3, $3); }
 	;
 /* End of expression */
 

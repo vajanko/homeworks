@@ -31,6 +31,8 @@ namespace mlc {
 		subprogram
 	};
 
+	typedef std::vector<mlc::icblock_pointer> icblock_list;
+
 	// compiler's semantic value
 	struct MlaskalLval {
 			int									dtge_;		// group element
@@ -49,6 +51,8 @@ namespace mlc {
 			// also used for storing type of expression
 			mlc::type_pointer type_;
 			std::vector<mlc::type_pointer> ranges_;
+			// array indexer expressions
+			icblock_list *exprs_ = NULL;
 
 			mlc::icblock_pointer code_ = NULL;
 

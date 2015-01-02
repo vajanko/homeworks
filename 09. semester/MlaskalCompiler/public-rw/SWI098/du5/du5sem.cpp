@@ -379,7 +379,51 @@ namespace mlc {
 			break;
 		}
 	}
-	
+	/**
+	* Append XLD instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_xld_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::XLDB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::XLDI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::XLDR());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::XLDS());
+			break;
+		}
+	}
+	/**
+	* Append XST instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_xst_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::XSTB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::XSTI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::XSTR());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::XSTS());
+			break;
+		}
+	}
+
 
 	/**
 	 * Create new icblock in the provided MlaskalLval instance of does not exit yet.
@@ -485,32 +529,13 @@ namespace mlc {
 			break;
 		}
 	}
-	void load_element_value(MlaskalCtx *ctx, MlaskalLval &out, int val_line, MlaskalLval &val)
+	void load_element(MlaskalCtx *ctx, MlaskalLval &out, int val_line, MlaskalLval &val)
 	{
-		/*if (out.code_ == NULL)
-			out.code_ = icblock_create();
+		// caluclate address of the element
+		append_code_block(out, val);
 
-		auto sp = ctx->tab->find_symbol(val.id_ci_);
-		auto tp = sp->access_typed()->type();
-
-		switch (sp->kind())
-		{
-		case symbol_kind::SKIND_LOCAL_VARIABLE:
-			stack_address adr = sp->access_typed()->access_local_variable()->address();
-			out.code_->append_instruction(new ai::LLDP(adr));
-			append_code_block(out, val);
-			out.code_->append_instruction(new ai::ADDP());
-			break;
-		case symbol_kind::SKIND_GLOBAL_VARIABLE:
-			stack_address adr = sp->access_typed()->access_global_variable()->address();
-			
-			break;
-		}*/
-
-		//out.code_->append_instruction(new ai::XLDI())
-		/*new ai::XSTB();
-		new ai::LREF();
-		new ai::ADDP();*/
+		// and load the value at this address
+		append_xld_ins(out.code_, val.type_);
 	}
 	
 	void unary_op(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val)
@@ -717,8 +742,198 @@ namespace mlc {
 			break;
 		}
 	}
-	
-	
+	void store_element(MlaskalCtx *ctx, MlaskalLval &out, int arr_line, MlaskalLval &arr, MlaskalLval &expr)
+	{
+		out.code_ = icblock_create();
+		// first of all we calculate the value to be stored in the array
+		append_code_block(out, expr);
+
+		// then we convert calculate value to the array element type
+		// it is also checked whether assignment is possible
+		store_conversion(out.code_, arr_line, arr.type_, expr.type_);
+
+		// then calculate the address of the array element
+		append_code_block(out, arr);
+
+		// and store the value at this address
+		append_xst_ins(out.code_, arr.type_);
+	}
+	void array_element(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &idxs)
+	{
+		create_block_if_empty(out);
+
+		auto sp = ctx->tab->find_symbol(id.id_ci_);
+		auto tp = sp->access_typed()->type();
+		if (tp->cat() != type_category::TCAT_ARRAY)
+		{	// indexing a non-array variable
+			error(DUERR_NOTARRAY, id_line, *id.id_ci_);
+			return;
+		}
+
+		// get all ranges types
+		while (tp->cat() == type_category::TCAT_ARRAY)
+		{
+			out.ranges_.push_back(tp);
+			tp = tp->access_array()->element_type();
+		}
+		out.ranges_.push_back(tp);	// array single element type
+
+		for (auto expr : *idxs.exprs_)
+		{
+			if (out.code_->empty())
+			{
+				// access array beginning address
+				switch (sp->kind())
+				{
+				case symbol_kind::SKIND_GLOBAL_VARIABLE:
+					out.code_->append_instruction(new ai::GREF(sp->access_typed()->access_global_variable()->address()));
+					break;
+				case symbol_kind::SKIND_LOCAL_VARIABLE:
+					out.code_->append_instruction(new ai::LREF(sp->access_typed()->access_local_variable()->address()));
+					break;
+				default:
+					error(DUERR_NOTVAR, id_line, *id.id_ci_);
+					return;
+				}
+
+				// calculate index expression
+				icblock_append_delete(out.code_, expr);
+				
+				// substract lower bound
+				tp = out.ranges_.front();
+				auto rt = tp->access_array()->index_type();
+				auto lb = rt->access_range()->lowerBound();
+				out.code_->append_instruction(new ai::LDLITI(lb));
+				out.code_->append_instruction(new ai::SUBI());
+
+				// remove type at the beginning
+				out.ranges_.erase(out.ranges_.begin());
+			}
+			else
+			{
+				tp = out.ranges_.front();
+				auto rt = tp->access_array()->index_type();
+
+				// multiply previous value by range size
+				auto lb = rt->access_range()->lowerBound();
+				auto ub = rt->access_range()->upperBound();
+				// (ub - lb + 1)
+				out.code_->append_instruction(new ai::LDLITI(ub));
+				out.code_->append_instruction(new ai::LDLITI(lb));
+				out.code_->append_instruction(new ai::SUBI());
+				out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(1)));
+				out.code_->append_instruction(new ai::ADDI());
+
+				out.code_->append_instruction(new ai::MULI());
+
+				// calculate next index expression
+				icblock_append_delete(out.code_, expr);
+				out.code_->append_instruction(new ai::LDLITI(lb));
+				out.code_->append_instruction(new ai::SUBI());
+
+				// and add to the previous result
+				out.code_->append_instruction(new ai::ADDI());
+
+				// remove type at the beginning
+				out.ranges_.erase(out.ranges_.begin());
+				//out.exprs_->insert(out.exprs_->end(), out.exprs_->begin(), out.exprs_->end());
+			}
+		}
+		
+		out.type_ = out.ranges_.front();
+
+		delete idxs.exprs_;
+
+		//// find out type of the array element
+		//out.type_ = idxs.type_;
+
+
+		//// calculate the index - scalar value
+		//append_code_block(out, idxs);
+
+		// add index to the array begin pointer
+		out.code_->append_instruction(new ai::ADDP());
+	}
+	void array_offset(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr)
+	{
+		if (identical_type(expr.type_, ctx->tab->logical_integer()))
+		{
+			if (out.exprs_ == NULL)
+				out.exprs_ = new icblock_list();
+			out.exprs_->push_back(expr.code_);
+
+			/*auto sp = ctx->tab->find_symbol(expr.id_ci_);
+			// find out type of the array element
+			auto tp = sp->access_typed()->type();
+			if (tp->cat() == type_category::TCAT_ARRAY)
+			{
+				type_pointer et;	// element type
+
+				if (out.ranges_.empty())
+				{
+					type_pointer et = tp;
+					while (et->cat() == type_category::TCAT_ARRAY)
+					{
+						out.ranges_.push_back(et);
+						et = et->access_array()->element_type();
+					}
+					out.ranges_.push_back(et);
+
+					// calculate index expression
+					append_code_block(out, expr);
+					// substract lower bound
+					et = out.ranges_.front();
+					auto rt = et->access_array()->index_type();
+					auto lb = rt->access_range()->lowerBound();
+					out.code_->append_instruction(new ai::LDLITI(lb));
+					out.code_->append_instruction(new ai::SUBI());
+
+					// remove type at the beginning
+					out.ranges_.erase(out.ranges_.begin());
+				}
+				else
+				{
+					et = out.ranges_.front();
+					auto rt = et->access_array()->index_type();
+
+					// multiply previous value by range size
+					auto lb = rt->access_range()->lowerBound();
+					auto ub = rt->access_range()->upperBound();
+					// (ub - lb + 1)
+					out.code_->append_instruction(new ai::LDLITI(ub));
+					out.code_->append_instruction(new ai::LDLITI(lb));
+					out.code_->append_instruction(new ai::SUBI());
+					out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(1)));
+					out.code_->append_instruction(new ai::ADDI());
+
+					out.code_->append_instruction(new ai::MULI());
+
+					// calculate next index expression
+					append_code_block(out, expr);
+					out.code_->append_instruction(new ai::LDLITI(lb));
+					out.code_->append_instruction(new ai::SUBI());
+
+					// and add to the previous result
+					out.code_->append_instruction(new ai::ADDI());
+
+					// remove type at the beginning
+					out.ranges_.erase(out.ranges_.begin());
+
+					out.type_ = out.ranges_.front();
+				}
+			}
+			else
+			{	// indexing a non-array variable
+				error(DUERR_NOTARRAY, expr_line, *expr.id_ci_);
+			}*/
+		}
+		else
+		{	// indexing with non-integral type
+			error(DUERR_CANNOTCONVERT, expr_line);
+		}
+
+	}
+
 	void subprogram_call(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &real_params)
 	{
 		create_block_if_empty(out);
