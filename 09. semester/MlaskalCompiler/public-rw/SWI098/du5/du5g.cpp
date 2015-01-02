@@ -1841,14 +1841,14 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 209 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
-    { array_offset(ctx, (yyval), (yylsp[(1) - (1)]), (yyvsp[(1) - (1)])); ;}
+    { array_index(ctx, (yyval), (yylsp[(1) - (1)]), (yyvsp[(1) - (1)])); ;}
     break;
 
   case 76:
 
 /* Line 1455 of yacc.c  */
 #line 210 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du5\\du5g.y"
-    { array_offset(ctx, (yyval), (yylsp[(3) - (3)]), (yyvsp[(3) - (3)])); ;}
+    { array_index(ctx, (yyval), (yylsp[(3) - (3)]), (yyvsp[(3) - (3)])); ;}
     break;
 
   case 77:

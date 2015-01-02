@@ -123,7 +123,7 @@ namespace mlc {
 
 	void store_element(MlaskalCtx *ctx, MlaskalLval &out, int arr_line, MlaskalLval &arr, MlaskalLval &expr);
 	void array_element(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &idxs);
-	void array_offset(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr);
+	void array_index(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr);
 
 	void unary_op(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val);
 	void unary_not(MlaskalCtx *ctx, MlaskalLval &out, int op_line, MlaskalLval &op, MlaskalLval &val);

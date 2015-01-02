@@ -206,8 +206,8 @@ idxs: idx
 	;
 idx: DUTOK_LSBRA exprs DUTOK_RSBRA		{ $$.code_ = $2.code_; $$.type_ = $2.type_; $$.exprs_ = $2.exprs_; }	/* ordinal expressions */
 	;
-exprs: expr						{ array_offset(ctx, $$, @1, $1); }
-	| exprs DUTOK_COMMA expr	{ array_offset(ctx, $$, @3, $3); }
+exprs: expr						{ array_index(ctx, $$, @1, $1); }
+	| exprs DUTOK_COMMA expr	{ array_index(ctx, $$, @3, $3); }
 	;
 /* End of expression */
 

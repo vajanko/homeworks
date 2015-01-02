@@ -758,6 +758,9 @@ namespace mlc {
 		// and store the value at this address
 		append_xst_ins(out.code_, arr.type_);
 	}
+	/**
+	 * Create code for accessing particualr array element such as arr[1,2][one]
+	 */
 	void array_element(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &idxs)
 	{
 		create_block_if_empty(out);
@@ -805,9 +808,6 @@ namespace mlc {
 				auto lb = rt->access_range()->lowerBound();
 				out.code_->append_instruction(new ai::LDLITI(lb));
 				out.code_->append_instruction(new ai::SUBI());
-
-				// remove type at the beginning
-				out.ranges_.erase(out.ranges_.begin());
 			}
 			else
 			{
@@ -835,103 +835,36 @@ namespace mlc {
 				out.code_->append_instruction(new ai::ADDI());
 
 				// remove type at the beginning
-				out.ranges_.erase(out.ranges_.begin());
-				//out.exprs_->insert(out.exprs_->end(), out.exprs_->begin(), out.exprs_->end());
+				//out.ranges_.erase(out.ranges_.begin());
 			}
+
+			// remove type at the beginning
+			out.ranges_.erase(out.ranges_.begin());
 		}
 		
 		out.type_ = out.ranges_.front();
 
 		delete idxs.exprs_;
-
-		//// find out type of the array element
-		//out.type_ = idxs.type_;
-
-
-		//// calculate the index - scalar value
-		//append_code_block(out, idxs);
+		idxs.exprs_ = NULL;
 
 		// add index to the array begin pointer
 		out.code_->append_instruction(new ai::ADDP());
 	}
-	void array_offset(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr)
+	/**
+	 * Store code for array indexer which will be then used to access particular array element.
+	 */
+	void array_index(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr)
 	{
 		if (identical_type(expr.type_, ctx->tab->logical_integer()))
 		{
 			if (out.exprs_ == NULL)
 				out.exprs_ = new icblock_list();
 			out.exprs_->push_back(expr.code_);
-
-			/*auto sp = ctx->tab->find_symbol(expr.id_ci_);
-			// find out type of the array element
-			auto tp = sp->access_typed()->type();
-			if (tp->cat() == type_category::TCAT_ARRAY)
-			{
-				type_pointer et;	// element type
-
-				if (out.ranges_.empty())
-				{
-					type_pointer et = tp;
-					while (et->cat() == type_category::TCAT_ARRAY)
-					{
-						out.ranges_.push_back(et);
-						et = et->access_array()->element_type();
-					}
-					out.ranges_.push_back(et);
-
-					// calculate index expression
-					append_code_block(out, expr);
-					// substract lower bound
-					et = out.ranges_.front();
-					auto rt = et->access_array()->index_type();
-					auto lb = rt->access_range()->lowerBound();
-					out.code_->append_instruction(new ai::LDLITI(lb));
-					out.code_->append_instruction(new ai::SUBI());
-
-					// remove type at the beginning
-					out.ranges_.erase(out.ranges_.begin());
-				}
-				else
-				{
-					et = out.ranges_.front();
-					auto rt = et->access_array()->index_type();
-
-					// multiply previous value by range size
-					auto lb = rt->access_range()->lowerBound();
-					auto ub = rt->access_range()->upperBound();
-					// (ub - lb + 1)
-					out.code_->append_instruction(new ai::LDLITI(ub));
-					out.code_->append_instruction(new ai::LDLITI(lb));
-					out.code_->append_instruction(new ai::SUBI());
-					out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(1)));
-					out.code_->append_instruction(new ai::ADDI());
-
-					out.code_->append_instruction(new ai::MULI());
-
-					// calculate next index expression
-					append_code_block(out, expr);
-					out.code_->append_instruction(new ai::LDLITI(lb));
-					out.code_->append_instruction(new ai::SUBI());
-
-					// and add to the previous result
-					out.code_->append_instruction(new ai::ADDI());
-
-					// remove type at the beginning
-					out.ranges_.erase(out.ranges_.begin());
-
-					out.type_ = out.ranges_.front();
-				}
-			}
-			else
-			{	// indexing a non-array variable
-				error(DUERR_NOTARRAY, expr_line, *expr.id_ci_);
-			}*/
 		}
 		else
 		{	// indexing with non-integral type
 			error(DUERR_CANNOTCONVERT, expr_line);
 		}
-
 	}
 
 	void subprogram_call(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &real_params)
