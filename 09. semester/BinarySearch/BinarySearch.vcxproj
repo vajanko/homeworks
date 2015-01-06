@@ -273,6 +273,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="du3bsearch.cpp" />
     <ClCompile Include="exp4main.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>

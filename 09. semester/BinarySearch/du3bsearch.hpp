@@ -4,9 +4,12 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <memory>
 #include <xmmintrin.h>
 
 typedef unsigned long data_element;
+
+template<typename T> T smaller(T x, T y) { return (x<y) ? x : y; }
 
 #undef BIN_SEARCH
 #undef SEQ_SEARCH
@@ -544,8 +547,6 @@ public:
 	bin_search(data_element *data, std::size_t size) : data(data), size(size) { }
 };
 
-const std::size_t CACHE_ELEM_SIZE = 1024 * 8;
-
 class bsearch_inner {
 private:
 	data_element *data;
@@ -553,15 +554,16 @@ private:
 
 	std::size_t block_size;
 
-	bin_search index;
+	bin_search index1;
+	bin_search index2;
 public:
 	std::size_t get_size() const { return data_size; }
 
 	std::size_t find(const data_element el) const
 	{
-		std::size_t idx = index.find(el);
+		std::size_t idx = index1.find(el);
 		std::size_t l = idx * block_size;
-		std::size_t r = min(l + block_size, data_size);
+		std::size_t r = smaller(l + block_size, data_size);
 
 		while (l + 1 < r)
 		{
@@ -576,8 +578,11 @@ public:
 	}
 
 	bsearch_inner(const data_element * idata, std::size_t isize) :
-		data(new data_element[isize]), data_size(isize), index(nullptr, 0)
+		data(new data_element[isize]), data_size(isize), 
+		index1(nullptr, 0), index2(nullptr, 0)
 	{
+		const std::size_t CACHE_ELEM_SIZE = 1024 * 64;
+
 		std::copy_n(idata, isize, data);
 
 		block_size = data_size / CACHE_ELEM_SIZE;
@@ -590,7 +595,7 @@ public:
 		for (std::size_t i = 0; i < index_size; ++i)
 			index_data[i] = data[i * block_size];
 
-		index = bin_search(index_data, index_size);
+		index1 = bin_search(index_data, index_size);
 	}
 };
 #endif
