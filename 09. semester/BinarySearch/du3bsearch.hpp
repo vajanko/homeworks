@@ -14,7 +14,8 @@ typedef unsigned long data_element;
 #undef PBIN_SEARCH
 #undef BST_SEARCH
 #undef VEB_SEARCH
-#define VEB_SEARCH
+#undef BLK_SEARCH
+#define BLK_SEARCH
 
 #ifdef BIN_SEARCH
 class bsearch_inner {
@@ -516,51 +517,130 @@ public:
 	}
 };
 #endif
+#ifdef BLK_SEARCH
+
+class bin_search
+{
+private:
+	data_element *data;
+	std::size_t size;
+public:
+	std::size_t find(data_element el) const
+	{
+		std::size_t l = 0;
+		std::size_t r = size;
+
+		while (l + 1 < r)
+		{
+			std::size_t i = (l + r) >> 1;		// div by 2
+			if (data[i] > el)
+				r = i;
+			else
+				l = i;
+		}
+
+		return l;
+	}
+	bin_search(data_element *data, std::size_t size) : data(data), size(size) { }
+};
+
+const std::size_t CACHE_ELEM_SIZE = 1024 * 8;
+
+class bsearch_inner {
+private:
+	data_element *data;
+	std::size_t data_size;
+
+	std::size_t block_size;
+
+	bin_search index;
+public:
+	std::size_t get_size() const { return data_size; }
+
+	std::size_t find(const data_element el) const
+	{
+		std::size_t idx = index.find(el);
+		std::size_t l = idx * block_size;
+		std::size_t r = min(l + block_size, data_size);
+
+		while (l + 1 < r)
+		{
+			std::size_t i = (l + r) >> 1;		// div by 2
+			if (data[i] > el)
+				r = i;
+			else
+				l = i;
+		}
+		
+		return el < data[0] ? l : l + 1;
+	}
+
+	bsearch_inner(const data_element * idata, std::size_t isize) :
+		data(new data_element[isize]), data_size(isize), index(nullptr, 0)
+	{
+		std::copy_n(idata, isize, data);
+
+		block_size = data_size / CACHE_ELEM_SIZE;
+		if (block_size == 0)
+			block_size = data_size;
+
+		std::size_t index_size = std::ceil(data_size / block_size);
+		data_element *index_data = new data_element[index_size];
+
+		for (std::size_t i = 0; i < index_size; ++i)
+			index_data[i] = data[i * block_size];
+
+		index = bin_search(index_data, index_size);
+	}
+};
+#endif
 
 class bsearch_outer {
 private:
 	const bsearch_inner inner;
 	std::size_t osize;
 
-	data_element *buckets;
-	std::size_t *bucket_index;
+	std::unique_ptr<data_element> buckets;
+	std::unique_ptr<std::size_t> bucket_index;
 
-	std::size_t *bucket_size;
-	std::size_t *bucket_start;
+	std::unique_ptr<std::size_t> bucket_size;
+	std::unique_ptr<std::size_t> bucket_start;
 
 public:
 	bsearch_outer(const bsearch_inner & inner, std::size_t osize) : inner(inner), osize(osize),
 		buckets(new data_element[osize]), bucket_index(new std::size_t[osize]),
-		bucket_size(new std::size_t[inner.isize + inner.rsize + 1]), 
-		bucket_start(new std::size_t[inner.isize + inner.rsize + 1])
-	{
-	}
-	~bsearch_outer()
-	{
-		delete[] buckets;
-		delete[] bucket_size;
-	}
+		bucket_size(new std::size_t[inner.get_size() + 1]), 
+		bucket_start(new std::size_t[inner.get_size() + 1]) { }
 
 	void bucketize(const data_element * odata)
 	{
-		for (std::size_t i = 0; i < inner.isize + inner.rsize + 1; ++i)
-			bucket_size[i] = 0;
+		std::size_t *bucket_index = this->bucket_index.get();
+		data_element *buckets = this->buckets.get();
+		std::size_t *bucket_size = this->bucket_size.get();
+		std::size_t *bucket_start = this->bucket_start.get();
 
-		std::size_t idx;
+		// clear bucket_size array
+		/*std::size_t bucket_count = (inner.get_size() + 1) / 4;
+		__m128i *b = (__m128i*)bucket_size;
+		for (std::size_t i = 0; i < bucket_count; ++i)
+			b[i] = _mm_setzero_si128();
+		std::size_t last_count = (inner.get_size() + 1) % 4;
+		for (std::size_t i = 0; i < last_count; ++i)
+			bucket_size[inner.get_size() + i] = 0;*/
+
+		std::size_t bucket_count = inner.get_size() + 1;
+		for (std::size_t i = 0; i < bucket_count; ++i)
+			bucket_size[i] = 0;
 
 		for (std::size_t i = 0; i < osize; ++i)
 		{
-			idx = inner.find(odata[i]);
+			std::size_t idx = inner.find(odata[i]);
 			bucket_index[i] = idx;
 			++bucket_size[idx];
-
-			/*std::size_t bi = bucket_size[idx];
-			buckets[idx * osize + bi] = odata[i];
-			bucket_size[idx] = bi + 1;*/
 		}
 
 		std::size_t acc = 0;
-		for (std::size_t i = 0; i <= inner.isize + inner.rsize; ++i)
+		for (std::size_t i = 0; i <= inner.get_size(); ++i)
 		{
 			bucket_start[i] = acc;
 			acc += bucket_size[i];
@@ -572,31 +652,13 @@ public:
 			buckets[bucket_start[idx]] = odata[i];
 			++bucket_start[idx];
 		}
-
-		/*for (std::size_t i = 0; i < osize / 4; ++i)
-		{
-			__m128i cur = *((__m128i*)odata + i);
-
-			for (int j = 0; j < 4; ++j)
-			{
-				data_element el = cur.m128i_u32[j];
-				idx = inner.find(el);
-
-				std::size_t bi = buckets_size[idx];
-				buckets[idx * osize + bi] = el;
-
-				buckets_size[idx] = bi + 1;
-			}
-			
-		}*/
 	}
 
 	typedef std::pair< const data_element *, std::size_t> bucket_rv;
 
 	bucket_rv bucket(std::size_t k) const 
 	{
-		//return bucket_rv(buckets + k * osize, bucket_size[k]);
-		return bucket_rv(buckets + bucket_start[k] - bucket_size[k], bucket_size[k]);
+		return bucket_rv(buckets.get() + bucket_start.get()[k] - bucket_size.get()[k], bucket_size.get()[k]);
 	}
 };
 

@@ -12,9 +12,9 @@
 
 void test()
 {
-	const std::size_t in_size = 8;
+	const std::size_t in_size = 3;
 
-	data_element in_data[in_size] = { 1,3,4,5,7,9,10,11 }; // , 8, 9, 10, 11, 12, 13, 14, 15 };
+	data_element in_data[in_size] = { 2,5,9 }; // , 8, 9, 10, 11, 12, 13, 14, 15 };
 
 	bsearch_inner inner(in_data, in_size);
 
@@ -34,9 +34,9 @@ void test()
 
 int main( int argc, char * * argv)
 {
-	test();
+	/*test();
 	system("pause");
-	return 0;
+	return 0;*/
 
 	generator_list< param_type_4, time_complexity> gl;
 
