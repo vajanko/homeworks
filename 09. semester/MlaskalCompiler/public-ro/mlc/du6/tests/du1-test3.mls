@@ -1,0 +1,10 @@
+program du6test;
+
+procedure test;
+var
+	a:integer;
+begin
+end;
+
+begin
+end.

@@ -1,0 +1,7 @@
+Warning (line 3): Label '1' defined but never used
+Warning (line 3): Label '2' declared but never used
+Warning (line 3): Label '3' declared but never used
+Warning (line 3): Label '4' declared but never used
+Warning (line 3): Label '5' declared but never used
+Warning (line 3): Label '6' declared but never used
+Everything is nearly OK, although there were 6 warnings

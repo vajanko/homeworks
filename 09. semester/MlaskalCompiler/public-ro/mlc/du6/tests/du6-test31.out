@@ -1,0 +1,8 @@
+Error (line 6): '7' is not a label
+Warning (line 3): Label '1' declared but never used
+Warning (line 3): Label '2' declared but never used
+Warning (line 3): Label '3' declared but never used
+Warning (line 3): Label '4' declared but never used
+Warning (line 3): Label '5' declared but never used
+Warning (line 3): Label '6' declared but never used
+There were some errors 1 and warnings 6

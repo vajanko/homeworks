@@ -1,0 +1,16 @@
+program du1test;
+
+function test1 :integer;
+begin
+	test1 := 21;
+end;
+
+procedure test;
+var a:integer;
+begin
+	a := test1;
+end;
+
+begin
+	test;
+end.

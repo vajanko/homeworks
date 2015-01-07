@@ -1,0 +1,35 @@
+program du6test41;
+
+type
+	REC = record
+	    f1, f2 : integer;
+	    f3 : real;
+	end;
+
+var 
+	gv1, gv2 : REC;
+	
+procedure reccp( pv : REC; var pw : REC);
+var
+	lv : REC;
+begin
+	pw.f1 := pv.f1;
+	pw.f2 := pv.f2;
+	pw.f3 := pv.f3;
+end;
+	
+procedure reccp2( pv : REC; var pw : REC);
+var
+	lv : REC;
+begin
+	pw := pv;
+end;
+	
+procedure scacp( v : real; var w : real);
+begin
+	w := v;
+end;
+	
+begin
+	reccp( gv1, gv2);		
+end.

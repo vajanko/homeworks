@@ -1,0 +1,13 @@
+Error (line 10): '1' is not a label
+Error (line 13): Duplicated label '6' definition
+Error (line 20): Duplicated label '6' definition
+Error (line 3): Missing label '1' definition
+Warning (line 3): Label '2' defined but never used
+Warning (line 3): Label '4' declared but never used
+Error (line 3): Missing label '5' definition
+Warning (line 3): Label '6' defined but never used
+Warning (line 7): Label '2' defined but never used
+Warning (line 7): Label '4' declared but never used
+Error (line 7): Missing label '5' definition
+Warning (line 7): Label '6' defined but never used
+There were some errors 6 and warnings 6

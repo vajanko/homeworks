@@ -1,0 +1,13 @@
+State #58 is non-accepting -
+ associated rule line numbers:
+	189
+ out-transitions: [ 0-9 ]
+ jam-transitions: EOF [ \000-/  :-\377 ]
+
+State #95 is non-accepting -
+ associated rule line numbers:
+	189
+ out-transitions: [ 0-9 ]
+ jam-transitions: EOF [ \000-/  :-\377 ]
+
+2 backing up (non-accepting) states.

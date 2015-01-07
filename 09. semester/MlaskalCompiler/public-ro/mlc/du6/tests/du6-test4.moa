@@ -1,0 +1,97 @@
+Integer constants
+0:	1
+1:	0
+2:	10
+
+Real constants
+
+String constants
+
+Identifiers
+0:	"BOOLEAN"
+1:	"INTEGER"
+2:	"REAL"
+3:	"STRING"
+4:	"FALSE"
+5:	"TRUE"
+6:	"READI"
+7:	"READR"
+8:	"READS"
+9:	"P"
+10:	"WRITEI"
+11:	"WRITER"
+12:	"WRITES"
+13:	"WRITELN"
+14:	"DU6TEST"
+15:	"I"
+16:	"J"
+
+Functions and procedures
+READI:INTEGER	[0;2], used registers=0
+READR:REAL	[3;5], used registers=0
+READS:STRING	[6;8], used registers=0
+WRITEI(P:INTEGER [size=1;stkoffs=-1])	[9;11], used registers=0
+WRITER(P:REAL [size=1;stkoffs=-1])	[12;14], used registers=0
+WRITES(P:STRING [size=1;stkoffs=-1])	[15;17], used registers=0
+WRITELN	[18;19], used registers=0
+DU6TEST	[20;45], used registers=0
+	VAR
+		I:INTEGER[start=20;end=20;size=1;stkoffs=0]
+		J:INTEGER[start=21;end=21;size=1;stkoffs=1]
+
+Instructions
+READI:
+0:	FNCREADI
+1:	LSTI	[-1]
+2:	RET
+READR:
+3:	FNCREADR
+4:	LSTR	[-1]
+5:	RET
+READS:
+6:	FNCREADS
+7:	LSTS	[-1]
+8:	RET
+WRITEI:
+9:	LLDI	[-1]
+10:	FNCWRITEI
+11:	RET
+WRITER:
+12:	LLDR	[-1]
+13:	FNCWRITER
+14:	RET
+WRITES:
+15:	LLDS	[-1]
+16:	FNCWRITES
+17:	RET
+WRITELN:
+18:	FNCWRITELN
+19:	RET
+DU6TEST:
+20:	INITI
+21:	INITI
+22:	LDLITI	LITINT[1]
+23:	GSTI	[1]
+24:	LDLITI	LITINT[0]
+25:	GSTI	[0]
+26:	JMP	9	;; target=35
+27:	GLDI	[1]
+28:	GLDI	[0]
+29:	ADDI
+30:	GSTI	[1]
+31:	GLDI	[0]
+32:	LDLITI	LITINT[0]
+33:	ADDI
+34:	GSTI	[0]
+35:	LDLITI	LITINT[2]
+36:	GLDI	[0]
+37:	GEI
+38:	JT	-11	;; target=27
+39:	GLDI	[1]
+40:	CALL	9	;; label=WRITEI
+41:	DTORI
+42:	CALL	18	;; label=WRITELN
+43:	DTORI
+44:	DTORI
+45:	HALT
+

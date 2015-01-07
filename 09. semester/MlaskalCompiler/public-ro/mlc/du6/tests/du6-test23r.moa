@@ -1,0 +1,172 @@
+Integer constants
+0:	1
+1:	10
+2:	5
+
+Real constants
+
+String constants
+
+Identifiers
+0:	"BOOLEAN"
+1:	"INTEGER"
+2:	"REAL"
+3:	"STRING"
+4:	"FALSE"
+5:	"TRUE"
+6:	"READI"
+7:	"READR"
+8:	"READS"
+9:	"P"
+10:	"WRITEI"
+11:	"WRITER"
+12:	"WRITES"
+13:	"WRITELN"
+14:	"DU6TEST"
+15:	"AR1"
+16:	"A1"
+17:	"I"
+18:	"REPLACEMEMEBER"
+19:	"A"
+20:	"R"
+
+Functions and procedures
+READI:INTEGER	[0;2], used registers=0
+READR:REAL	[3;5], used registers=0
+READS:STRING	[6;8], used registers=0
+WRITEI(P:INTEGER [size=1;stkoffs=-1])	[9;11], used registers=0
+WRITER(P:REAL [size=1;stkoffs=-1])	[12;14], used registers=0
+WRITES(P:STRING [size=1;stkoffs=-1])	[15;17], used registers=0
+WRITELN	[18;19], used registers=0
+REPLACEMEMEBER(A:INTEGER [size=10;stkoffs=-12], I:INTEGER [size=1;stkoffs=-2], R:INTEGER [size=1;stkoffs=-1])	[20;27], used registers=0
+DU6TEST	[28;114], used registers=0
+	VAR
+		A1:INTEGER[start=115;end115size=10;stkoffs=0]
+		I:INTEGER[start=115;end115size=1;stkoffs=10]
+
+Instructions
+READI:
+0:	FNCREADI
+1:	LSTI	[-1]
+2:	RET
+READR:
+3:	FNCREADR
+4:	LSTR	[-1]
+5:	RET
+READS:
+6:	FNCREADS
+7:	LSTS	[-1]
+8:	RET
+WRITEI:
+9:	LLDI	[-1]
+10:	FNCWRITEI
+11:	RET
+WRITER:
+12:	LLDR	[-1]
+13:	FNCWRITER
+14:	RET
+WRITES:
+15:	LLDS	[-1]
+16:	FNCWRITES
+17:	RET
+WRITELN:
+18:	FNCWRITELN
+19:	RET
+REPLACEMEMEBER:
+20:	LLDI	[-1]
+21:	LREF	[-12]
+22:	LLDI	[-2]
+23:	LDLITI	LITINT[0]
+24:	SUBI
+25:	ADDP
+26:	XSTI
+27:	RET
+DU6TEST:
+28:	INITI
+29:	INITI
+30:	INITI
+31:	INITI
+32:	INITI
+33:	INITI
+34:	INITI
+35:	INITI
+36:	INITI
+37:	INITI
+38:	INITI
+39:	LDLITI	LITINT[0]
+40:	GSTI	[10]
+41:	JMP	12	;; target=53
+42:	GLDI	[10]
+43:	GREF	[0]
+44:	GLDI	[10]
+45:	LDLITI	LITINT[0]
+46:	SUBI
+47:	ADDP
+48:	XSTI
+49:	GLDI	[10]
+50:	LDLITI	LITINT[0]
+51:	ADDI
+52:	GSTI	[10]
+53:	LDLITI	LITINT[1]
+54:	GLDI	[10]
+55:	GEI
+56:	JT	-14	;; target=42
+57:	LLDI	[0]
+58:	LLDI	[1]
+59:	LLDI	[2]
+60:	LLDI	[3]
+61:	LLDI	[4]
+62:	LLDI	[5]
+63:	LLDI	[6]
+64:	LLDI	[7]
+65:	LLDI	[8]
+66:	LLDI	[9]
+67:	LDLITI	LITINT[2]
+68:	LDLITI	LITINT[2]
+69:	MINUSI
+70:	CALL	20	;; label=REPLACEMEMEBER
+71:	DTORI
+72:	DTORI
+73:	DTORI
+74:	DTORI
+75:	DTORI
+76:	DTORI
+77:	DTORI
+78:	DTORI
+79:	DTORI
+80:	DTORI
+81:	DTORI
+82:	DTORI
+83:	LDLITI	LITINT[0]
+84:	GSTI	[10]
+85:	JMP	13	;; target=98
+86:	GREF	[0]
+87:	GLDI	[10]
+88:	LDLITI	LITINT[0]
+89:	SUBI
+90:	ADDP
+91:	XLDI
+92:	CALL	9	;; label=WRITEI
+93:	DTORI
+94:	GLDI	[10]
+95:	LDLITI	LITINT[0]
+96:	ADDI
+97:	GSTI	[10]
+98:	LDLITI	LITINT[1]
+99:	GLDI	[10]
+100:	GEI
+101:	JT	-15	;; target=86
+102:	CALL	18	;; label=WRITELN
+103:	DTORI
+104:	DTORI
+105:	DTORI
+106:	DTORI
+107:	DTORI
+108:	DTORI
+109:	DTORI
+110:	DTORI
+111:	DTORI
+112:	DTORI
+113:	DTORI
+114:	HALT
+
