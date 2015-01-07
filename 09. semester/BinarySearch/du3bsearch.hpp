@@ -18,7 +18,8 @@ template<typename T> T smaller(T x, T y) { return (x<y) ? x : y; }
 #undef BST_SEARCH
 #undef VEB_SEARCH
 #undef BLK_SEARCH
-#define BLK_SEARCH
+#undef BTR_SEARCH
+#define BTR_SEARCH
 
 #ifdef BIN_SEARCH
 class bsearch_inner {
@@ -631,6 +632,44 @@ public:
 			index_data[i] = data[i * block_size];
 
 		index1 = bin_search(index_data, index_size);
+	}
+};
+#endif
+#ifdef BTR_SEARCH
+class bsearch_inner {
+private:
+	data_element *data;
+	std::size_t data_size;
+
+	std::size_t block_size;
+public:
+	std::size_t get_size() const { return data_size; }
+
+	std::size_t find(const data_element el) const
+	{
+		
+	}
+
+	void build_btr(const data_element *idata, std::size_t isize, data_element *data, std::size_t bsize) const
+	{
+		std::size_t lay = bsize;
+		std::size_t m = bsize;
+		while (m <= isize)
+		{
+			lay *= bsize;
+			m += lay;
+		}
+
+		std::size_t step = 2;
+		long pos = isize - 1;
+
+		
+	}
+	bsearch_inner(const data_element * idata, std::size_t isize) :
+		data(new data_element[isize]), data_size(isize), block_size(4)
+	{
+		std::copy_n(idata, isize, data);
+
 	}
 };
 #endif
