@@ -302,6 +302,46 @@ public:
 };
 #endif
 #ifdef VEB_SEARCH
+
+class vEBTraverser {
+public:
+	uint64_t root() {
+		d = 0;
+		cix = 1;
+		return 1;
+	}
+	uint64_t left() {
+		d++;
+		cix <<= 1;
+		return vEBIndex();
+	}
+	uint64_t right() {
+		d++;
+		cix = (cix << 1) + 1;
+		return vEBIndex();
+	}
+private:
+	uint64_t cix;
+	uint64_t d;
+
+	uint64_t vEBIndex() {
+		// Start with largest sub-tree, work down to smallest.
+		uint64_t ix = 1;
+		uint32_t new_d = d;
+		for (char b = 4; b >= 0; --b) {
+			const uint64_t b_val = 1L << b;
+			if (d & b_val) {
+				// Determine sub triangle and add start offset to index.
+				const uint64_t masked_d = d & (b_val - 1);
+				const uint64_t new_node_size = (1L << b_val) - 1;
+				uint64_t subtri_ix = (cix >> masked_d) & new_node_size;
+				ix += new_node_size * (1L + subtri_ix);
+			}
+		}
+		return ix;
+	}
+};
+
 class bsearch_inner {
 public:
 	data_element* data;
@@ -311,48 +351,45 @@ public:
 	data_element* rdata;
 	std::size_t height;
 
-	std::size_t *succ;
-
 	std::size_t find(const data_element el) const
 	{
-		if (rsize > 0 && rdata[0] <= el)
+		/*vEBTraverser tr;
+		std::size_t i = tr.root();
+		while (true)
 		{
-			std::size_t res = isize + 1;
-			for (std::size_t j = 1; j < rsize - 1; ++j)
-			{
-				if (rdata[j] < el)
-					return res;
-				
-				++res;
-			}
+			if (data[i] > el)
+				i = tr.right();
+			else
+				i = tr.left();
+		}*/
 
-			return res;
+		std::size_t left = 0;
+		std::size_t right = 0;
+		std::size_t h = height;		// currently searched tree depth
+		std::size_t d = 0;			// search depth
+
+		while (right - left > 256)	// ??
+		{
+			std::size_t r_height = h / 2;
+			std::size_t ch_height = r_height + h % 2;
+
+			// TODO: this can be done more efficiently
+			std::size_t r_nodes = std::pow(2, r_height) - 1;
+
+			++d;
 		}
 
-		std::size_t i = 0;	// root
-		std::size_t l;
-		std::size_t r;
-
-		for (std::size_t j = 0; j < height - 1; ++j)
+		// regular binary search in small blocks
+		while (left + 1 < right)
 		{
-			l = succ[i * 2];
-			r = succ[i * 2 + 1];
-
-			if (l < tsize && data[i] > el)
-			{
-				i = l;
-			}
-			else if (r < tsize)
-			{
-				i = r;
-			}
-			/*else
-			{
-				return data[i];
-			}*/
+			std::size_t i = (left + right) >> 1;		// div by 2
+			if (data[i] > el)
+				right = i;
+			else
+				left = i;
 		}
 
-		return data[i];
+		return left;
 	}
 
 	void build_bst(const data_element *idata, std::size_t isize, data_element *data) const
@@ -432,19 +469,16 @@ public:
 
 			for (std::size_t i = 0; i < ch_trees; ++i)
 			{
-				//std::size_t ch_pos = (i % 2 == 0) ? i_pos * 2 + 1 : i_pos * 2 + 2;
 				ch_pos = i_pos;
 				build_veb(ch_pos, odata, o_pos, ch_height);
-				//i_pos += (i % 2 == 0) ? 1 : ch_nodes;
 				i_pos += 1;
 				o_pos += ch_nodes;
 			}
 		}
 	}
-	bsearch_inner(const data_element * idata, std::size_t isize) : isize(isize), tsize(isize * 2 + 1), data(new data_element[(isize * 2 + 1) * 2]), 
-		succ(new std::size_t[isize * 2 + 1])
+	bsearch_inner(const data_element * idata, std::size_t isize) : isize(isize), tsize(isize * 2 + 1), data(new data_element[(isize * 2 + 1) * 2])
 	{
-		std::size_t m = 0;
+		/*std::size_t m = 0;
 		while ((2 << m) - 1 <= isize)
 			++m;
 
@@ -453,9 +487,9 @@ public:
 		isize -= rsize;
 
 		rdata = new data_element[rsize];
-		std::copy(idata + isize, idata + isize + rsize, rdata);
+		std::copy(idata + isize, idata + isize + rsize, rdata);*/
 
-		build_bst(idata, isize - rsize, data);
+		build_bst(idata, isize, data);
 
 		/*for (std::size_t i = 0; i < tsize; ++i)
 			std::cout << data[i] << " ";
@@ -464,9 +498,10 @@ public:
 		height = std::ceil(std::log2(isize)) + 1;
 		std::size_t i_pos = 0;
 		data_element *tmp = new data_element[tsize];
+
 		build_veb(i_pos, tmp, 0, height);
 
-		for (std::size_t i = 0; i < (isize * 2 + 1) * 2; ++i)
+		/*for (std::size_t i = 0; i < (isize * 2 + 1) * 2; ++i)
 			succ[i] = 0;
 
 		std::size_t j;
@@ -499,7 +534,7 @@ public:
 					}
 				}
 			}
-		}
+		}*/
 
 
 		delete[] data;

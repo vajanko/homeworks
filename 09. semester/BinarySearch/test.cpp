@@ -7,6 +7,8 @@
 #include <cmath>
 #include <algorithm>
 
+typedef unsigned long data_element;
+
 using namespace std;
 
 const int SORTED_ARRAY_SIZE = 100 * 1000 * 1000;
@@ -198,4 +200,60 @@ int main1() {
 	assertEquals(slow_result, fast_result, NUM_ITERS);
 
 	return 0;
+}
+
+void build_veb(data_element* inputArray, data_element* outputArray, 
+	std::size_t root, std::size_t  height, std::size_t  depth, std::size_t  N) {
+
+	static int recursion = 0;
+	static int idx = 0;
+	if (N <= 3) 
+	{
+		outputArray[idx++] = inputArray[root];
+		if (N == 3) {
+			int lchild = 2 * root + 1;
+			int rchild = 2 * root + 2;
+			outputArray[idx++] = inputArray[lchild];
+			outputArray[idx++] = inputArray[rchild];
+		}
+		return;
+	}
+
+	//int totalHeight = static_cast<int>((std::log(N+1)/std::log(2)));
+	//int h0 = static_cast<int>(std::floor(totalHeight/2));
+	//int t = totalHeight - h0;
+	std::size_t totalHeight = static_cast<std::size_t>(std::log(N + 1) / std::log(2));
+
+	// is seems that here it should be enough to have height / 2
+	std::size_t h0 = static_cast<std::size_t>(std::floor(static_cast<float>(height) / 2));
+	// and here height / 2 + height % 2
+	std::size_t t = static_cast<std::size_t>(std::ceil(static_cast<float>(height) / 2));
+
+	//std::cout << "Recursion         :" << recursion << std::endl;
+	//std::cout << "Total Tree Height :" << totalHeight << "\n";
+	//std::cout << "H0 height         :" << h0 << "\n";
+	//std::cout << "Rem height        :" << t << "\n";
+
+	std::size_t h0nodes = static_cast<std::size_t>(std::pow(2, h0)) - 1;
+	std::size_t remNodes = N - h0nodes;		// reminening nodes
+	/*std::cout << "H0 nodes          :" << h0nodes << std::endl;
+	std::cout << "Rem nodes         :" << remNodes << std::endl;*/
+
+	// now calculate number of subtrees 
+	std::size_t numSubtrees = static_cast<std::size_t>(std::pow(2, h0));
+	std::size_t perSubtreeElement = remNodes / numSubtrees;
+
+	/*std::cout << "Num of Subtrees	  :" << numSubtrees << std::endl;
+	std::cout << "Per subtree cnt   :" << perSubtreeElement << std::endl;
+	std::cout << "----------------------------------------------------" << std::endl;*/
+	recursion++;
+	// now for tree rooted at @h0, we launch one recursive function
+	build_veb(inputArray, outputArray, root, h0, t, h0nodes);
+	// and for all subtrees @later height, we launch recursive functions
+	for (int i = 0; i < numSubtrees; i++) {
+		// find the root elements for all the subtrees
+		std::size_t r = static_cast<std::size_t>(std::pow(2, t)) - 1;
+		r += i;		//move appropriately along the dimension
+		build_veb(inputArray, outputArray, r, t, t + 1, perSubtreeElement);
+	}
 }
