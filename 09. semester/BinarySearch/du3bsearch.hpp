@@ -647,7 +647,22 @@ public:
 
 	std::size_t find(const data_element el) const
 	{
-		
+		std::size_t l = 0;
+		std::size_t r = data_size;
+
+		while (l + block_size < r)
+		{
+			std::size_t i = (l + r) / (block_size + 1);
+			if (data[i] > el)
+				r = i;
+			else
+				l = i;
+		}
+
+		// TODO: reform regular binary search
+
+
+		return l;
 	}
 
 	void build_btr(const data_element *idata, std::size_t isize, data_element *data, std::size_t bsize) const
