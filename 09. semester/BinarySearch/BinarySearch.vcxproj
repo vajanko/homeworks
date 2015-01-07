@@ -276,6 +276,7 @@
     <ClCompile Include="du3bsearch.cpp" />
     <ClCompile Include="exp4main.cpp" />
     <ClCompile Include="test.cpp" />
+    <ClCompile Include="test2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="du3bsearch.hpp" />
