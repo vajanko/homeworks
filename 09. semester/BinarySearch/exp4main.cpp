@@ -14,14 +14,14 @@ void test()
 {
 	const std::size_t in_size = 8;
 
-	data_element in_data[in_size] = { 1, 2, 3, 4, 5, 6, 7, 8 };// , 10, 11, 12, 13, 14, 15
+	data_element in_data[in_size] = { 1,2,3,4,5,6,7,8 };// , 10, 11, 12, 13, 14, 15
 
 
 	bsearch_inner inner(in_data, in_size);
 
 	const std::size_t out_size = 10;
 	bsearch_outer outer(inner, out_size);
-	data_element out_data[out_size] = { 1, 5, 11, 2, 3, 7, 4, 9, 0, 10 };
+	data_element out_data[out_size] = { 5, 5, 11, 2, 3, 7, 4, 9, 0, 10 };
 
 	outer.bucketize(out_data);
 	for (std::size_t i = 0; i < in_size + 1; ++i)
