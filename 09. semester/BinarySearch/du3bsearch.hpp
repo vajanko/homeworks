@@ -18,8 +18,6 @@ template<typename T> T smaller(T x, T y) { return (x<y) ? x : y; }
 #undef BST_SEARCH
 #undef VEB_SEARCH
 #undef BLK_SEARCH
-#undef BTR_SEARCH
-#define BTR_SEARCH
 
 #ifdef BIN_SEARCH
 class bsearch_inner {
@@ -635,59 +633,100 @@ public:
 	}
 };
 #endif
-#ifdef BTR_SEARCH
-class bsearch_inner {
+
+class btree_search {
 private:
 	data_element *data;
 	std::size_t data_size;
 
 	std::size_t block_size;
+	std::size_t height;
 public:
 	std::size_t get_size() const { return data_size; }
 
 	std::size_t find(const data_element el) const
 	{
 		std::size_t l = 0;
-		std::size_t r = data_size;
+		std::size_t r = block_size;
+		std::size_t i;
+		std::size_t res = 0;
 
-		while (l + block_size < r)
+		for (std::size_t j = 0; j <= height; ++j)
 		{
-			std::size_t i = (l + r) / (block_size + 1);
-			if (data[i] > el)
-				r = i;
-			else
-				l = i;
+			// binary search in the node
+			for (std::size_t k = 0; k < block_size; ++k)
+			{
+				i = (l + r) >> 1;		// div by 2
+				if (data[i] > el)
+				{
+					r = i;
+				}
+				else
+				{
+					res += (i - l) * (height - j) * (block_size + 1);
+					l = i;
+				}
+			}
+
+			//i = l;
+			l = el <= data[l] ? l : l + 1;
+			// jump to the child node
+			l = l * block_size + block_size;
+			r = l + block_size;
 		}
 
-		// TODO: reform regular binary search
+		//i = data[i] < el ? i + 1 : i;
 
-
-		return l;
+		return res;
 	}
 
-	void build_btr(const data_element *idata, std::size_t isize, data_element *data, std::size_t bsize) const
+	void build_btree(std::size_t out, const data_element *idata, std::size_t begin, std::size_t end)
 	{
-		std::size_t lay = bsize;
-		std::size_t m = bsize;
-		while (m <= isize)
+		// block position (not element position)
+		std::size_t part_size = std::ceil((double)(end - begin) / (block_size + 1));
+		
+		for (std::size_t i = begin + part_size - 1; i < end; i += part_size)
 		{
-			lay *= bsize;
-			m += lay;
+			data[out] = idata[i];
+			++out;
 		}
 
-		std::size_t step = 2;
-		long pos = isize - 1;
+		if (part_size == 1)
+			return;
 
-		
+		for (std::size_t i = begin; i < end; i += part_size)
+		{
+			build_btree(out, idata, i, i + part_size - 1);
+			out += (part_size - 1);
+		}
 	}
-	bsearch_inner(const data_element * idata, std::size_t isize) :
-		data(new data_element[isize]), data_size(isize), block_size(4)
+	btree_search(const data_element * idata, std::size_t isize) :
+		data(new data_element[isize]), data_size(isize), height(0), block_size(2)
 	{
 		std::copy_n(idata, isize, data);
 
+		std::size_t layer = block_size;
+		std::size_t m = block_size;
+		std::size_t h = 0;
+		while (m < isize)
+		{
+			layer *= (block_size + 1);
+			m += layer;
+			++h;
+		}
+
+		height = h;
+		//data = new data_element(data_size);
+
+		build_btree(0, idata, 0, m);
+
+		for (std::size_t i = 0; i < data_size; ++i)
+			std::cout << data[i] << " ";
+		std::cout << std::endl;
 	}
 };
-#endif
+
+typedef btree_search bsearch_inner;
 
 class bsearch_outer {
 private:
