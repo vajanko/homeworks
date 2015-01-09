@@ -810,38 +810,33 @@ private:
 	const bsearch_inner &inner;
 	std::size_t osize;
 
-	std::unique_ptr<data_element[]> buckets;
-	std::unique_ptr<std::size_t[]> bucket_index;
+	data_element *buckets;
+	std::size_t *bucket_index;
 
-	std::unique_ptr<std::size_t[]> bucket_size;
-	std::unique_ptr<std::size_t[]> bucket_start;
+	std::size_t *bucket_size;
+	std::size_t *bucket_start;
 
 public:
 	bsearch_outer(const bsearch_inner & inner, std::size_t osize) : inner(inner), osize(osize),
 		buckets(new data_element[osize]), bucket_index(new std::size_t[osize]),
-		bucket_size(new std::size_t[inner.get_size() + 1]), 
+		bucket_size(new std::size_t[inner.get_size() + 1]),
 		bucket_start(new std::size_t[inner.get_size() + 1]) { }
+	bsearch_outer(const bsearch_outer &val) = delete;
+	bsearch_outer& operator=(bsearch_outer &other) = delete;
+	~bsearch_outer() 
+	{
+		delete[] buckets; 
+		delete[] bucket_index;
+		delete[] bucket_size;
+		delete[] bucket_start;
+	}
 
 	void bucketize(const data_element * odata)
 	{
-		/*std::size_t *bucket_index = this->bucket_index.get();
-		data_element *buckets = this->buckets.get();
-		std::size_t *bucket_size = this->bucket_size.get();
-		std::size_t *bucket_start = this->bucket_start.get();*/
-
-		// clear bucket_size array
-		/*std::size_t bucket_count = (inner.get_size() + 1) / 4;
-		__m128i *b = (__m128i*)bucket_size;
-		for (std::size_t i = 0; i < bucket_count; ++i)
-			b[i] = _mm_setzero_si128();
-		std::size_t last_count = (inner.get_size() + 1) % 4;
-		for (std::size_t i = 0; i < last_count; ++i)
-			bucket_size[inner.get_size() + i] = 0;*/
-
-		// clear bucket_size array
 		std::size_t bucket_count = inner.get_size() + 1;
-		for (std::size_t i = 0; i < bucket_count; ++i)
-			bucket_size[i] = 0;
+
+		// clear bucket_size array
+		std::fill(bucket_size, bucket_size + bucket_count, 0);
 
 		for (std::size_t i = 0; i < osize; ++i)
 		{
@@ -851,7 +846,7 @@ public:
 		}
 
 		std::size_t acc = 0;
-		for (std::size_t i = 0; i <= inner.get_size(); ++i)
+		for (std::size_t i = 0; i < bucket_count; ++i)
 		{
 			bucket_start[i] = acc;
 			acc += bucket_size[i];
@@ -869,7 +864,7 @@ public:
 
 	bucket_rv bucket(std::size_t k) const 
 	{
-		return bucket_rv(buckets.get() + bucket_start.get()[k] - bucket_size.get()[k], bucket_size.get()[k]);
+		return bucket_rv(buckets + bucket_start[k] - bucket_size[k], bucket_size[k]);
 	}
 };
 
