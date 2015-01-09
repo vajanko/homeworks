@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <memory>
 #include <xmmintrin.h>
+#include <queue>
 
 typedef unsigned long data_element;
 
@@ -625,11 +626,13 @@ public:
 
 class btree_search {
 private:
-	data_element *data;
+	std::unique_ptr<data_element[]> data;
 	std::size_t data_size;
 
 	std::size_t degree;
+	std::size_t degree1;
 	std::size_t height;
+	std::size_t total_leafs;
 public:
 	std::size_t get_size() const { return data_size; }
 
@@ -641,64 +644,139 @@ public:
 		std::size_t res = 0;
 
         // number of leafs in a b-tree of this->height height
-        std::size_t leafs = std::pow(degree + 1, height);
+		std::size_t leafs = total_leafs;
+			//std::pow(degree + 1, height);
 
 		for (std::size_t j = 0; j <= height; ++j)
 		{
+			std::size_t left = l;
+
 			// binary search in the node
 			for (std::size_t k = 0; k < degree; ++k)
 			{
 				i = (l + r) >> 1;		// div by 2
 				if (data[i] > el)
-				{
 					r = i;
-				}
                 else
-				{
-                    res += (i - l + (l + r) % 2) * leafs;
 					l = i;
-				}
 			}
+
+			l = el < data[l] ? l : l + 1;
+
+			res += (l - left) * leafs;
 
             leafs /= (degree + 1);
 
-			//i = l;
-			l = el <= data[l] ? l : l + 1;
 			// jump to the child node
-			l = l * degree + degree;
+			l = left * (degree + 1) + (l - left + 1) * degree;
 			r = l + degree;
 		}
-
-		//i = data[i] < el ? i + 1 : i;
-
+		
 		return res;
 	}
 
-	void build_btree(std::size_t out, const data_element *idata, std::size_t begin, std::size_t end)
+	void build_btree(std::size_t out, const data_element *idata, std::size_t isize, std::size_t begin, std::size_t end)
 	{
-		// block position (not element position)
-		std::size_t part_size = std::ceil((double)(end - begin) / (degree + 1));
-		
-		for (std::size_t i = begin + part_size - 1; i < end; i += part_size)
+		typedef std::pair<std::size_t, std::size_t> be;
+
+		std::size_t idx = 0;
+		std::queue<be> bfs;
+		bfs.push(be(begin, end));
+
+		while (!bfs.empty())
 		{
-			data[out] = idata[i];
-			++out;
+			auto it = bfs.front();
+			bfs.pop();
+
+			// it.first == begin
+			// it.second == end
+			std::size_t part_size = std::ceil((double)(it.second - it.first) / (degree + 1));
+
+			if (part_size == 0)
+				continue;
+
+			for (std::size_t i = it.first + part_size - 1; i < it.second; i += part_size)
+			{
+				if (i < isize)
+					data[idx] = idata[i];
+				//std::cout << data[idx] << " ";
+				++idx;
+			}
+
+			if (part_size <= 1)
+				continue;
+
+			for (std::size_t i = it.first; i < it.second; i += part_size)
+			{
+				bfs.push(be(i, i + part_size - 1));
+			}
 		}
 
-		if (part_size == 1)
-			return;
 
-		for (std::size_t i = begin; i < end; i += part_size)
+		//// block position (not element position)
+		//std::size_t part_size = std::ceil((double)(end - begin) / (degree + 1));
+		//std::size_t idx = out;
+		//
+		//for (std::size_t i = begin + part_size - 1; i < end; i += part_size)
+		//{
+		//	data[idx] = idata[i];
+		//	std::cout << data[idx] << " ";
+		//	++idx;
+		//}
+
+		//if (part_size == 1)
+		//	return;
+
+		//idx = out * degree + degree;
+		//for (std::size_t i = begin; i < end; i += part_size)
+		//{
+		//	build_btree(idx, idata, i, i + part_size - 1);
+		//	idx += degree;
+		//	//out += (part_size - 1);
+		//}
+	}
+	void print_btree(std::size_t begin, std::size_t end)
+	{
+		std::size_t idx = 0;
+		std::queue<std::size_t> bfs;
+		bfs.push(0);
+
+		std::size_t nodes = 1;
+
+		while (!bfs.empty())
 		{
-			build_btree(out, idata, i, i + part_size - 1);
-			out += (part_size - 1);
+			for (std::size_t j = 0; j < nodes && !bfs.empty(); ++j)
+			{
+				auto it = bfs.front();
+				bfs.pop();
+
+				for (std::size_t i = 0; i < degree; ++i)
+				{
+					if (it + i < data_size)
+					{
+						if (data[it + i] == SIZE_MAX)
+							std::cout << "M ";
+						else
+							std::cout << data[it + i] << " ";
+					}
+					std::size_t ch = it * (degree + 1) + (i + 1) * degree;
+					if (ch < data_size)
+						bfs.push(ch);
+				}
+				std::size_t ch = it * (degree + 1) + (degree + 1) * degree;
+				if (ch < data_size)
+					bfs.push(ch);
+				std::cout << "| ";
+			}
+
+			std::cout << std::endl;
+
+			nodes *= (degree + 1);
 		}
 	}
 	btree_search(const data_element * idata, std::size_t isize) :
-		data(new data_element[isize]), data_size(isize), height(0), degree(2)
+		/*data(new data_element[isize])*/data(nullptr), data_size(isize), height(0), degree(2)
 	{
-		std::copy_n(idata, isize, data);
-
 		std::size_t layer = degree;
 		std::size_t m = degree;
 		std::size_t h = 0;
@@ -710,13 +788,20 @@ public:
 		}
 
 		height = h;
-		//data = new data_element(data_size);
-
-		build_btree(0, idata, 0, m);
-
+		data_size = m;
+		data.reset(new data_element[data_size]);
 		for (std::size_t i = 0; i < data_size; ++i)
+			data[i] = SIZE_MAX;
+		degree1 = degree + 1;
+		total_leafs = std::pow(degree + 1, height);
+
+		build_btree(0, idata, isize, 0, m);
+
+		//print_btree(0, m);
+
+		/*for (std::size_t i = 0; i < data_size; ++i)
 			std::cout << data[i] << " ";
-		std::cout << std::endl;
+		std::cout << std::endl;*/
 	}
 };
 
