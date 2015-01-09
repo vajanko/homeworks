@@ -20,7 +20,7 @@ void test()
 
 	const std::size_t out_size = 27;
 	bsearch_outer outer(inner, out_size);
-	data_element out_data[out_size] = { 23, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
+	data_element out_data[out_size] = { 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
 
 	outer.bucketize(out_data);
 	for (std::size_t i = 0; i < in_size + 1; ++i)
