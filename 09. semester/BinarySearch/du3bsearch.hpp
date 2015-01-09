@@ -554,41 +554,9 @@ public:
 };
 #endif
 
-//class bin_search
-//{
-//private:
-//	std::unique_ptr<data_element[]> data;
-//	std::size_t size;
-//public:
-//	std::size_t find(data_element el) const
-//	{
-//		std::size_t l = 0;
-//		std::size_t r = size;
-//
-//		while (l + 1 < r)
-//		{
-//			std::size_t i = (l + r) >> 1;		// div by 2
-//			if (data[i] > el)
-//				r = i;
-//			else
-//				l = i;
-//		}
-//
-//		return l;
-//	}
-//	bin_search &operator=(bin_search &&val)
-//	{
-//		data = std::move(val.data);
-//		size = val.size;
-//		return *this;
-//	}
-//	bin_search(data_element *data, std::size_t size) : data(data), size(size) { }
-//	bin_search(bin_search &&val) : data(std::move(val.data)), size(val.size) { }
-//};
-
 class block_search {
 private:
-	const std::size_t CACHE_ELEM_SIZE = 4;
+	const std::size_t CACHE_ELEM_SIZE = 1024 * 64;
 
 	std::unique_ptr<data_element[]> data;
 	std::size_t data_size;
@@ -641,7 +609,7 @@ public:
 		if (block_size == 0)
 			block_size = data_size;
 
-		index_size = std::ceil(data_size / block_size) + 1;
+		index_size = std::ceil(data_size / block_size) + data_size % block_size;
 		index.reset(new data_element[index_size]);
 
 		for (std::size_t i = 0; i < index_size; ++i)
