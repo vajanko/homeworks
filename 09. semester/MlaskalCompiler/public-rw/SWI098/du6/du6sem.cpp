@@ -726,7 +726,6 @@ namespace mlc {
 		auto l_type = left.type_;
 		auto r_type = right.type_;
 
-		// TODO: boolean x boolean -> boolean
 		if (identical_type(l_type, bool_type) && identical_type(r_type, bool_type))
 		{	// boolean x boolean -> boolean
 			append_code_block(left, right);
@@ -736,6 +735,9 @@ namespace mlc {
 			{
 			case DUTOKGE_AND:
 				out.code_->append_instruction(new ai::AND());
+				break;
+			case DUTOKGE_OR:
+				out.code_->append_instruction(new ai::OR());
 				break;
 			case DUTOKGE_LT:
 				out.code_->append_instruction(new ai::LTB());
@@ -755,9 +757,6 @@ namespace mlc {
 			case DUTOKGE_EQ:
 				out.code_->append_instruction(new ai::EQB());
 				break;
-			case DUTOKGE_OR:
-				out.code_->append_instruction(new ai::OR());
-				break;
 			default:
 				error(DUERR_SYNTAX, op_line, "unknown binary operator for 'boolean' type");
 				break;
@@ -766,7 +765,7 @@ namespace mlc {
 			out.type_ = bool_type;
 		}
 		else if (identical_type(l_type, str_type) && identical_type(r_type, str_type))
-		{	// string x string -> string
+		{	// string x string -> string/boolean
 			append_code_block(left, right);
 			out.code_ = left.code_;
 
@@ -774,13 +773,36 @@ namespace mlc {
 			{
 			case DUTOKGE_PLUS:
 				out.code_->append_instruction(new ai::ADDS());
+				out.type_ = str_type;
+				break;
+			case DUTOKGE_LT:
+				out.code_->append_instruction(new ai::LTS());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_LE:
+				out.code_->append_instruction(new ai::LES());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_NE:
+				out.code_->append_instruction(new ai::NES());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_GE:
+				out.code_->append_instruction(new ai::GES());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_GT:
+				out.code_->append_instruction(new ai::GTS());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_EQ:
+				out.code_->append_instruction(new ai::EQS());
+				out.type_ = bool_type;
 				break;
 			default:
 				error(DUERR_SYNTAX, op_line, "unknown binary operator for 'string' type");
 				break;
 			}
-
-			out.type_ = str_type;
 		}
 		else if (identical_type(l_type, int_type) && identical_type(r_type, int_type) &&
 			op.dtge_ != DUTOKGE_SOLIDUS)
