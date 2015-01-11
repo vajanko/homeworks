@@ -6,11 +6,14 @@
 #include <algorithm>
 #include <memory>
 #include <xmmintrin.h>
+#include <stdlib.h>
 #include <queue>
 
 typedef unsigned long data_element;
 
 template<typename T> T smaller(T x, T y) { return (x<y) ? x : y; }
+template<typename T> T greater(T x, T y) { return (x>y) ? x : y; }
+template<typename T> T binary_tree_size(T height) { return (1 << height) - 1; }
 
 #undef SEQ_SEARCH
 #undef HEAP_SEARCH
@@ -19,9 +22,10 @@ template<typename T> T smaller(T x, T y) { return (x<y) ? x : y; }
 #undef VEB_SEARCH
 
 class binary_search {
-private:
+public:
 	std::unique_ptr<data_element[]> data;
 	std::size_t isize;
+	std::size_t height;
 public:
     std::size_t get_size() const { return isize; }
     std::size_t find(const data_element el) const
@@ -45,7 +49,53 @@ public:
         return el < data[l] ? l : l + 1;
     }
 
-    binary_search(const data_element * idata, std::size_t isize) : data(isize == 0 ? nullptr : new data_element[isize]), isize(isize)
+	void find_many(const data_element *els, const std::size_t count, std::size_t *results) const
+	{
+		std::size_t *i = new std::size_t[count];
+		std::size_t size = isize >> 1;
+		std::fill(i, i + count, size);
+
+		for (std::size_t j = 0; j < height; ++j)
+		{
+			size = size >> 1;
+
+			for (std::size_t k = 0; k < count; ++k)
+			{
+				if (data[i[k]] > els[k])
+					i[k] = i[k] - size;
+				else
+					i[k] = i[k] + size;
+			}
+		}
+
+		for (std::size_t k = 0; k < count; ++k)
+			results[k] = els[k] < data[i[k]] ? i[k] : i[k] + 1;
+
+		/*std::size_t *l = new std::size_t[count];
+		std::size_t *r = new std::size_t[count];
+		std::size_t i;
+		
+		std::fill(l, l + count, 0);
+		std::fill(r, r + count, isize);
+
+		for (std::size_t j = 0; j < height; ++j)
+		{
+			for (std::size_t k = 0; k < count; ++k)
+			{
+				i = (l[k] + r[k]) >> 1;
+				if (data[i] > els[k])
+					r[k] = i;
+				else
+					l[k] = i;
+			}
+		}
+
+		for (std::size_t k = 0; k < count; ++k)
+			results[k] = els[k] < data[l[k]] ? l[k] : l[k] + 1;*/
+	}
+
+    binary_search(const data_element * idata, std::size_t isize) : data(isize == 0 ? nullptr : new data_element[isize]), isize(isize),
+		height(std::log2(isize))
     {
 		if (data.get() != nullptr)
 			std::copy_n(idata, isize, data.get());
@@ -60,8 +110,7 @@ public:
 	}
 };
 
-#ifdef SEQ_SEARCH
-class bsearch_inner {
+class sequence_search {
 public:
 	data_element* data;
 	std::size_t isize;
@@ -78,12 +127,12 @@ public:
 		return i;
 	}
 
-	bsearch_inner(const data_element * idata, std::size_t isize) : data(new data_element[isize]), isize(isize)
+	sequence_search(const data_element * idata, std::size_t isize) : data(new data_element[isize]), isize(isize)
 	{
 		std::copy_n(idata, isize, data);
 	}
 };
-#endif
+
 #ifdef HEAP_SEARCH
 class bsearch_inner {
 public:
@@ -598,6 +647,39 @@ public:
 		
 		return el < data[0] ? l : l + 1;
 	}
+	std::size_t find(const data_element el, std::size_t left , std::size_t right) const
+	{
+		if (left == right)
+			return left;
+
+		// search in the index
+		std::size_t l = 0;
+		std::size_t r = index_size;
+
+		while (l + 1 < r)
+		{
+			std::size_t i = (l + r) >> 1;		// div by 2
+			if (index[i] > el)
+				r = i;
+			else
+				l = i;
+		}
+
+		l = greater(l * block_size, left);
+		r = smaller(smaller(l + block_size, data_size), right);
+
+		// search in the indexed part
+		while (l + 1 < r)
+		{
+			std::size_t i = (l + r) >> 1;		// div by 2
+			if (data[i] > el)
+				r = i;
+			else
+				l = i;
+		}
+
+		return el < data[0] ? l : l + 1;
+	}
 
 	block_search(const data_element * idata, std::size_t isize) :
 		data(new data_element[isize]), data_size(isize)
@@ -619,12 +701,15 @@ public:
 
 class btree_search {
 private:
-	std::unique_ptr<data_element[]> data;
+	data_element* data;
 	std::size_t data_size;
+
+	std::size_t *missing_elements;	// number of elements missing from right side at i-th level
+	std::size_t height;
 
 	std::size_t degree;
 	std::size_t degree1;
-	std::size_t height;
+	
 	std::size_t total_leafs;
 	std::size_t node_height;
 public:
@@ -634,6 +719,9 @@ public:
 	{
 		std::size_t l = 0;
 		std::size_t r = degree;
+		if (r <= data_size && data[r - 1] < data[l])
+			r -= missing_elements[0];
+
 		std::size_t left = 0;
 		std::size_t res = 0;
 
@@ -654,6 +742,13 @@ public:
 					l = i;
 			}
 
+			if (l + 1 < data_size && data[l + 1] < data[l] && data[l] <= el)
+			{
+				l = el < data[l] ? l : l + 1;
+				res += (l - left) * leafs;
+				return res;
+			}
+
 			l = el < data[l] ? l : l + 1;
 
 			res += (l - left) * leafs;
@@ -661,8 +756,13 @@ public:
 			leafs /= degree1;
 
 			// jump to the child node
-			l = left * degree1 + (l - left + 1) * degree;
+			//l = left * degree1 + (l - left + 1) * degree;
+			l = left + (l + 1) * degree - missing_elements[j];
+				//(j == 0 ? 0 : missing_elements[j - 1]);
 			r = l + degree;
+
+			if (r <= data_size && data[r - 1] < data[l])
+				r -= missing_elements[j + 1];
 		}
 		
 		return res;
@@ -675,6 +775,9 @@ public:
 		std::size_t idx = 0;
 		std::queue<be> bfs;
 		bfs.push(be(begin, end));
+		std::size_t level = 0;
+		std::size_t part_size = std::ceil((double)(end - begin) / (degree + 1));
+		missing_elements[level] = 0;
 
 		while (!bfs.empty())
 		{
@@ -683,7 +786,13 @@ public:
 
 			// it.first == begin
 			// it.second == end
-			std::size_t part_size = std::ceil((double)(it.second - it.first) / (degree + 1));
+			std::size_t tmp = std::ceil((double)(it.second - it.first) / (degree + 1));
+			if (tmp != part_size)
+			{
+				++level;
+				missing_elements[level] = missing_elements[level - 1];
+			}
+			part_size = tmp;
 
 			if (part_size == 0)
 				continue;
@@ -691,9 +800,15 @@ public:
 			for (std::size_t i = it.first + part_size - 1; i < it.second; i += part_size)
 			{
 				if (i < isize)
+				{
 					data[idx] = idata[i];
+					++idx;
+				}
+				else
+				{
+					++missing_elements[level];
+				}
 				//std::cout << data[idx] << " ";
-				++idx;
 			}
 
 			if (part_size <= 1)
@@ -716,10 +831,8 @@ public:
 		//	std::cout << data[idx] << " ";
 		//	++idx;
 		//}
-
 		//if (part_size == 1)
 		//	return;
-
 		//idx = out * degree + degree;
 		//for (std::size_t i = begin; i < end; i += part_size)
 		//{
@@ -735,23 +848,27 @@ public:
 		bfs.push(0);
 
 		std::size_t nodes = 1;
+		std::size_t level = 0;
 
 		while (!bfs.empty())
 		{
 			for (std::size_t j = 0; j < nodes && !bfs.empty(); ++j)
 			{
-				auto it = bfs.front();
+				auto it = bfs.front() - (level == 0 ? 0 : missing_elements[level - 1]);
 				bfs.pop();
 
 				for (std::size_t i = 0; i < degree; ++i)
 				{
-					if (it + i < data_size)
+					/*if (it + i < data_size)
 					{
 						if (data[it + i] == SIZE_MAX)
 							std::cout << "M ";
 						else
 							std::cout << data[it + i] << " ";
-					}
+					}*/
+					if (it + i < data_size)
+						std::cout << data[it + i] << " ";
+
 					std::size_t ch = it * (degree + 1) + (i + 1) * degree;
 					if (ch < data_size)
 						bfs.push(ch);
@@ -763,14 +880,15 @@ public:
 			}
 
 			std::cout << std::endl;
+			level++;
 
 			nodes *= (degree + 1);
 		}
 	}
 	btree_search(const data_element * idata, std::size_t isize) :
-		/*data(new data_element[isize])*/data(nullptr), data_size(isize), height(0), degree(0), degree1(0)
+		data(new data_element[isize]), data_size(isize), height(0), degree(0), degree1(0)
 	{
-		degree = smaller<std::size_t>(1024, isize);
+		degree = smaller<std::size_t>(2, isize);
 		degree1 = degree + 1;
 		node_height = std::ceil(std::log2(degree));
 
@@ -786,14 +904,20 @@ public:
 
 		height = h;
 		total_leafs = std::pow(degree + 1, height);
-		data_size = m;
-		data.reset(new data_element[data_size]);
-		for (std::size_t i = 0; i < data_size; ++i)
-			data[i] = SIZE_MAX;
+		//data_size = m;
+		//data = new data_element[data_size];
+		/*for (std::size_t i = 0; i < data_size; ++i)
+			data[i] = SIZE_MAX;*/
+
+		missing_elements = new std::size_t[height];
 
 		build_btree(0, idata, isize, 0, m);
 
-		//print_btree(0, m);
+		for (std::size_t i = 0; i < data_size; ++i)
+			std::cout << data[i] << " ";
+		std::cout << std::endl;
+
+		print_btree(0, m);
 
 		/*for (std::size_t i = 0; i < data_size; ++i)
 			std::cout << data[i] << " ";
@@ -801,9 +925,102 @@ public:
 	}
 };
 
-//typedef btree_search bsearch_inner;
+#define WORD sizeof(data_element)*8
+std::size_t __inline clz(data_element value)
+{
+	data_element leading_zero = 0;
+
+	if (_BitScanReverse(&leading_zero, value))
+	{
+		return WORD - 1 - leading_zero;
+	}
+	else
+	{
+		// Same remarks as above
+		return WORD;
+	}
+}
+#define fls(x) (WORD-clz(x))
+
+class emde_boas_search
+{
+	// METADATA
+private:
+	// height of the main tree
+	std::size_t height;
+	// total number of nodes in the tree
+	std::size_t nodes;
+
+	// size of top tree at particular depth in a subtree
+	std::size_t *top_size;
+	// size of bottom tree at particular depth in a subtree
+	std::size_t *bottom_size;
+	// depth in the main tree at particular index in the 
+	std::size_t *subtree_depth;
+private:
+	void veb_init(std::size_t height, std::size_t depth)
+	{
+		if (height > 1)
+		{
+			std::size_t bottom_height = height / 2;
+			std::size_t top_height = height - bottom_height;
+
+			// depth index (-1) of bottom sub-trees
+			std::size_t bottom_depth = depth + top_height - 1;
+
+			// number of nodes in the top tree
+			top_size[bottom_depth] = binary_tree_size(top_height);
+
+			// number of nodes in the bottom tree
+			bottom_size[bottom_depth] = binary_tree_size(bottom_height);
+
+			subtree_depth[bottom_depth] = depth;
+
+			veb_init(top_height, depth);
+
+			veb_init(bottom_height, depth + top_height);
+		}
+	}
+	std::size_t bfs_to_veb(std::size_t bfs)
+	{
+		if (bfs <= 0 || bfs > data_size)
+			return 0;
+
+		std::size_t h = height;
+		std::size_t d = 0;
+		
+		/*std::size_t k = fls(bfs);
+		std::size_t p[fls(k)];
+		int i = 0;
+		for (int d = --k; d > 0; d = L.D[d]){
+			int w = v >> (k - d);
+			--d;
+			p[i] = L.T[d] + (w&L.T[d])*L.B[d];
+			++i;
+		}
+		for (p[i] = 1; i > 0; --i)
+			p[i - 1] += p[i];
+		return p[0];*/
+
+		return 0;
+	}
+private:
+	data_element *data;
+	std::size_t data_size;
+
+
+public:
+	std::size_t get_size() { return data_size; }
+
+	emde_boas_search(const data_element * idata, std::size_t isize)
+	{
+		
+	}
+};
+
+typedef btree_search bsearch_inner;
 //typedef binary_search bsearch_inner;
-typedef block_search bsearch_inner;
+//typedef block_search bsearch_inner;
 
 class bsearch_outer {
 private:
@@ -837,6 +1054,45 @@ public:
 
 		// clear bucket_size array
 		std::fill(bucket_size, bucket_size + bucket_count, 0);
+
+		/*inner.find_many(odata, osize, bucket_index);
+		for (std::size_t i = 0; i < osize; ++i)
+		{
+			++bucket_size[bucket_index[i]];
+		}*/
+
+		/*const std::size_t step = 1;
+		for (std::size_t i = 0; i < osize; i += step)
+		{
+			inner.find_many(odata + i, step, bucket_index + i);
+			for (std::size_t k = 0; k < step; ++k)
+			{
+				++bucket_size[bucket_index[i + k]];
+			}
+		}*/
+
+		/*std::size_t isize = inner.get_size();
+		std::size_t l = 0;
+		std::size_t r = isize;
+		std::size_t idx = inner.find(odata[0], l, r);
+		bucket_index[0] = idx;
+		++bucket_size[idx];
+
+		for (std::size_t i = 1; i < osize; ++i)
+		{
+			if (odata[i - 1] > odata[i])
+				r = idx;
+			else
+				r = isize;
+			if (odata[i - 1] < odata[i])
+				l = idx;
+			else
+				l = 0;
+
+			idx = inner.find(odata[i], l, r);
+			bucket_index[i] = idx;
+			++bucket_size[idx];
+		}*/
 
 		for (std::size_t i = 0; i < osize; ++i)
 		{

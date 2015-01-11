@@ -12,15 +12,15 @@
 
 void test()
 {
-	const std::size_t in_size = 23;
+	const std::size_t in_size = 27;
 
-	data_element in_data[in_size] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
+	data_element in_data[in_size] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,22,23,24,25,26,27 };
 
 	bsearch_inner inner(in_data, in_size);
 
-	const std::size_t out_size = 27;
+	const std::size_t out_size = 29;
 	bsearch_outer outer(inner, out_size);
-	data_element out_data[out_size] = { 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 };
+	data_element out_data[out_size] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,28 };
 
 	outer.bucketize(out_data);
 	for (std::size_t i = 0; i < in_size + 1; ++i)
@@ -39,29 +39,33 @@ void test()
 
 int main( int argc, char * * argv)
 {
-	/*test();
+	test();
 	system("pause");
-	return 0;*/
+	return 0;
 
 	generator_list< param_type_4, time_complexity> gl;
 
 #ifdef _DEBUG
-	std::size_t min_inner = 64UL;	
+	//std::size_t min_inner = 64UL;	
+	std::size_t min_inner = 1024 * 4UL;
 	std::size_t step_inner = 4;	
 	//std::size_t max_inner = 4 * 1024UL * 1024UL;
-	std::size_t max_inner = 4 * 1024UL * 4;
+	std::size_t max_inner = 4 * 1024UL;
 	std::size_t min_outer = 1024UL;	
 	std::size_t step_outer = 16;	
 	//std::size_t max_outer = 4 * 1024UL * 1024UL;
 	std::size_t max_outer = 4 * 1024UL * 16;
 	time_complexity target_complexity = 2500000UL;
 #else
-	std::size_t min_inner = 64UL;	
+	//std::size_t min_inner = 64UL;
+	std::size_t min_inner = 4 * 1024UL;
 	std::size_t step_inner = 4;	
-	std::size_t max_inner = 4 * 1024UL * 1024UL;
+	//std::size_t max_inner = 4 * 1024UL * 1024UL;
+	std::size_t max_inner = 4 * 1024UL;
 	std::size_t min_outer = 1024UL;	
 	std::size_t step_outer = 16;	
-	std::size_t max_outer = 4 * 1024UL * 1024UL;
+	//std::size_t max_outer = 4 * 1024UL * 1024UL;
+	std::size_t max_outer = 4 * 1024UL;
 	time_complexity target_complexity = 100000000UL;
 #endif
 
