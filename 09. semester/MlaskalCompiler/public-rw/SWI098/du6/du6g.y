@@ -170,8 +170,8 @@ real_params: expr
 
 /* Expression */
 expr: simple_expr								
-	| simple_expr DUTOK_OPER_REL simple_expr
-	| simple_expr DUTOK_EQ simple_expr
+	| simple_expr DUTOK_OPER_REL simple_expr	{ binary_op(ctx, $$, $1, @2, $2, $3); }
+	| simple_expr DUTOK_EQ simple_expr			{ $2.dtge_ = DUTOKGE_EQ; binary_op(ctx, $$, $1, @2, $2, $3); }
 	;
 simple_expr: terms								
 	| DUTOK_OPER_SIGNADD terms					{ unary_op(ctx, $$, @1, $1, $2); }
@@ -179,7 +179,7 @@ simple_expr: terms
 /* non-empty list of terms sepatated by +,-,or */
 terms: term										
 	| terms DUTOK_OPER_SIGNADD term				{ binary_op(ctx, $$, $1, @2, $2, $3); }
-	| terms DUTOK_OR term						{ binary_op(ctx, $$, $1, @2, $2, $3); }
+	| terms DUTOK_OR term						{ $2.dtge_ = DUTOKGE_OR; binary_op(ctx, $$, $1, @2, $2, $3); }
 	;
 term: factors
 	;

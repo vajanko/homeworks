@@ -732,13 +732,37 @@ namespace mlc {
 			append_code_block(left, right);
 			out.code_ = left.code_;
 
-			// notice that this is a hack - there is no DUTOKGE_OR value
-			// so if there is no AND operation it must be OR
-			if (op.dtge_ == DUTOKGE_AND)
+			switch (op.dtge_)
+			{
+			case DUTOKGE_AND:
 				out.code_->append_instruction(new ai::AND());
-			else
+				break;
+			case DUTOKGE_LT:
+				out.code_->append_instruction(new ai::LTB());
+				break;
+			case DUTOKGE_LE:
+				out.code_->append_instruction(new ai::LEB());
+				break;
+			case DUTOKGE_NE:
+				out.code_->append_instruction(new ai::NEB());
+				break;
+			case DUTOKGE_GE:
+				out.code_->append_instruction(new ai::GEB());
+				break;
+			case DUTOKGE_GT:
+				out.code_->append_instruction(new ai::GTB());
+				break;
+			case DUTOKGE_EQ:
+				out.code_->append_instruction(new ai::EQB());
+				break;
+			case DUTOKGE_OR:
 				out.code_->append_instruction(new ai::OR());
-
+				break;
+			default:
+				error(DUERR_SYNTAX, op_line, "unknown binary operator for 'boolean' type");
+				break;
+			}
+			
 			out.type_ = bool_type;
 		}
 		else if (identical_type(l_type, str_type) && identical_type(r_type, str_type))

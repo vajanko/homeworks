@@ -9,6 +9,10 @@ DU6LVAL.H
 
 #include "literal_storage.hpp"
 #include "dutables.h"
+#include "du6tok.h"
+
+#define DUTOKGE_EQ (DUTOKGE_GT + 1)
+#define DUTOKGE_OR (DUTOKGE_AND + 1)
 
 namespace mlc {
 
