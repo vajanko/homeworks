@@ -179,7 +179,7 @@ simple_expr: terms
 /* non-empty list of terms sepatated by +,-,or */
 terms: term										
 	| terms DUTOK_OPER_SIGNADD term				{ binary_op(ctx, $$, $1, @2, $2, $3); }
-	| terms DUTOK_OR term
+	| terms DUTOK_OR term						{ binary_op(ctx, $$, $1, @2, $2, $3); }
 	;
 term: factors
 	;

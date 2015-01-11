@@ -422,6 +422,138 @@ namespace mlc {
 			break;
 		}
 	}
+	/**
+	* Append EQ instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_eq_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::EQB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::EQI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::EQR());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::EQS());
+			break;
+		}
+	}
+	/**
+	* Append GE instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_ge_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::GEB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::GEI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::GER());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::GES());
+			break;
+		}
+	}
+	/**
+	* Append GT instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_gt_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::GTB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::GTI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::GTR());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::GTS());
+			break;
+		}
+	}
+	/**
+	* Append LE instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_le_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::LEB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::LEI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::LER());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::LES());
+			break;
+		}
+	}
+	/**
+	* Append LT instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_lt_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::LTB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::LTI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::LTR());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::LTS());
+			break;
+		}
+	}
+	/**
+	* Append NE instruction for particular type at the end of given block. This function is valid
+	* only for BOOLEAN, INTEGER, REAL and STRING.
+	*/
+	void append_ne_ins(mlc::icblock_pointer block, mlc::type_pointer tp)
+	{
+		switch (tp->cat())
+		{
+		case type_category::TCAT_BOOL:
+			block->append_instruction(new ai::NEB());
+			break;
+		case type_category::TCAT_INT:
+			block->append_instruction(new ai::NEI());
+			break;
+		case type_category::TCAT_REAL:
+			block->append_instruction(new ai::NER());
+			break;
+		case type_category::TCAT_STR:
+			block->append_instruction(new ai::NES());
+			break;
+		}
+	}
 
 
 	/**
@@ -590,12 +722,24 @@ namespace mlc {
 		auto real_type = ctx->tab->logical_real();
 		auto int_type = ctx->tab->logical_integer();
 		auto str_type = ctx->tab->logical_string();
+		auto bool_type = ctx->tab->logical_bool();
 		auto l_type = left.type_;
 		auto r_type = right.type_;
 
 		// TODO: boolean x boolean -> boolean
+		if (identical_type(l_type, bool_type) && identical_type(r_type, bool_type))
+		{	// boolean x boolean -> boolean
+			append_code_block(left, right);
+			out.code_ = left.code_;
 
-		if (identical_type(l_type, str_type) && identical_type(r_type, str_type))
+			// notice that this is a hack - there is no DUTOKGE_OR value
+			// so if there is no AND operation it must be OR
+			if (op.dtge_ == DUTOKGE_AND)
+				out.code_->append_instruction(new ai::AND());
+			else
+				out.code_->append_instruction(new ai::OR());
+		}
+		else if (identical_type(l_type, str_type) && identical_type(r_type, str_type))
 		{	// string x string -> string
 			append_code_block(left, right);
 			out.code_ = left.code_;
