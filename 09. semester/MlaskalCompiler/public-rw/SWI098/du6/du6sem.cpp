@@ -806,7 +806,7 @@ namespace mlc {
 		}
 		else if (identical_type(l_type, int_type) && identical_type(r_type, int_type) &&
 			op.dtge_ != DUTOKGE_SOLIDUS)
-		{	// integer x integer -> integer
+		{	// integer x integer -> integer/boolean
 			append_code_block(left, right);
 			out.code_ = left.code_;
 
@@ -814,31 +814,58 @@ namespace mlc {
 			{
 			case DUTOKGE_ASTERISK:
 				out.code_->append_instruction(new ai::MULI());
+				out.type_ = int_type;
 				break;
 			case DUTOKGE_DIV:
 				out.code_->append_instruction(new ai::DIVI());
+				out.type_ = int_type;
 				break;
 			case DUTOKGE_MOD:
 				out.code_->append_instruction(new ai::MODI());
+				out.type_ = int_type;
 				break;
 			case DUTOKGE_PLUS:
 				out.code_->append_instruction(new ai::ADDI());
+				out.type_ = int_type;
 				break;
 			case DUTOKGE_MINUS:
 				out.code_->append_instruction(new ai::SUBI());
+				out.type_ = int_type;
+				break;
+			case DUTOKGE_LT:
+				out.code_->append_instruction(new ai::LTI());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_LE:
+				out.code_->append_instruction(new ai::LEI());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_NE:
+				out.code_->append_instruction(new ai::NEI());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_GE:
+				out.code_->append_instruction(new ai::GEI());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_GT:
+				out.code_->append_instruction(new ai::GTI());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_EQ:
+				out.code_->append_instruction(new ai::EQI());
+				out.type_ = bool_type;
 				break;
 			default:
 				// operator is undefined for given operands - SOLIDUS
 				error(DUERR_SYNTAX, op_line, "unknown binary operator for 'integer' type");
 				break;
 			}
-
-			out.type_ = int_type;
 		}
 		else if ((identical_type(l_type, real_type) || identical_type(l_type, int_type)) &&
 			(identical_type(r_type, real_type) || identical_type(r_type, int_type)))
 		{
-			// real/integer x real/integer -> real
+			// real/integer x real/integer -> real/boolean
 
 			// convert all integers to reals
 			if (identical_type(r_type, int_type))
@@ -857,23 +884,49 @@ namespace mlc {
 			{
 			case DUTOKGE_ASTERISK:
 				out.code_->append_instruction(new ai::MULR());
+				out.type_ = real_type;
 				break;
 			case DUTOKGE_SOLIDUS:
 				out.code_->append_instruction(new ai::DIVR());
+				out.type_ = real_type;
 				break;
 			case DUTOKGE_PLUS:
 				out.code_->append_instruction(new ai::ADDR());
+				out.type_ = real_type;
 				break;
 			case DUTOKGE_MINUS:
 				out.code_->append_instruction(new ai::SUBR());
+				out.type_ = real_type;
+				break;
+			case DUTOKGE_LT:
+				out.code_->append_instruction(new ai::LTR());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_LE:
+				out.code_->append_instruction(new ai::LER());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_NE:
+				out.code_->append_instruction(new ai::NER());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_GE:
+				out.code_->append_instruction(new ai::GER());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_GT:
+				out.code_->append_instruction(new ai::GTR());
+				out.type_ = bool_type;
+				break;
+			case DUTOKGE_EQ:
+				out.code_->append_instruction(new ai::EQR());
+				out.type_ = bool_type;
 				break;
 			default:
 				// operator is undefined for given operands - DIV, MOD
 				error(DUERR_CANNOTCONVERT, op_line);
 				break;
 			}
-
-			out.type_ = real_type;
 		}
 		else
 		{
