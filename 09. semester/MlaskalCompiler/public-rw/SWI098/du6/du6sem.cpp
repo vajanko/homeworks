@@ -738,6 +738,8 @@ namespace mlc {
 				out.code_->append_instruction(new ai::AND());
 			else
 				out.code_->append_instruction(new ai::OR());
+
+			out.type_ = bool_type;
 		}
 		else if (identical_type(l_type, str_type) && identical_type(r_type, str_type))
 		{	// string x string -> string
