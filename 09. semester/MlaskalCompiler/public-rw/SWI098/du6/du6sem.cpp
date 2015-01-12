@@ -1186,16 +1186,16 @@ namespace mlc {
 			error(DUERR_NOTLABEL, label_line, *label.int_ci_);
 		}
 	}
-	void if_else_stmt(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &cond, MlaskalLval &stmt1, MlaskalLval &stmt2)
+	void if_else_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt1, MlaskalLval &stmt2)
 	{
-		if (!identical_type(cond.type_, ctx->tab->logical_bool()))
-		{
-			// non-boolean expression the the if statement
+		if (!identical_type(expr.type_, ctx->tab->logical_bool()))
+		{	// non-boolean expression the the if statement
+			error(DUERR_CANNOTCONVERT, expr_line);
 		}
 		else
 		{
 			// evaluate the condition
-			append_code_block(out, cond);
+			append_code_block(out, expr);
 			auto l1 = mlc::new_label(ctx);
 			// conditionaly jump to the else branch
 			out.code_->append_instruction_with_target(new ai::JF(out.code_->end()), l1);
@@ -1214,16 +1214,16 @@ namespace mlc {
 			out.code_->add_label(l2);
 		}
 	}
-	void if_stmt(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &cond, MlaskalLval &stmt)
+	void if_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt)
 	{
-		if (!identical_type(cond.type_, ctx->tab->logical_bool()))
-		{
-			// non-boolean expression the the if statement
+		if (!identical_type(expr.type_, ctx->tab->logical_bool()))
+		{	// non-boolean expression the the if statement
+			error(DUERR_CANNOTCONVERT, expr_line);
 		}
 		else
 		{
 			// evaluate the condition
-			append_code_block(out, cond);
+			append_code_block(out, expr);
 			auto l1 = mlc::new_label(ctx);
 			// conditionaly jump behind the than branch
 			out.code_->append_instruction_with_target(new ai::JF(out.code_->end()), l1);

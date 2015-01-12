@@ -133,8 +133,8 @@ namespace mlc {
 
 	void label_target(MlaskalCtx *ctx, MlaskalLval &out, int label_line, MlaskalLval &label);
 	void label_goto(MlaskalCtx *ctx, MlaskalLval &out, int label_line, MlaskalLval &label);
-	void if_else_stmt(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &cond, MlaskalLval &stmt1, MlaskalLval &stmt2);
-	void if_stmt(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &cond, MlaskalLval &stmt);
+	void if_else_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt1, MlaskalLval &stmt2);
+	void if_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt);
 }
 
 #endif
