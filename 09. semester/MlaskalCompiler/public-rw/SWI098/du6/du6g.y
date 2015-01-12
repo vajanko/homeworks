@@ -137,12 +137,12 @@ stmt: m_stmt
 	| u_stmt
 	;
 /* m_stmt only contains full conditions "if then else" */
-m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt	/* --> boolean expression */
+m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt	{ if_else_stmt(ctx, $$, $2, $4, $6); } /* --> boolean expression */
 	| DUTOK_WHILE expr DUTOK_DO m_stmt						/* --> boolean expression */
 	| DUTOK_UINT DUTOK_COLON stmt_rest	{ label_target(ctx, $$, @1, $1); append_code_block($$, $3);  }	/* statement optionaly starts with 123: ... */ 	
 	| stmt_rest
 	;
-u_stmt: DUTOK_IF expr DUTOK_THEN stmt						/* --> boolean expression */
+u_stmt: DUTOK_IF expr DUTOK_THEN stmt						{ if_stmt(ctx, $$, $2, $4); } /* --> boolean expression */
 	| DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt		/* --> boolean expression */
 	| DUTOK_WHILE expr DUTOK_DO u_stmt						/* --> boolean expression */
 	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt

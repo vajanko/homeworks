@@ -1186,6 +1186,55 @@ namespace mlc {
 			error(DUERR_NOTLABEL, label_line, *label.int_ci_);
 		}
 	}
+	void if_else_stmt(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &cond, MlaskalLval &stmt1, MlaskalLval &stmt2)
+	{
+		if (!identical_type(cond.type_, ctx->tab->logical_bool()))
+		{
+			// non-boolean expression the the if statement
+		}
+		else
+		{
+			// evaluate the condition
+			append_code_block(out, cond);
+			auto l1 = mlc::new_label(ctx);
+			// conditionaly jump to the else branch
+			out.code_->append_instruction_with_target(new ai::JF(out.code_->end()), l1);
+
+			// then branch with jump behind the else branch
+			append_code_block(out, stmt1);
+			auto l2 = mlc::new_label(ctx);
+			out.code_->append_instruction_with_target(new ai::JMP(out.code_->end()), l2);
+
+			// jump here when if expression is false
+			out.code_->add_label(l1);
+
+			append_code_block(out, stmt2);
+
+			// jump here when if expression is false and after the then statement is executed
+			out.code_->add_label(l2);
+		}
+	}
+	void if_stmt(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &cond, MlaskalLval &stmt)
+	{
+		if (!identical_type(cond.type_, ctx->tab->logical_bool()))
+		{
+			// non-boolean expression the the if statement
+		}
+		else
+		{
+			// evaluate the condition
+			append_code_block(out, cond);
+			auto l1 = mlc::new_label(ctx);
+			// conditionaly jump behind the than branch
+			out.code_->append_instruction_with_target(new ai::JF(out.code_->end()), l1);
+
+			// then branch statement
+			append_code_block(out, stmt);
+
+			// jump here when if expression is false
+			out.code_->add_label(l1);
+		}
+	}
 };
 
 /*****************************************/
