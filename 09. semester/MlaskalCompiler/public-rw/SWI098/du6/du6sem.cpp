@@ -1285,6 +1285,99 @@ namespace mlc {
 			out.code_->append_instruction_with_target(new ai::JT(out.code_->end()), l1);
 		}
 	}
+
+	void append_st_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
+	{
+		switch (tsp->kind())
+		{
+		case symbol_kind::SKIND_LOCAL_VARIABLE:
+			append_lst_ins(block, tsp->type(), tsp->access_local_variable()->address());
+			break;
+		case symbol_kind::SKIND_GLOBAL_VARIABLE:
+			append_gst_ins(block, tsp->type(), tsp->access_global_variable()->address());
+			break;
+		default:
+			break;
+		}
+	}
+	void append_ld_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
+	{
+		switch (tsp->kind())
+		{
+		case symbol_kind::SKIND_LOCAL_VARIABLE:
+			append_lld_ins(block, tsp->type(), tsp->access_local_variable()->address());
+			break;
+		case symbol_kind::SKIND_GLOBAL_VARIABLE:
+			append_gld_ins(block, tsp->type(), tsp->access_global_variable()->address());
+			break;
+		default:
+			break;
+		}
+	}
+	void append_for_cond(MlaskalLval &out, MlaskalLval &end, mlc::typed_symbol_pointer loop_tsp, mlc::ic_label jump)
+	{
+		// load loop variable
+		append_ld_var(out.code_, loop_tsp);
+		// evaluate end expression
+		append_code_block(out, end);
+		// compare loop variable and the end expression result
+		out.code_->append_instruction(new ai::EQI());
+		// if end condition is met jump to given location
+		out.code_->append_instruction_with_target(new ai::JT(out.code_->end()), jump);
+	}
+	void for_stmt(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &init, MlaskalLval &dir, MlaskalLval &end, MlaskalLval &stmt)
+	{
+		auto sp = ctx->tab->find_symbol(id.id_ci_);
+		auto tsp = sp->access_typed();
+		auto tp = sp->access_typed()->type();
+		if (tp->cat() != type_category::TCAT_INT)
+		{
+			error(DUERR_FORNOTINTEGER, id_line, *id.id_ci_);
+		}
+		else
+		{
+			create_block_if_empty(out);
+
+			auto l1 = mlc::new_label(ctx);		// loop repeat - before loop body
+			auto l2 = mlc::new_label(ctx);		// loop break - after loop body
+
+			// evaluate the initial expression
+			append_code_block(out, init);
+			append_st_var(out.code_, tsp);	// store expression value to the loop variable
+
+			// break loop if end condition is satisfied
+			//append_for_cond(out, end, tsp, l2);
+			
+			out.code_->add_label(l1);
+
+			// append loop body
+			append_code_block(out, stmt);
+
+			// break loop if end condition is satisfied
+			append_for_cond(out, end, tsp, l2);
+
+			// increment or decrement loop variable by one
+			append_ld_var(out.code_, tsp);
+			out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(1)));
+
+			switch (dir.dtge_)
+			{
+			case DUTOKGE_TO:
+				out.code_->append_instruction(new ai::ADDI());
+				break;
+			case DUTOKGE_DOWNTO:
+				out.code_->append_instruction(new ai::SUBI());
+				break;
+			}
+			append_st_var(out.code_, tsp);
+
+			// jump back at the loop header
+			out.code_->append_instruction_with_target(new ai::JMP(out.code_->end()), l1);
+
+			out.code_->add_label(l2);
+		}
+		/*DUERR_FORNOTLOCAL,*/
+	}
 };
 
 /*****************************************/

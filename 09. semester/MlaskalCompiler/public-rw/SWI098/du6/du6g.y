@@ -145,7 +145,7 @@ m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt	{ if_else_stmt(ctx, $$
 u_stmt: DUTOK_IF expr DUTOK_THEN stmt	{ if_stmt(ctx, $$, @2, $2, $4); } /* --> boolean expression */
 	| DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt		{ if_else_stmt(ctx, $$, @2, $2, $4, $6); } /* --> boolean expression */
 	| DUTOK_WHILE expr DUTOK_DO u_stmt	{ while_stmt(ctx, $$, @2, $2, $4); }	/* --> boolean expression */
-	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
+	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt	{ for_stmt(ctx, $$, @2, $2, $4, $5, $6, $8); }	/* --> ordinal variable identifier, ordinal expression 2x */
 	;
 /* the rest of statement definition except "if" and "while" without leading label */
 stmt_rest: /* empty */
@@ -156,7 +156,7 @@ stmt_rest: /* empty */
 	| DUTOK_GOTO DUTOK_UINT					{ label_goto(ctx, $$, @2, $2); }
 	| DUTOK_BEGIN stmts DUTOK_END			{ append_code_block($$, $2); }
 	| DUTOK_REPEAT stmts DUTOK_UNTIL expr	{ repeat_stmt(ctx, $$, @4, $4, $2); }					/* --> boolean expression */
-	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt		/* --> ordinal variable identifier, ordinal expression 2x */
+	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt	{ for_stmt(ctx, $$, @2, $2, $4, $5, $6, $8); }	/* --> ordinal variable identifier, ordinal expression 2x */
 	;
 /* non-empty list of statements separated by a semicolon */
 stmts: stmt
