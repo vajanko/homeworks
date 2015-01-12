@@ -138,13 +138,13 @@ stmt: m_stmt
 	;
 /* m_stmt only contains full conditions "if then else" */
 m_stmt: DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE m_stmt	{ if_else_stmt(ctx, $$, @2, $2, $4, $6); } /* --> boolean expression */
-	| DUTOK_WHILE expr DUTOK_DO m_stmt						/* --> boolean expression */
+	| DUTOK_WHILE expr DUTOK_DO m_stmt	{ while_stmt(ctx, $$, @2, $2, $4); }	/* --> boolean expression */
 	| DUTOK_UINT DUTOK_COLON stmt_rest	{ label_target(ctx, $$, @1, $1); append_code_block($$, $3);  }	/* statement optionaly starts with 123: ... */ 	
 	| stmt_rest
 	;
-u_stmt: DUTOK_IF expr DUTOK_THEN stmt						{ if_stmt(ctx, $$, @2, $2, $4); } /* --> boolean expression */
-	| DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt		/* --> boolean expression */
-	| DUTOK_WHILE expr DUTOK_DO u_stmt						/* --> boolean expression */
+u_stmt: DUTOK_IF expr DUTOK_THEN stmt	{ if_stmt(ctx, $$, @2, $2, $4); } /* --> boolean expression */
+	| DUTOK_IF expr DUTOK_THEN m_stmt DUTOK_ELSE u_stmt		{ if_else_stmt(ctx, $$, @2, $2, $4, $6); } /* --> boolean expression */
+	| DUTOK_WHILE expr DUTOK_DO u_stmt	{ while_stmt(ctx, $$, @2, $2, $4); }	/* --> boolean expression */
 	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO u_stmt
 	;
 /* the rest of statement definition except "if" and "while" without leading label */
@@ -154,7 +154,7 @@ stmt_rest: /* empty */
 	| DUTOK_IDENTIFIER					 { subprogram_call(ctx, $$, @1, $1, $1); }	/* --> procedure identifier */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	{ subprogram_call(ctx, $$, @1, $1, $3); }	/* --> procedure identifier */
 	| DUTOK_GOTO DUTOK_UINT				 { label_goto(ctx, $$, @2, $2); }
-	| DUTOK_BEGIN stmts DUTOK_END
+	| DUTOK_BEGIN stmts DUTOK_END		 { append_code_block($$, $2); }
 	| DUTOK_REPEAT stmts DUTOK_UNTIL expr					/* --> boolean expression */
 	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt		/* --> ordinal variable identifier, ordinal expression 2x */
 	;

@@ -1186,13 +1186,20 @@ namespace mlc {
 			error(DUERR_NOTLABEL, label_line, *label.int_ci_);
 		}
 	}
-	void if_else_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt1, MlaskalLval &stmt2)
+
+	bool check_boolean_expr(MlaskalCtx *ctx, int expr_line, MlaskalLval &expr)
 	{
 		if (!identical_type(expr.type_, ctx->tab->logical_bool()))
-		{	// non-boolean expression the the if statement
+		{	// non-boolean expression
 			error(DUERR_CANNOTCONVERT, expr_line);
+			return false;
 		}
-		else
+
+		return true;
+	}
+	void if_else_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt1, MlaskalLval &stmt2)
+	{
+		if (check_boolean_expr(ctx, expr_line, expr))
 		{
 			// evaluate the condition
 			append_code_block(out, expr);
@@ -1216,11 +1223,7 @@ namespace mlc {
 	}
 	void if_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt)
 	{
-		if (!identical_type(expr.type_, ctx->tab->logical_bool()))
-		{	// non-boolean expression the the if statement
-			error(DUERR_CANNOTCONVERT, expr_line);
-		}
-		else
+		if (check_boolean_expr(ctx, expr_line, expr))
 		{
 			// evaluate the condition
 			append_code_block(out, expr);
@@ -1233,6 +1236,33 @@ namespace mlc {
 
 			// jump here when if expression is false
 			out.code_->add_label(l1);
+		}
+	}
+	void while_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt)
+	{
+		if (check_boolean_expr(ctx, expr_line, expr))
+		{
+			create_block_if_empty(out);
+
+			auto l1 = mlc::new_label(ctx);
+			// target for the looping
+			out.code_->add_label(l1);
+			
+			// evaluate the condition
+			append_code_block(out, expr);
+
+			// end of the loop body
+			auto l2 = mlc::new_label(ctx);
+			out.code_->append_instruction_with_target(new ai::JF(out.code_->end()), l2);
+
+			// append loop body statement
+			append_code_block(out, stmt);
+
+			// jump back at the loop head
+			out.code_->append_instruction_with_target(new ai::JMP(out.code_->end()), l1);
+
+			// jump here if loop condition isn't true
+			out.code_->add_label(l2);
 		}
 	}
 };
