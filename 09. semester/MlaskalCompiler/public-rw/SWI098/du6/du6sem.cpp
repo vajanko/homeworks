@@ -1265,6 +1265,26 @@ namespace mlc {
 			out.code_->add_label(l2);
 		}
 	}
+	void repeat_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt)
+	{
+		if (check_boolean_expr(ctx, expr_line, expr))
+		{
+			create_block_if_empty(out);
+
+			auto l1 = mlc::new_label(ctx);
+			// target for the looping
+			out.code_->add_label(l1);
+
+			// append loop body statement - execute directly
+			append_code_block(out, stmt);
+
+			// evaluate the condition
+			append_code_block(out, expr);
+
+			// jump back at the loop beginning if condition is true
+			out.code_->append_instruction_with_target(new ai::JT(out.code_->end()), l1);
+		}
+	}
 };
 
 /*****************************************/

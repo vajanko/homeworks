@@ -136,6 +136,7 @@ namespace mlc {
 	void if_else_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt1, MlaskalLval &stmt2);
 	void if_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt);
 	void while_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt);
+	void repeat_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt);
 }
 
 #endif

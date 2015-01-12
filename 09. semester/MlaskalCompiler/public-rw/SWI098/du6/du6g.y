@@ -149,13 +149,13 @@ u_stmt: DUTOK_IF expr DUTOK_THEN stmt	{ if_stmt(ctx, $$, @2, $2, $4); } /* --> b
 	;
 /* the rest of statement definition except "if" and "while" without leading label */
 stmt_rest: /* empty */
-	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr { store_identifier(ctx, $$, @1, $1, $3); } /* --> variable, function identifier */
-	| array_var DUTOK_ASSIGN expr		 { store_element(ctx, $$, @1, $1, $3); }	/* --> array variable */
-	| DUTOK_IDENTIFIER					 { subprogram_call(ctx, $$, @1, $1, $1); }	/* --> procedure identifier */
+	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr	{ store_identifier(ctx, $$, @1, $1, $3); } /* --> variable, function identifier */
+	| array_var DUTOK_ASSIGN expr			{ store_element(ctx, $$, @1, $1, $3); }	/* --> array variable */
+	| DUTOK_IDENTIFIER						{ subprogram_call(ctx, $$, @1, $1, $1); }	/* --> procedure identifier */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	{ subprogram_call(ctx, $$, @1, $1, $3); }	/* --> procedure identifier */
-	| DUTOK_GOTO DUTOK_UINT				 { label_goto(ctx, $$, @2, $2); }
-	| DUTOK_BEGIN stmts DUTOK_END		 { append_code_block($$, $2); }
-	| DUTOK_REPEAT stmts DUTOK_UNTIL expr					/* --> boolean expression */
+	| DUTOK_GOTO DUTOK_UINT					{ label_goto(ctx, $$, @2, $2); }
+	| DUTOK_BEGIN stmts DUTOK_END			{ append_code_block($$, $2); }
+	| DUTOK_REPEAT stmts DUTOK_UNTIL expr	{ repeat_stmt(ctx, $$, @4, $4, $2); }					/* --> boolean expression */
 	| DUTOK_FOR DUTOK_IDENTIFIER DUTOK_ASSIGN expr DUTOK_FOR_DIRECTION expr DUTOK_DO m_stmt		/* --> ordinal variable identifier, ordinal expression 2x */
 	;
 /* non-empty list of statements separated by a semicolon */

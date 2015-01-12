@@ -12,9 +12,13 @@ begin
 		writes('true');}
 
 	i:=4;
-	while (i > 0) do
+	{while (i > 0) do
 	begin
 		writei(i);
 		i:= i - 1;
-	end;
+	end;}
+	repeat
+		writei(i);
+		i:= i - 1
+	until i > 0;
 end.
