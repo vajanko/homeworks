@@ -130,6 +130,9 @@ namespace mlc {
 	void binary_op(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &left, int op_line, MlaskalLval &op, MlaskalLval &right);
 
 	void subprogram_call(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &real_params);
+
+	void label_target(MlaskalCtx *ctx, MlaskalLval &out, int label_line, MlaskalLval &label);
+	void label_goto(MlaskalCtx *ctx, MlaskalLval &out, int label_line, MlaskalLval &label);
 }
 
 #endif

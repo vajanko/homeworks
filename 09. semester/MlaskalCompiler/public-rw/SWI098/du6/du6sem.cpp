@@ -1155,6 +1155,37 @@ namespace mlc {
 		}
 	}
 
+	void label_target(MlaskalCtx *ctx, MlaskalLval &out, int label_line, MlaskalLval &label)
+	{
+		create_block_if_empty(out);
+
+		auto lb = ctx->tab->find_label(label.int_ci_);
+		if (!lb == false)
+		{
+			out.code_->add_label(lb->label());
+			lb->label_found(label_line);
+		}
+		else
+		{	// label number that is not a label
+			error(DUERR_NOTLABEL, label_line, *label.int_ci_);
+		}
+		//out.code_->append_instruction()
+	}
+	void label_goto(MlaskalCtx *ctx, MlaskalLval &out, int label_line, MlaskalLval &label)
+	{
+		create_block_if_empty(out);
+
+		auto lb = ctx->tab->find_label(label.int_ci_);
+		if (!lb == false)
+		{
+			out.code_->append_instruction_with_target(new ai::JMP(out.code_->end()), lb->label());
+			lb->goto_found(label_line);
+		}
+		else
+		{	// goto number that is not a label
+			error(DUERR_NOTLABEL, label_line, *label.int_ci_);
+		}
+	}
 };
 
 /*****************************************/
