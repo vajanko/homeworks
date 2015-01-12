@@ -1262,26 +1262,6 @@ namespace mlc {
 			append_code_block(out, expr);
 			// and jump back before the loop body
 			out.code_->append_instruction_with_target(new ai::JT(out.code_->end()), l1);
-
-			//auto l1 = mlc::new_label(ctx);
-			//// target for the looping
-			//out.code_->add_label(l1);
-			//
-			//// evaluate the condition
-			//append_code_block(out, expr);
-
-			//// end of the loop body
-			//auto l2 = mlc::new_label(ctx);
-			//out.code_->append_instruction_with_target(new ai::JF(out.code_->end()), l2);
-
-			//// append loop body statement
-			//append_code_block(out, stmt);
-
-			//// jump back at the loop head
-			//out.code_->append_instruction_with_target(new ai::JMP(out.code_->end()), l1);
-
-			//// jump here if loop condition isn't true
-			//out.code_->add_label(l2);
 		}
 	}
 	void repeat_stmt(MlaskalCtx *ctx, MlaskalLval &out, int expr_line, MlaskalLval &expr, MlaskalLval &stmt)
@@ -1300,8 +1280,8 @@ namespace mlc {
 			// evaluate the condition
 			append_code_block(out, expr);
 
-			// jump back at the loop beginning if condition is true
-			out.code_->append_instruction_with_target(new ai::JT(out.code_->end()), l1);
+			// jump back at the loop beginning if condition is false
+			out.code_->append_instruction_with_target(new ai::JF(out.code_->end()), l1);
 		}
 	}
 
