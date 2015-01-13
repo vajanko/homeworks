@@ -1313,23 +1313,11 @@ namespace mlc {
 			break;
 		}
 	}
-	void append_for_cond(MlaskalLval &out, MlaskalLval &end, mlc::typed_symbol_pointer loop_tsp, mlc::ic_label jump)
-	{
-		// load loop variable
-		append_ld_var(out.code_, loop_tsp);
-		// evaluate end expression
-		append_code_block(out, end);
-		// compare loop variable and the end expression result
-		out.code_->append_instruction(new ai::EQI());
-		// if end condition is met jump to given location
-		out.code_->append_instruction_with_target(new ai::JT(out.code_->end()), jump);
-	}
 	void for_stmt(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &init, MlaskalLval &dir, MlaskalLval &end, MlaskalLval &stmt)
 	{
 		auto sp = ctx->tab->find_symbol(id.id_ci_);
 		auto tsp = sp->access_typed();
-		auto tp = sp->access_typed()->type();
-		if (tp->cat() != type_category::TCAT_INT)
+		if (tsp->access_typed()->type()->cat() != type_category::TCAT_INT)
 		{
 			error(DUERR_FORNOTINTEGER, id_line, *id.id_ci_);
 		}
@@ -1341,39 +1329,39 @@ namespace mlc {
 			auto l2 = mlc::new_label(ctx);		// loop break - after loop body
 
 			// evaluate the initial expression
-			append_code_block(out, init);
+			append_code_block(out, init);	// execute initialization of loop variable
 			append_st_var(out.code_, tsp);	// store expression value to the loop variable
 
-			// break loop if end condition is satisfied
-			//append_for_cond(out, end, tsp, l2);
-			
+			// jump at the loop end before the break condition - this jump results in possible skipping of loop body
+			out.code_->append_instruction_with_target(new ai::JMP(out.code_->end()), l2);
+
+			// next execution jumps here to run loop body again
 			out.code_->add_label(l1);
 
 			// append loop body
 			append_code_block(out, stmt);
 
-			// break loop if end condition is satisfied
-			append_for_cond(out, end, tsp, l2);
-
 			// increment or decrement loop variable by one
 			append_ld_var(out.code_, tsp);
 			out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(1)));
-
-			switch (dir.dtge_)
-			{
-			case DUTOKGE_TO:
+			if (dir.dtge_ == DUTOKGE_TO)
 				out.code_->append_instruction(new ai::ADDI());
-				break;
-			case DUTOKGE_DOWNTO:
+			else if (dir.dtge_ == DUTOKGE_DOWNTO)
 				out.code_->append_instruction(new ai::SUBI());
-				break;
-			}
 			append_st_var(out.code_, tsp);
 
-			// jump back at the loop header
-			out.code_->append_instruction_with_target(new ai::JMP(out.code_->end()), l1);
-
+			// first execution jumps here to evaluate the break condition only, but not
+			// the increment or decrement
 			out.code_->add_label(l2);
+
+			// evaluate the break conditions
+			append_code_block(out, end);		// evaluate end expression
+			append_ld_var(out.code_, tsp);		// load loop variable
+			if (dir.dtge_ == DUTOKGE_TO)
+				out.code_->append_instruction(new ai::GEI());	// compare loop variable and the end expression result
+			else if (dir.dtge_ == DUTOKGE_DOWNTO)
+				out.code_->append_instruction(new ai::LEI());
+			out.code_->append_instruction_with_target(new ai::JT(out.code_->end()), l1);
 		}
 		/*DUERR_FORNOTLOCAL,*/
 	}
