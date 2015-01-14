@@ -33,6 +33,7 @@ namespace mlc {
 	};
 
 	typedef std::vector<mlc::icblock_pointer> icblock_list;
+	typedef std::vector<mlc::type_pointer> type_list;
 
 		// compiler's semantic value
 		struct MlaskalLval {
@@ -53,7 +54,7 @@ namespace mlc {
 			mlc::type_pointer type_;
 			std::vector<mlc::type_pointer> ranges_;
 			// array indexer expressions
-			icblock_list *exprs_ = NULL;
+			icblock_list exprs_;
 
 			mlc::icblock_pointer code_ = NULL;
 		};

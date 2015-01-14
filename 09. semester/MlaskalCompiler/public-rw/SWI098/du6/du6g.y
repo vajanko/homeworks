@@ -163,8 +163,8 @@ stmts: stmt
 	| stmts DUTOK_SEMICOLON stmt		{ append_code_block($1, $3); }
 	;
 /* non-empty list of expressions separated by a comma */
-real_params: expr
-	| real_params DUTOK_COMMA expr	{ append_code_block($$, $3); }
+real_params: expr { $$.exprs_.push_back($1.code_); $$.identifiers_.push_back($1.id_ci_); }
+	| real_params DUTOK_COMMA expr	{ $$.exprs_.push_back($3.code_); $$.identifiers_.push_back($1.id_ci_); }
 	;
 /* End of statement */
 
@@ -200,7 +200,7 @@ array_var: DUTOK_IDENTIFIER idxs	{ array_element(ctx, $$, @1, $1, $2); }	/* --> 
 	;
 /* array indexer */
 idxs: idx
-	| idxs idx	{ $$.exprs_->insert($$.exprs_->end(), $2.exprs_->begin(), $2.exprs_->end()); }
+	| idxs idx	{ $$.exprs_.insert($$.exprs_.end(), $2.exprs_.begin(), $2.exprs_.end()); }
 	;
 idx: DUTOK_LSBRA exprs DUTOK_RSBRA		{ $$.code_ = $2.code_; $$.type_ = $2.type_; $$.exprs_ = $2.exprs_; }	/* ordinal expressions */
 	;

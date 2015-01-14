@@ -556,6 +556,50 @@ namespace mlc {
 	}
 
 
+	void append_st_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
+	{
+		switch (tsp->kind())
+		{
+		case symbol_kind::SKIND_LOCAL_VARIABLE:
+			append_lst_ins(block, tsp->type(), tsp->access_local_variable()->address());
+			break;
+		case symbol_kind::SKIND_PARAMETER_BY_REFERENCE:
+			append_lst_ins(block, tsp->type(), tsp->access_parameter_by_reference()->address());
+			break;
+		case symbol_kind::SKIND_GLOBAL_VARIABLE:
+			append_gst_ins(block, tsp->type(), tsp->access_global_variable()->address());
+			break;
+		default:
+			break;
+		}
+	}
+	void append_ld_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
+	{
+		switch (tsp->kind())
+		{
+		case symbol_kind::SKIND_LOCAL_VARIABLE:
+			append_lld_ins(block, tsp->type(), tsp->access_local_variable()->address());
+			break;
+		case symbol_kind::SKIND_GLOBAL_VARIABLE:
+			append_gld_ins(block, tsp->type(), tsp->access_global_variable()->address());
+			break;
+		default:
+			break;
+		}
+	}
+	void append_ref_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
+	{
+		switch (tsp->kind())
+		{
+		case symbol_kind::SKIND_LOCAL_VARIABLE:
+			block->append_instruction(new ai::LREF(tsp->access_local_variable()->address()));
+			break;
+		case symbol_kind::SKIND_GLOBAL_VARIABLE:
+			block->append_instruction(new ai::GREF(tsp->access_global_variable()->address()));
+			break;
+		}
+	}
+
 	/**
 	* Create new icblock in the provided MlaskalLval instance of does not exit yet.
 	*/
@@ -622,9 +666,12 @@ namespace mlc {
 		case symbol_kind::SKIND_CONST:
 			append_ldlit_ins(out.code_, out.type_, sp->access_typed()->access_const());
 			break;
-		case symbol_kind::SKIND_FUNCTION:
-			// function without parameters
+		case symbol_kind::SKIND_FUNCTION:	// function without parameters
 			subprogram_call(ctx, out, val_line, val, val);
+			break;
+		case symbol_kind::SKIND_PARAMETER_BY_REFERENCE:
+			out.code_->append_instruction(new ai::LLDP(sp->access_typed()->access_parameter_by_reference()->address()));
+			append_xld_ins(out.code_, out.type_);
 			break;
 		default:
 			error(DUERR_NOTVAR, val_line, *val.id_ci_);
@@ -974,6 +1021,12 @@ namespace mlc {
 		case symbol_kind::SKIND_LOCAL_VARIABLE:
 			append_lst_ins(out.code_, id.type_, sp->access_typed()->access_local_variable()->address());
 			break;
+		case symbol_kind::SKIND_PARAMETER_BY_REFERENCE:
+			// load the address ...
+			out.code_->append_instruction(new ai::LLDP(sp->access_typed()->access_parameter_by_reference()->address()));
+			// ... and then store to that address
+			append_xst_ins(out.code_, id.type_);
+			break;
 		case symbol_kind::SKIND_FUNCTION:
 			if (ctx->tab->nested() && ctx->tab->my_function_name() == id.id_ci_)
 			{
@@ -1025,7 +1078,7 @@ namespace mlc {
 		}
 		out.ranges_.push_back(tp);	// array single element type
 
-		for (auto expr : *idxs.exprs_)
+		for (auto expr : idxs.exprs_)
 		{
 			if (out.code_->empty())
 			{
@@ -1088,8 +1141,9 @@ namespace mlc {
 
 		out.type_ = out.ranges_.front();
 
-		delete idxs.exprs_;
-		idxs.exprs_ = NULL;
+		idxs.exprs_.clear();
+		//delete idxs.exprs_;
+		//idxs.exprs_ = NULL;
 
 		// add index to the array begin pointer
 		out.code_->append_instruction(new ai::ADDP());
@@ -1101,9 +1155,7 @@ namespace mlc {
 	{
 		if (identical_type(expr.type_, ctx->tab->logical_integer()))
 		{
-			if (out.exprs_ == NULL)
-				out.exprs_ = new icblock_list();
-			out.exprs_->push_back(expr.code_);
+			out.exprs_.push_back(expr.code_);
 		}
 		else
 		{	// indexing with non-integral type
@@ -1126,25 +1178,52 @@ namespace mlc {
 				append_init_ins(out.code_, out.type_);
 			}
 
-			// evaluate subprogram arguments if any
-			if (real_params.code_ != NULL)
-				append_code_block(out, real_params);
+			// this is just a fix - code for real params must not be appended at
+			// any other place
+			real_params.code_ = NULL;
 
-			// call subprogram
-			out.code_->append_instruction(new ai::CALL(sp->access_subprogram()->code()));
-
-			// dispose variables used by the subprogram in reverse order
 			auto params = sp->access_subprogram()->parameters();
-			std::vector<mlc::parameter_entry> params_wrap(params->begin(), params->end());
-			for (auto param = params_wrap.rbegin(); param != params_wrap.rend(); ++param)
+			if (real_params.exprs_.size() != params->size())
 			{
-				if (param->partype == parameter_mode::PMODE_BY_VALUE)
+				error(DUERR_PARNUM, id_line, *id.id_ci_);
+			}
+			else
+			{
+				auto ex = real_params.exprs_.begin();
+				auto id = real_params.identifiers_.begin();
+				for (std::size_t i = 0; i < params->size(); ++i)
 				{
-					append_dtor_ins(out.code_, param->ltype);
+					auto param = params->begin() + i;
+					if (param->partype == parameter_mode::PMODE_BY_VALUE)
+					{	// evaluate subprogram argument passed by value
+						icblock_append_delete(out.code_, ex[i]);
+					}
+					else if (param->partype == parameter_mode::PMODE_BY_REFERENCE)
+					{	// get variable address passed by reference
+						auto tsp = ctx->tab->find_symbol(id[i])->access_typed();
+						append_ref_var(out.code_, tsp);
+
+						// TODO: check here whether parameter can be passed by reference
+						// i + 1 can not be passed
+						// DUERR_NOTPARAMVAR
+					}
 				}
-				else if (param->partype == parameter_mode::PMODE_BY_REFERENCE)
+
+				// call subprogram
+				out.code_->append_instruction(new ai::CALL(sp->access_subprogram()->code()));
+
+				// dispose variables used by the subprogram in reverse order
+				std::vector<mlc::parameter_entry> params_wrap(params->begin(), params->end());
+				for (auto param = params_wrap.rbegin(); param != params_wrap.rend(); ++param)
 				{
-					// TODO: du6
+					if (param->partype == parameter_mode::PMODE_BY_VALUE)
+					{
+						append_dtor_ins(out.code_, param->ltype);
+					}
+					else if (param->partype == parameter_mode::PMODE_BY_REFERENCE)
+					{
+						out.code_->append_instruction(new ai::DTORP());
+					}
 				}
 			}
 		}
@@ -1153,6 +1232,9 @@ namespace mlc {
 			// trying to call variable, constant or other identifier
 			error(DUERR_NOTPROC, id_line, *id.id_ci_);
 		}
+
+		//delete real_params.exprs_;
+		real_params.exprs_.clear();
 	}
 
 	void label_target(MlaskalCtx *ctx, MlaskalLval &out, int label_line, MlaskalLval &label)
@@ -1169,7 +1251,6 @@ namespace mlc {
 		{	// label number that is not a label
 			error(DUERR_NOTLABEL, label_line, *label.int_ci_);
 		}
-		//out.code_->append_instruction()
 	}
 	void label_goto(MlaskalCtx *ctx, MlaskalLval &out, int label_line, MlaskalLval &label)
 	{
@@ -1285,34 +1366,7 @@ namespace mlc {
 		}
 	}
 
-	void append_st_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
-	{
-		switch (tsp->kind())
-		{
-		case symbol_kind::SKIND_LOCAL_VARIABLE:
-			append_lst_ins(block, tsp->type(), tsp->access_local_variable()->address());
-			break;
-		case symbol_kind::SKIND_GLOBAL_VARIABLE:
-			append_gst_ins(block, tsp->type(), tsp->access_global_variable()->address());
-			break;
-		default:
-			break;
-		}
-	}
-	void append_ld_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
-	{
-		switch (tsp->kind())
-		{
-		case symbol_kind::SKIND_LOCAL_VARIABLE:
-			append_lld_ins(block, tsp->type(), tsp->access_local_variable()->address());
-			break;
-		case symbol_kind::SKIND_GLOBAL_VARIABLE:
-			append_gld_ins(block, tsp->type(), tsp->access_global_variable()->address());
-			break;
-		default:
-			break;
-		}
-	}
+
 	void for_stmt(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &init, MlaskalLval &dir, MlaskalLval &end, MlaskalLval &stmt)
 	{
 		auto sp = ctx->tab->find_symbol(id.id_ci_);
@@ -1343,7 +1397,7 @@ namespace mlc {
 
 			// increment or decrement loop variable by one
 			append_ld_var(out.code_, tsp);
-			out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(1)));
+			out.code_->append_instruction(new ai::LDLITI(ctx->tab->one()));
 			if (dir.dtge_ == DUTOKGE_TO)
 				out.code_->append_instruction(new ai::ADDI());
 			else if (dir.dtge_ == DUTOKGE_DOWNTO)

@@ -2,7 +2,8 @@
 $rootDir = "C:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\"
 $dir = $rootDir + "public-ro\\mlc\\du6\\tests\\"
 $debugDir = $rootDir + "public-rw\\SWI098\\du6\\Debug\\"
-$exeFile = $debugDir + "mlc.exe"
+$mlcFile = $debugDir + "mlc.exe"
+$vmFile = $rootDir + "public-ro\\common\\tools\\icm.exe"
 
 cd $debugDir
 
@@ -10,12 +11,17 @@ foreach ($sourceFile in [System.IO.Directory]::EnumerateFiles($dir, "*.mls"))
 {
     $outFile1 = $sourceFile.Replace("mls", "out")
     $asmFile1 = $sourceFile.Replace("mls", "moa")
+    $icmFile1 = $sourceFile.Replace("mls", "icmout")
 
     $outFile2 = [System.IO.Path]::GetFileName($outFile1)
     $binFile2 = [System.IO.Path]::GetFileName($binFile1)
     $asmFile2 = [System.IO.Path]::GetFileName($asmFile1)
+    $icmFile2 = [System.IO.Path]::GetFileName($icmFile1)
 
-    & $exeFile $sourceFile $binFile2 "-S$asmFile2" > $outFile2
+    # compile the program
+    & $mlcFile $sourceFile $binFile2 "-S$asmFile2" > $outFile2
+    # run the program
+    # & $vmFile "$debugDir$binFile2" stack > $icmFile2
 
     # $outFile2 = $debugDir + $outFile2;
     # $asmFile2 = $debugDir + $asmFile2;
@@ -24,22 +30,33 @@ foreach ($sourceFile in [System.IO.Directory]::EnumerateFiles($dir, "*.mls"))
     {
         if ([System.IO.File]::ReadAllText($outFile1) -ne [System.IO.File]::ReadAllText($debugDir + $outFile2))
         {
-            echo "$outFile2 - Error"# in file $outFile2"
+            echo "X - $outFile2"
         }
         else
         {
-            echo "$outFile2 - OK"
+            echo ". - $outFile2"
         }
     }
     if (Test-Path $asmFile1)
     {
         if ([System.IO.File]::ReadAllText($asmFile1) -ne [System.IO.File]::ReadAllText($debugDir + $asmFile2))
         {
-            echo "$asmFile2 - Error"
+            echo "X - $asmFile2"
         }
         else
         {
-            echo "$asmFile2 - OK"
+            echo ". - $asmFile2"
+        }
+    }
+    if (Test-Path $icmFile1)
+    {
+        if ([System.IO.File]::ReadAllText($icmFile1) -ne [System.IO.File]::ReadAllText($debugDir + $icmFile2))
+        {
+            echo "X - $icmFile2"
+        }
+        else
+        {
+            echo ". - $icmFile2"
         }
     }
 }
