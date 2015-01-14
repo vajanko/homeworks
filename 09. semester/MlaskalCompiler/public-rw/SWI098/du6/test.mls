@@ -2,6 +2,15 @@ program du4test1;
 {label 1;}
 var b:boolean;
 i:integer;
+procedure inc(var i:integer);
+begin
+	i := i+1;
+end;
+procedure inc2(var i:integer);
+begin
+	inc(i);
+	inc(i);
+end;
 begin
 	
 	{b := true;
@@ -21,6 +30,11 @@ begin
 		writei(i);
 		i:= i - 1
 	until i > 0;}
-	for i:= 1 to 0 do
-		writei(i);
+	{for i:= 1 to 0 do
+		writei(i);}
+
+	i:=1;
+	inc2(i + 1);
+	writei(i);
+
 end.

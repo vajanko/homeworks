@@ -597,6 +597,9 @@ namespace mlc {
 		case symbol_kind::SKIND_GLOBAL_VARIABLE:
 			block->append_instruction(new ai::GREF(tsp->access_global_variable()->address()));
 			break;
+		/*case symbol_kind::SKIND_PARAMETER_BY_REFERENCE:
+			block->append_instruction(new ai::LREF(tsp->access_global_variable()->address()));
+			break;*/
 		}
 	}
 
@@ -1200,12 +1203,46 @@ namespace mlc {
 					}
 					else if (param->partype == parameter_mode::PMODE_BY_REFERENCE)
 					{	// get variable address passed by reference
-						auto tsp = ctx->tab->find_symbol(id[i])->access_typed();
-						append_ref_var(out.code_, tsp);
 
-						// TODO: check here whether parameter can be passed by reference
-						// i + 1 can not be passed
-						// DUERR_NOTPARAMVAR
+						// TODO: rafactoring is needed
+
+						if (id[i] != param->idx) // TODO: how to solve these || ex[i]->size() != 1
+						{
+							error(DUERR_NOTPARAMVAR, id_line);
+
+							// evaluate subprogram argument passed by value
+							icblock_append_delete(out.code_, ex[i]);
+						}
+						else
+						{
+							auto sp = ctx->tab->find_symbol(id[i]);
+							if (sp->kind() == symbol_kind::SKIND_PARAMETER_BY_REFERENCE)
+							{
+								if (ex[i]->size() != 2)
+								{
+									error(DUERR_NOTPARAMVAR, id_line);
+
+									icblock_append_delete(out.code_, ex[i]);
+								}
+								else
+								{
+									out.code_->append_instruction(new ai::LLDP(sp->access_typed()->access_parameter_by_reference()->address()));
+								}
+							}
+							else
+							{
+								if (ex[i]->size() != 1)
+								{
+									error(DUERR_NOTPARAMVAR, id_line);
+
+									icblock_append_delete(out.code_, ex[i]);
+								}
+								else
+								{
+									append_ref_var(out.code_, sp->access_typed());
+								}
+							}
+						}
 					}
 				}
 

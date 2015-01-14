@@ -1697,6 +1697,55 @@ yyreduce:
     { append_code_block((yyval), (yyvsp[(2) - (3)])); block_leave(ctx, (yylsp[(2) - (3)])); ;}
     break;
 
+  case 31:
+
+/* Line 1455 of yacc.c  */
+#line 140 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { if_else_stmt(ctx, (yyval), (yylsp[(2) - (6)]), (yyvsp[(2) - (6)]), (yyvsp[(4) - (6)]), (yyvsp[(6) - (6)])); ;}
+    break;
+
+  case 32:
+
+/* Line 1455 of yacc.c  */
+#line 141 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { while_stmt(ctx, (yyval), (yylsp[(2) - (4)]), (yyvsp[(2) - (4)]), (yyvsp[(4) - (4)])); ;}
+    break;
+
+  case 33:
+
+/* Line 1455 of yacc.c  */
+#line 142 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { label_target(ctx, (yyval), (yylsp[(1) - (3)]), (yyvsp[(1) - (3)])); append_code_block((yyval), (yyvsp[(3) - (3)]));  ;}
+    break;
+
+  case 35:
+
+/* Line 1455 of yacc.c  */
+#line 145 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { if_stmt(ctx, (yyval), (yylsp[(2) - (4)]), (yyvsp[(2) - (4)]), (yyvsp[(4) - (4)])); ;}
+    break;
+
+  case 36:
+
+/* Line 1455 of yacc.c  */
+#line 146 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { if_else_stmt(ctx, (yyval), (yylsp[(2) - (6)]), (yyvsp[(2) - (6)]), (yyvsp[(4) - (6)]), (yyvsp[(6) - (6)])); ;}
+    break;
+
+  case 37:
+
+/* Line 1455 of yacc.c  */
+#line 147 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { while_stmt(ctx, (yyval), (yylsp[(2) - (4)]), (yyvsp[(2) - (4)]), (yyvsp[(4) - (4)])); ;}
+    break;
+
+  case 38:
+
+/* Line 1455 of yacc.c  */
+#line 148 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { for_stmt(ctx, (yyval), (yylsp[(2) - (8)]), (yyvsp[(2) - (8)]), (yyvsp[(4) - (8)]), (yyvsp[(5) - (8)]), (yyvsp[(6) - (8)]), (yyvsp[(8) - (8)])); ;}
+    break;
+
   case 40:
 
 /* Line 1455 of yacc.c  */
@@ -1725,6 +1774,34 @@ yyreduce:
     { subprogram_call(ctx, (yyval), (yylsp[(1) - (4)]), (yyvsp[(1) - (4)]), (yyvsp[(3) - (4)])); ;}
     break;
 
+  case 44:
+
+/* Line 1455 of yacc.c  */
+#line 156 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { label_goto(ctx, (yyval), (yylsp[(2) - (2)]), (yyvsp[(2) - (2)])); ;}
+    break;
+
+  case 45:
+
+/* Line 1455 of yacc.c  */
+#line 157 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { append_code_block((yyval), (yyvsp[(2) - (3)])); ;}
+    break;
+
+  case 46:
+
+/* Line 1455 of yacc.c  */
+#line 158 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { repeat_stmt(ctx, (yyval), (yylsp[(4) - (4)]), (yyvsp[(4) - (4)]), (yyvsp[(2) - (4)])); ;}
+    break;
+
+  case 47:
+
+/* Line 1455 of yacc.c  */
+#line 159 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { for_stmt(ctx, (yyval), (yylsp[(2) - (8)]), (yyvsp[(2) - (8)]), (yyvsp[(4) - (8)]), (yyvsp[(5) - (8)]), (yyvsp[(6) - (8)]), (yyvsp[(8) - (8)])); ;}
+    break;
+
   case 49:
 
 /* Line 1455 of yacc.c  */
@@ -1732,11 +1809,32 @@ yyreduce:
     { append_code_block((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)])); ;}
     break;
 
+  case 50:
+
+/* Line 1455 of yacc.c  */
+#line 166 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { (yyval).exprs_.push_back((yyvsp[(1) - (1)]).code_); (yyval).identifiers_.push_back((yyvsp[(1) - (1)]).id_ci_); ;}
+    break;
+
   case 51:
 
 /* Line 1455 of yacc.c  */
 #line 167 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
-    { append_code_block((yyval), (yyvsp[(3) - (3)])); ;}
+    { (yyval).exprs_.push_back((yyvsp[(3) - (3)]).code_); (yyval).identifiers_.push_back((yyvsp[(1) - (3)]).id_ci_); ;}
+    break;
+
+  case 53:
+
+/* Line 1455 of yacc.c  */
+#line 173 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { binary_op(ctx, (yyval), (yyvsp[(1) - (3)]), (yylsp[(2) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)])); ;}
+    break;
+
+  case 54:
+
+/* Line 1455 of yacc.c  */
+#line 174 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { (yyvsp[(2) - (3)]).dtge_ = DUTOKGE_EQ; binary_op(ctx, (yyval), (yyvsp[(1) - (3)]), (yylsp[(2) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)])); ;}
     break;
 
   case 56:
@@ -1751,6 +1849,13 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 181 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
     { binary_op(ctx, (yyval), (yyvsp[(1) - (3)]), (yylsp[(2) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)])); ;}
+    break;
+
+  case 59:
+
+/* Line 1455 of yacc.c  */
+#line 182 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
+    { (yyvsp[(2) - (3)]).dtge_ = DUTOKGE_OR; binary_op(ctx, (yyval), (yyvsp[(1) - (3)]), (yylsp[(2) - (3)]), (yyvsp[(2) - (3)]), (yyvsp[(3) - (3)])); ;}
     break;
 
   case 62:
@@ -1827,7 +1932,7 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 203 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
-    { (yyval).exprs_->insert((yyval).exprs_->end(), (yyvsp[(2) - (2)]).exprs_->begin(), (yyvsp[(2) - (2)]).exprs_->end()); ;}
+    { (yyval).exprs_.insert((yyval).exprs_.end(), (yyvsp[(2) - (2)]).exprs_.begin(), (yyvsp[(2) - (2)]).exprs_.end()); ;}
     break;
 
   case 74:
@@ -2071,7 +2176,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 2075 "du6g.cpp"
+#line 2180 "du6g.cpp"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
