@@ -545,8 +545,11 @@ namespace mlc {
 			break;
 		}
 	}
-
-
+	/**
+	* Append LST or GST instruction for particular variable scope. This function is valid for
+	* global, local variable and variable passed by reference. Variable type must be
+	* BOOLEAN, INTEGER, REAL or STRING.
+	*/
 	void append_st_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
 	{
 		switch (tsp->kind())
@@ -564,6 +567,10 @@ namespace mlc {
 			break;
 		}
 	}
+	/**
+	* Append LLD or GLD instruction for particular variable scope. This function is valid for
+	* global and local variable. Variable type must be BOOLEAN, INTEGER, REAL or STRING.
+	*/
 	void append_ld_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
 	{
 		switch (tsp->kind())
@@ -578,6 +585,10 @@ namespace mlc {
 			break;
 		}
 	}
+	/**
+	* Append LREF or GREF instruction for particular variable scope. This function is valid for
+	* global and local variable.
+	*/
 	void append_ref_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
 	{
 		switch (tsp->kind())
@@ -588,11 +599,9 @@ namespace mlc {
 		case symbol_kind::SKIND_GLOBAL_VARIABLE:
 			block->append_instruction(new ai::GREF(tsp->access_global_variable()->address()));
 			break;
-		/*case symbol_kind::SKIND_PARAMETER_BY_REFERENCE:
-			block->append_instruction(new ai::LREF(tsp->access_global_variable()->address()));
-			break;*/
 		}
 	}
+
 
 	/**
 	* Create new icblock in the provided MlaskalLval instance of does not exit yet.
@@ -1393,8 +1402,6 @@ namespace mlc {
 			out.code_->append_instruction_with_target(new ai::JF(out.code_->end()), l1);
 		}
 	}
-
-
 	void for_stmt(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &init, MlaskalLval &dir, MlaskalLval &end, MlaskalLval &stmt)
 	{
 		auto sp = ctx->tab->find_symbol(id.id_ci_);
@@ -1418,6 +1425,7 @@ namespace mlc {
 
 			// evaluate the initial expression
 			append_code_block(out, init);	// execute initialization of loop variable
+			// TODO: add possible conversion from real
 			append_st_var(out.code_, tsp);	// store expression value to the loop variable
 
 			// jump at the loop end before the break condition - this jump results in possible skipping of loop body
@@ -1465,14 +1473,14 @@ namespace mlc {
 	DUERR_TYPEMISMATCH,
 	DUERR_NOTPROC,
 	DUERR_NOTARRAY,
-	DUERR_NOTRECORD,
+	.DUERR_NOTRECORD,
 	DUERR_NOTSCALAR,
 	DUERR_PARNUM,
 	DUERR_NOTVAR,
 	DUERR_NOTFNC,
 	DUERR_NOTCONST,
 	DUERR_NOTINTEGRAL,
-	DUERR_CANNOTCONVERT,
+	.DUERR_CANNOTCONVERT,
 	.DUERR_FORNOTLOCAL,
 	.DUERR_FORNOTINTEGER,
 	.DUERR_BADRANGE,
