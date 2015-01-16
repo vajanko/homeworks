@@ -1757,7 +1757,7 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 153 "c:\\Projects\\Homeworks\\09. semester\\MlaskalCompiler\\public-rw\\SWI098\\du6\\du6g.y"
-    { store_element(ctx, (yyval), (yylsp[(1) - (3)]), (yyvsp[(1) - (3)]), (yyvsp[(3) - (3)])); ;}
+    { store_array(ctx, (yyval), (yylsp[(1) - (3)]), (yyvsp[(1) - (3)]), (yyvsp[(3) - (3)])); ;}
     break;
 
   case 42:

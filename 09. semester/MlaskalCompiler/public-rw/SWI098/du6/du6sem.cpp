@@ -602,6 +602,10 @@ namespace mlc {
 		}
 	}
 
+	void append_array_copy(mlc::icblock_pointer block, mlc::type_pointer arr_t, mlc::type_pointer elem_t)
+	{
+
+	}
 
 	/**
 	* Create new icblock in the provided MlaskalLval instance of does not exit yet.
@@ -687,6 +691,7 @@ namespace mlc {
 	*/
 	void load_const_value(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &val, const_type type)
 	{
+		// TODO: refactor
 		create_block_if_empty(out);
 
 		switch (type)
@@ -1042,24 +1047,43 @@ namespace mlc {
 			break;
 		}
 	}
-	void store_element(MlaskalCtx *ctx, MlaskalLval &out, int arr_line, MlaskalLval &arr, MlaskalLval &expr)
+	void store_array(MlaskalCtx *ctx, MlaskalLval &out, int arr_line, MlaskalLval &arr, MlaskalLval &expr)
 	{
 		out.code_ = icblock_create();
-		// first of all we calculate the value to be stored in the array
-		append_code_block(out, expr);
 
-		// then we convert calculate value to the array element type
-		// it is also checked whether assignment is possible
-		store_conversion(out.code_, arr_line, arr.type_, expr.type_);
+		if (expr.type_->cat() == type_category::TCAT_ARRAY)
+		{	// store complex array element - whole array
+			// TODO: transform a1[1] = a2; to 
+			// a[1][3]=a2[3]; 
+			// a[1][4]=a2[4];
 
-		// then calculate the address of the array element
-		append_code_block(out, arr);
+			out.code_->append_instruction(new ai::INITI());		// create new variable for the loop
+			out.code_->append_instruction(new ai::LSTI());
 
-		// and store the value at this address
-		append_xst_ins(out.code_, arr.type_);
+			// calculate address of the first array element
+			append_code_block(out, arr);
+
+			// append_for
+		}
+		else
+		{	// store single array element
+
+			// first of all we calculate the value to be stored in the array
+			append_code_block(out, expr);
+
+			// then we convert calculate value to the array element type
+			// it is also checked whether assignment is possible
+			store_conversion(out.code_, arr_line, arr.type_, expr.type_);
+
+			// then calculate the address of the array element
+			append_code_block(out, arr);
+
+			// and store the value at this address
+			append_xst_ins(out.code_, arr.type_);
+		}
 	}
 	/**
-	* Create code for accessing particualr array element such as arr[1,2][one]
+	* Create code for accessing particular array element such as arr[1,2][one]
 	*/
 	void array_element(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &idxs)
 	{
@@ -1074,18 +1098,20 @@ namespace mlc {
 		}
 
 		// get all ranges types
-		while (tp->cat() == type_category::TCAT_ARRAY)
-		{
-			out.ranges_.push_back(tp);
-			tp = tp->access_array()->element_type();
-		}
-		out.ranges_.push_back(tp);	// array single element type
+		//while (tp->cat() == type_category::TCAT_ARRAY)
+		//{
+		//	out.ranges_.push_back(tp);
+		//	tp = tp->access_array()->element_type();
+		//}
+		//out.ranges_.push_back(tp);	// array single element type
 
 		for (auto expr : idxs.exprs_)
 		{
 			if (out.code_->empty())
-			{
-				// access array beginning address
+			{	// access array beginning address
+
+				// TODO: refactor
+				//append_ref_var(out.code_, sp->access_typed());
 				switch (sp->kind())
 				{
 				case symbol_kind::SKIND_GLOBAL_VARIABLE:
@@ -1103,7 +1129,7 @@ namespace mlc {
 				icblock_append_delete(out.code_, expr);
 
 				// substract lower bound
-				tp = out.ranges_.front();
+				//tp = out.ranges_.front();
 				auto rt = tp->access_array()->index_type();
 				auto lb = rt->access_range()->lowerBound();
 				out.code_->append_instruction(new ai::LDLITI(lb));
@@ -1111,7 +1137,10 @@ namespace mlc {
 			}
 			else
 			{
-				tp = out.ranges_.front();
+				// TODO: check whether current tp is array, otherwise we are indexing a non-array variable
+
+				tp = tp->access_array()->element_type();
+				//tp = out.ranges_.front();
 				auto rt = tp->access_array()->index_type();
 
 				// multiply previous value by range size
@@ -1133,20 +1162,15 @@ namespace mlc {
 
 				// and add to the previous result
 				out.code_->append_instruction(new ai::ADDI());
-
-				// remove type at the beginning
-				//out.ranges_.erase(out.ranges_.begin());
 			}
 
 			// remove type at the beginning
-			out.ranges_.erase(out.ranges_.begin());
+			// out.ranges_.erase(out.ranges_.begin());
 		}
 
-		out.type_ = out.ranges_.front();
-
+		out.type_ = tp->access_array()->element_type();
+		//out.type_ = out.ranges_.front();
 		idxs.exprs_.clear();
-		//delete idxs.exprs_;
-		//idxs.exprs_ = NULL;
 
 		// add index to the array begin pointer
 		out.code_->append_instruction(new ai::ADDP());

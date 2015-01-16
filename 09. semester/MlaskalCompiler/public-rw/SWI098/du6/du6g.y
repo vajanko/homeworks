@@ -150,7 +150,7 @@ u_stmt: DUTOK_IF expr DUTOK_THEN stmt	{ if_stmt(ctx, $$, @2, $2, $4); } /* --> b
 /* the rest of statement definition except "if" and "while" without leading label */
 stmt_rest: /* empty */
 	| DUTOK_IDENTIFIER DUTOK_ASSIGN expr	{ store_identifier(ctx, $$, @1, $1, $3); } /* --> variable, function identifier */
-	| array_var DUTOK_ASSIGN expr			{ store_element(ctx, $$, @1, $1, $3); }	/* --> array variable */
+	| array_var DUTOK_ASSIGN expr			{ store_array(ctx, $$, @1, $1, $3); }	/* --> array variable */
 	| DUTOK_IDENTIFIER						{ subprogram_call(ctx, $$, @1, $1, $1); }	/* --> procedure identifier */
 	| DUTOK_IDENTIFIER DUTOK_LPAR real_params DUTOK_RPAR	{ subprogram_call(ctx, $$, @1, $1, $3); }	/* --> procedure identifier */
 	| DUTOK_GOTO DUTOK_UINT					{ label_goto(ctx, $$, @2, $2); }
