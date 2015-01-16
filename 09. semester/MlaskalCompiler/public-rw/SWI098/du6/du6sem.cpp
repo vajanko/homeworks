@@ -24,14 +24,6 @@ namespace mlc {
 
 		return tp;
 	}
-	/**
-	*  Gets type of an identifier (variable, function, constant)
-	*/
-	/*type_pointer get_symbol_type(MlaskalCtx *ctx, mlc::ls_id_type::const_pointer id)
-	{
-	auto sp = ctx->tab->find_symbol(id);
-	return sp->access_typed()->type();
-	}*/
 
 	void procedure_declare(MlaskalCtx *ctx, MlaskalLval &out, int proc_line, MlaskalLval &proc, MlaskalLval &params)
 	{
@@ -89,10 +81,9 @@ namespace mlc {
 	void range_declare(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &low, int high_line, MlaskalLval &high)
 	{
 		if (*low.int_ci_ > *high.int_ci_)
-		{	// bad range
 			error(DUERR_BADRANGE, high_line);
-		}
 
+		// even if the range is bad go on as nothing has happend
 		auto l = ctx->tab->ls_int().add(*low.int_ci_);
 		auto h = ctx->tab->ls_int().add(*high.int_ci_);
 		out.type_ = ctx->tab->create_range_type(l, h);
@@ -1408,7 +1399,13 @@ namespace mlc {
 	{
 		auto sp = ctx->tab->find_symbol(id.id_ci_);
 		auto tsp = sp->access_typed();
-		if (tsp->access_typed()->type()->cat() != type_category::TCAT_INT)
+
+		if (sp->kind() != symbol_kind::SKIND_GLOBAL_VARIABLE && sp->kind() != symbol_kind::SKIND_LOCAL_VARIABLE
+			&& sp->kind() != symbol_kind::SKIND_PARAMETER_BY_REFERENCE)
+		{	// identifier is not a variable, it is either undefined or a function, constant or procedure identifier
+			error(DUERR_FORNOTLOCAL, id_line, *id.id_ci_);
+		}
+		else if (tsp->access_typed()->type()->cat() != type_category::TCAT_INT)
 		{
 			error(DUERR_FORNOTINTEGER, id_line, *id.id_ci_);
 		}
@@ -1454,8 +1451,35 @@ namespace mlc {
 				out.code_->append_instruction(new ai::LEI());
 			out.code_->append_instruction_with_target(new ai::JT(out.code_->end()), l1);
 		}
-		/*DUERR_FORNOTLOCAL,*/
 	}
+	/*
+	DUERR_SEMERROR = 6000,
+	DUERR_DUPSYM,
+	DUERR_DUPLABEL,
+	DUERR_NOTTYPE,
+	DUERR_NOTORDINAL,
+	DUERR_NOTLABEL,
+	DUERR_NOTMINE,
+	DUERR_NOTLVALUE,
+	DUERR_NOTPARAMVAR,
+	DUERR_TYPEMISMATCH,
+	DUERR_NOTPROC,
+	DUERR_NOTARRAY,
+	DUERR_NOTRECORD,
+	DUERR_NOTSCALAR,
+	DUERR_PARNUM,
+	DUERR_NOTVAR,
+	DUERR_NOTFNC,
+	DUERR_NOTCONST,
+	DUERR_NOTINTEGRAL,
+	DUERR_CANNOTCONVERT,
+	.DUERR_FORNOTLOCAL,
+	.DUERR_FORNOTINTEGER,
+	.DUERR_BADRANGE,
+	.DUERR_DUPLABELDEF,
+	.DUERR_MISLABELDEF,
+	DUERR_NOTFIELD,
+	*/
 };
 
 /*****************************************/
