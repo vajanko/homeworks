@@ -261,7 +261,7 @@ namespace mlc {
 	}
 	/**
 	* Append GLD instruction for particular type at the end of given block. This function is valid
-	* only for BOOLEAN, INTEGER, REAL and STRING.
+	* only for BOOLEAN, INTEGER, REAL, STRING and ARRAY
 	*/
 	void append_gld_ins(mlc::icblock_pointer block, mlc::type_pointer tp, mlc::stack_address adr)
 	{
@@ -279,11 +279,14 @@ namespace mlc {
 		case type_category::TCAT_STR:
 			block->append_instruction(new ai::GLDS(adr));
 			break;
+		case type_category::TCAT_ARRAY:
+			block->append_instruction(new ai::GREF(adr));
+			break;
 		}
 	}
 	/**
 	* Append LLD instruction for particular type at the end of given block. This function is valid
-	* only for BOOLEAN, INTEGER, REAL and STRING.
+	* only for BOOLEAN, INTEGER, REAL, STRING and ARRAY.
 	*/
 	void append_lld_ins(mlc::icblock_pointer block, mlc::type_pointer tp, mlc::stack_address adr)
 	{
@@ -300,6 +303,9 @@ namespace mlc {
 			break;
 		case type_category::TCAT_STR:
 			block->append_instruction(new ai::LLDS(adr));
+			break;
+		case type_category::TCAT_ARRAY:
+			block->append_instruction(new ai::LREF(adr));
 			break;
 		}
 	}
@@ -1008,14 +1014,21 @@ namespace mlc {
 	}
 	void store_identifier(MlaskalCtx *ctx, MlaskalLval &out, int id_line, MlaskalLval &id, MlaskalLval &expr)
 	{
-		//icblock_pointer block = expr.code_;
-		out.code_ = expr.code_;
-
 		/* --> variable, function identifier */
 		// find assigned symbol
 		auto sp = ctx->tab->find_symbol(id.id_ci_);
 		// find out type of the assigned symbol
 		id.type_ = sp->access_typed()->type();
+
+		if (id.type_->cat() == type_category::TCAT_ARRAY)
+		{
+			create_block_if_empty(id);
+			append_ref_var(id.code_, sp->access_typed());
+			store_array(ctx, out, id_line, id, expr);
+			return;
+		}
+
+		out.code_ = expr.code_;
 
 		// possible conversion in the assignment
 		// it is also checked whether assignment is possible
@@ -1057,13 +1070,56 @@ namespace mlc {
 			// a[1][3]=a2[3]; 
 			// a[1][4]=a2[4];
 
-			out.code_->append_instruction(new ai::INITI());		// create new variable for the loop
-			out.code_->append_instruction(new ai::LSTI());
+			// create new variable for the loop
+			auto loop_id = ctx->tab->ls_id().add("abc");
+			symbol_pointer loop_var = ctx->tab->find_symbol(loop_id);
+			if (loop_var->kind() == symbol_kind::SKIND_UNDEF)
+				loop_var = ctx->tab->add_var(arr_line, loop_id, ctx->tab->logical_integer());
+			auto tsp = loop_var->access_typed();
 
-			// calculate address of the first array element
+			auto rt = expr.type_->access_array()->index_type();
+			auto rn = rt->access_range();
+			auto count = ctx->tab->ls_int().add(*rn->upperBound() - *rn->lowerBound() + 1);
+
+			auto l1 = mlc::new_label(ctx);
+			auto l2 = mlc::new_label(ctx);
+
+			// initialize the loop variable with zero
+			//out.code_->append_instruction(new ai::INITI());
+			out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(0)));
+			append_st_var(out.code_, tsp);
+
+			out.code_->append_instruction_with_target(new ai::JMP(out.code_->end()), l2);
+
+			out.code_->add_label(l1);
+
+			// calculate address of the first expression element and add current loop index
+			append_code_block(out, expr);
+			append_ld_var(out.code_, tsp);
+			out.code_->append_instruction(new ai::ADDP());
+			out.code_->append_instruction(new ai::XLDI());
+
+			// calculate address of the first array element and add current loop index
 			append_code_block(out, arr);
+			append_ld_var(out.code_, tsp);
+			out.code_->append_instruction(new ai::ADDP());
 
-			// append_for
+			// store current element of array on the left to the assigned array
+			out.code_->append_instruction(new ai::XSTI());
+
+			// add 1 to loop variable
+			append_ld_var(out.code_, tsp);
+			out.code_->append_instruction(new ai::LDLITI(ctx->tab->one()));
+			out.code_->append_instruction(new ai::ADDI());
+			append_st_var(out.code_, tsp);
+
+			out.code_->add_label(l2);
+
+			// for loop condition
+			append_ld_var(out.code_, tsp);
+			out.code_->append_instruction(new ai::LDLITI(count));		// TODO: calculate total number
+			out.code_->append_instruction(new ai::EQI());
+			out.code_->append_instruction_with_target(new ai::JF(out.code_->end()), l1);
 		}
 		else
 		{	// store single array element
@@ -1097,39 +1153,22 @@ namespace mlc {
 			return;
 		}
 
-		// get all ranges types
-		//while (tp->cat() == type_category::TCAT_ARRAY)
-		//{
-		//	out.ranges_.push_back(tp);
-		//	tp = tp->access_array()->element_type();
-		//}
-		//out.ranges_.push_back(tp);	// array single element type
-
 		for (auto expr : idxs.exprs_)
 		{
 			if (out.code_->empty())
 			{	// access array beginning address
 
-				// TODO: refactor
-				//append_ref_var(out.code_, sp->access_typed());
-				switch (sp->kind())
+				if (sp->kind() != symbol_kind::SKIND_GLOBAL_VARIABLE && sp->kind() != symbol_kind::SKIND_LOCAL_VARIABLE)
 				{
-				case symbol_kind::SKIND_GLOBAL_VARIABLE:
-					out.code_->append_instruction(new ai::GREF(sp->access_typed()->access_global_variable()->address()));
-					break;
-				case symbol_kind::SKIND_LOCAL_VARIABLE:
-					out.code_->append_instruction(new ai::LREF(sp->access_typed()->access_local_variable()->address()));
-					break;
-				default:
 					error(DUERR_NOTVAR, id_line, *id.id_ci_);
 					return;
 				}
+				append_ref_var(out.code_, sp->access_typed());
 
 				// calculate index expression
 				icblock_append_delete(out.code_, expr);
 
 				// substract lower bound
-				//tp = out.ranges_.front();
 				auto rt = tp->access_array()->index_type();
 				auto lb = rt->access_range()->lowerBound();
 				out.code_->append_instruction(new ai::LDLITI(lb));
@@ -1140,18 +1179,14 @@ namespace mlc {
 				// TODO: check whether current tp is array, otherwise we are indexing a non-array variable
 
 				tp = tp->access_array()->element_type();
-				//tp = out.ranges_.front();
 				auto rt = tp->access_array()->index_type();
 
 				// multiply previous value by range size
 				auto lb = rt->access_range()->lowerBound();
 				auto ub = rt->access_range()->upperBound();
 				// (ub - lb + 1)
-				out.code_->append_instruction(new ai::LDLITI(ub));
-				out.code_->append_instruction(new ai::LDLITI(lb));
-				out.code_->append_instruction(new ai::SUBI());
-				out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(1)));
-				out.code_->append_instruction(new ai::ADDI());
+				auto dim = ctx->tab->ls_int().add(*ub - *lb + 1);
+				out.code_->append_instruction(new ai::LDLITI(dim));
 
 				out.code_->append_instruction(new ai::MULI());
 
@@ -1163,14 +1198,26 @@ namespace mlc {
 				// and add to the previous result
 				out.code_->append_instruction(new ai::ADDI());
 			}
-
-			// remove type at the beginning
-			// out.ranges_.erase(out.ranges_.begin());
 		}
 
-		out.type_ = tp->access_array()->element_type();
-		//out.type_ = out.ranges_.front();
+		tp = tp->access_array()->element_type();
+		out.type_ = tp;
 		idxs.exprs_.clear();
+
+		while (tp->cat() == type_category::TCAT_ARRAY)
+		{
+			// multiply previous value by range size
+			auto rt = tp->access_array()->index_type();
+			auto lb = rt->access_range()->lowerBound();
+			auto ub = rt->access_range()->upperBound();
+			// (ub - lb + 1)
+			auto dim = ctx->tab->ls_int().add(*ub - *lb + 1);
+			out.code_->append_instruction(new ai::LDLITI(dim));
+
+			out.code_->append_instruction(new ai::MULI());
+
+			tp = tp->access_array()->element_type();
+		}
 
 		// add index to the array begin pointer
 		out.code_->append_instruction(new ai::ADDP());
