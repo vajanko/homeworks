@@ -1205,8 +1205,8 @@ public:
 class table_search
 {
 private:
-	const std::size_t lut_bits = 16;
-	const std::size_t shift_bits = 32 - lut_bits;
+	std::size_t lut_bits = 16;
+	std::size_t shift_bits = 32 - lut_bits;
 
 	std::vector<std::pair<std::size_t, std::size_t>> lut;
 	data_element min_elem;
@@ -1244,8 +1244,10 @@ public:
 	table_search(const data_element * idata, std::size_t isize) :
 		data_size(isize), data(new data_element[isize]),
 		min_elem(idata[0]), max_elem(idata[isize - 1])
-		//table_size(idata[isize - 1] - idata[0] + 1), table(new std::size_t[idata[isize - 1] - idata[0]] + 1)
 	{
+		lut_bits = isize >= (1 << 18) ? 24 : 16;
+		shift_bits = 32 - lut_bits;
+
 		std::copy_n(idata, isize, data);
 
 		const std::size_t lut_size = 1 << lut_bits;
@@ -1270,8 +1272,8 @@ public:
 		}
 
 		// set remaining thresholds that couldn't be found
-		for (std::size_t i = thresh; i < lut.size(); i++)
-			lut[i] = { last, isize - 1 };
+		/*for (std::size_t i = thresh; i < lut.size(); i++)
+			lut[i] = { last, isize - 1 };*/
 	}
 };
 
