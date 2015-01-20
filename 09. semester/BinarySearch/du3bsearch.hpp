@@ -8,6 +8,7 @@
 #include <xmmintrin.h>
 #include <stdlib.h>
 #include <queue>
+#include <map>
 
 typedef unsigned long data_element;
 
@@ -15,10 +16,6 @@ template<typename T> T smaller(T x, T y) { return (x<y) ? x : y; }
 template<typename T> T greater(T x, T y) { return (x>y) ? x : y; }
 template<typename T> T binary_tree_size(T height) { return (1 << height) - 1; }
 
-#undef SEQ_SEARCH
-#undef HEAP_SEARCH
-#undef PBIN_SEARCH
-#undef BST_SEARCH
 #undef VEB_SEARCH
 
 class binary_search {
@@ -133,221 +130,6 @@ public:
 	}
 };
 
-#ifdef HEAP_SEARCH
-class bsearch_inner {
-public:
-	data_element* data;
-	std::size_t isize;
-
-	std::size_t find(const data_element el) const
-	{
-		std::size_t i = 0;
-
-		while (i < isize && data[i] < el)
-		{
-			std::size_t l = 2 * i + 1;
-			std::size_t r = 2 * i + 2;
-			if (r < isize && data[r] <= el)
-			{
-				i = r;
-			}
-			else if (l < isize)
-			{
-				i = l;
-			}
-			else
-			{
-				++i;
-				//break;
-			}
-		}
-
-		if (el >= data[i])
-			++i;
-
-		return i;
-	}
-
-	bsearch_inner(const data_element * idata, std::size_t isize) : data(new data_element[isize]), isize(isize)
-	{
-		std::copy_n(idata, isize, data);
-	}
-};
-#endif
-#ifdef PBIN_SEARCH
-class bsearch_inner {
-public:
-	data_element* data;
-	std::size_t isize;
-
-	//std::size_t find(const __m128i el) const
-	void find(const data_element *el, std::size_t i[]) const
-	{
-		/*__m128i l = _mm_setzero_si128();
-		__m128i r = _mm_setr_epi32(isize, isize, isize, isize);
-
-		__m128i s = _mm_sub_epi32(r, l);
-		__m128i d = _mm_srai_epi32(s, 1);
-		__m128i i = _mm_add_epi32(l, d);*/
-
-		//while (&& _mm_cmplt_epi32(_mm_add_epi32(l, 1), r))
-
-		/*std::size_t l = 0;
-		std::size_t r = isize;
-		std::size_t i = l + (r - l) / 2;*/
-		std::size_t l[2] = { 0, 0 };
-		std::size_t r[2] = { isize, isize };
-		i[0] = isize / 2;
-		i[1] = isize / 2;
-
-		while (l[0] + 1 < r[0] && l[1] + 1 < r[1])
-		{
-			if (data[i[0]] > el[0])
-			{
-				r[0] = i[0];
-			}
-			else
-			{
-				l[0] = i[0];
-			}
-			i[0] = l[0] + (r[0] - l[0]) / 2;
-
-			if (data[i[1]] > el[1])
-			{
-				r[1] = i[1];
-			}
-			else
-			{
-				l[1] = i[1];
-			}
-			i[1] = l[1] + (r[1] - l[1]) / 2;
-		}
-
-		if (el[0] >= data[i[0]])
-			++i[0];
-		if (el[1] >= data[i[1]])
-			++i[1];
-	}
-
-	bsearch_inner(const data_element * idata, std::size_t isize) : data(new data_element[isize]), isize(isize)
-	{
-		std::copy_n(idata, isize, data);
-	}
-	/*~bsearch_inner()
-	{
-	delete[] data;
-	}*/
-
-};
-#endif
-#ifdef BST_SEARCH
-class bsearch_inner {
-public:
-	data_element* data;
-	std::size_t isize;
-	std::size_t tsize;
-
-	void init() const
-	{
-		//for (std::size_t i = isize; i < tsize; ++i)
-		//{
-		//	//data[i] <- clear
-		//}
-	}
-	std::size_t find(const data_element el) const
-	{
-		std::size_t i = 0;	// root
-		std::size_t l;
-		std::size_t r;
-
-		while (i < tsize)
-		{
-			l = i * 2 + 1;
-
-			if (l < tsize && data[i] > el)
-			{
-				i = l;
-			}
-			else if (l + 1 < tsize)
-			{
-				r = l + 1;
-				i = r;
-			}
-			else
-			{
-				return data[i];
-			}
-		}
-
-		return i;
-	}
-
-	void build_bst(const data_element *idata, std::size_t isize, data_element *data) const
-	{
-		data_element leaf_idx = 0;
-		std::vector<data_element> wdata(idata, idata + isize);
-
-		std::size_t m = 0;
-		while ((2 << m) - 1 <= isize)
-			++m;
-
-		// now holds: isize < 2^m -1 and "m" is minimal
-		--m;
-		std::size_t leafs = isize - (2 << m) + 1;
-
-		std::size_t step = 2;
-		long pos = isize - 1;
-
-		// remove the leafs
-		for (long i = leafs * step - 2; i >= 0; i -= step)
-		{
-			data[pos] = wdata.at(i);
-			--pos;
-		}
-		for (long i = leafs * step - 2; i >= 0; i -= step)
-		{
-			wdata.erase(wdata.begin() + i);
-		}
-
-		// now wdata has size 2^m -1
-		while (pos >= 0)
-		{
-			for (long i = wdata.size() - 1; i >= 0; i -= step)
-			{
-				data[pos] = wdata.at(i);
-				--pos;
-			}
-			for (long i = wdata.size() - 1; i >= 0; i -= step)
-			{
-				wdata.erase(wdata.begin() + i);
-			}
-		}
-
-		// init leafs
-		for (std::size_t i = isize; i < tsize - leafs - 1; ++i)
-			data[i] = i - isize + leafs + 1;
-
-		for (std::size_t i = 0; i < leafs + 1; ++i)
-			data[tsize - leafs - 1 + i] = i;
-	}
-	bsearch_inner(const data_element * idata, std::size_t isize) : isize(isize), tsize(isize * 2 + 1), data(new data_element[isize * 2 + 1])
-	{
-		build_bst(idata, isize, data);
-
-		std::size_t m = 0;
-		while ((2 << m) < isize)
-			++m;
-
-		/*for (std::size_t i = 0; i < tsize; ++i)
-			std::cout << data[i] << " ";
-		std::cout << std::endl;*/
-	}
-	~bsearch_inner()
-	{
-		//delete[] data;
-	}
-};
-#endif
 #ifdef VEB_SEARCH
 
 class vEBTraverser {
@@ -925,22 +707,348 @@ public:
 	}
 };
 
-#define WORD sizeof(data_element)*8
-std::size_t __inline clz(data_element value)
+class index_search
 {
-	data_element leading_zero = 0;
+private:
+	std::size_t CACHE_SIZE[3];
+	std::size_t block_size[3];
+	std::size_t index_size[3];
 
-	if (_BitScanReverse(&leading_zero, value))
+	data_element* data;
+	std::size_t data_size;
+
+public:
+	std::size_t get_size() const { return data_size; }
+
+	std::size_t find(const data_element el) const
 	{
-		return WORD - 1 - leading_zero;
+		// search in the index
+		std::size_t l = 0;
+		std::size_t r = index_size[0];
+
+		while (l + 1 < r)
+		{
+			std::size_t i = (l + r) >> 1;		// div by 2
+			if (data[i] > el)
+				r = i;
+			else
+				l = i;
+		}
+
+		if (el < data[l])
+			return l;
+
+		std::size_t res = l;
+
+		l = index_size[0] + l * (block_size[0] - 1);
+		r = smaller(l + block_size[0] - 1, data_size);
+
+		// search in the indexed part
+		while (l + 1 < r)
+		{
+			std::size_t i = (l + r) >> 1;		// div by 2
+			if (data[i] > el)
+				r = i;
+			else
+				l = i;
+		}
+
+		r = el < data[l] ? 0 : 1;
+		l = l - index_size[0] + res + 1;
+
+		return l + r;
 	}
-	else
+	void build_index(data_element *odata, const data_element *idata, std::size_t index_size, std::size_t block_size)
 	{
-		// Same remarks as above
-		return WORD;
+		// copy index at the beginning of the array
+		for (std::size_t i = 0; i < index_size; ++i)
+			data[i] = idata[i * block_size];
+		// copy the rest of the array
+		std::size_t di = index_size;
+		for (std::size_t i = 0; i < index_size; ++i)
+		{
+			for (std::size_t j = i * block_size + 1; j < (i + 1) * block_size; ++j)
+			{
+				data[di] = idata[j];
+				++di;
+			}
+		}
 	}
-}
-#define fls(x) (WORD-clz(x))
+
+	index_search(const data_element * idata, std::size_t isize) : 
+		data(new data_element[isize]), data_size(isize)
+	{
+		auto x = std::log2(22);
+
+		CACHE_SIZE[0] = 8;
+		block_size[0] = data_size / CACHE_SIZE[0];
+		if (block_size[0] == 0)
+			block_size[0] = data_size;
+		index_size[0] = std::ceil(data_size / block_size[0]) + data_size % block_size[0];
+
+		CACHE_SIZE[1] = 4;
+		block_size[1] = index_size[0] / CACHE_SIZE[1];
+		index_size[1] = index_size[0] / block_size[1];
+		
+		build_index(data, idata, index_size[0], block_size[0]);
+
+		std::size_t di = index_size[0];
+		for (std::size_t i = 0; i < index_size[0]; ++i)
+		{
+			for (std::size_t j = i * block_size[0] + 1; j < (i + 1) * block_size[0]; ++j)
+			{
+				data[di] = idata[j];
+				++di;
+			}
+		}
+
+		// debug
+		/*for (std::size_t i = 0; i < data_size; ++i)
+			std::cout << data[i] << " ";
+		std::cout << std::endl;*/
+	}
+};
+
+class inter_search
+{
+public:
+	data_element* data;
+	std::size_t data_size;
+public:
+	std::size_t get_size() const { return data_size; }
+
+	std::size_t find(const data_element el) const
+	{
+		std::size_t l = 0;
+		std::size_t r = data_size - 1;
+
+		while (data[l] <= el && data[r] >= el)
+		{
+			std::size_t i = l + ((el - data[l]) * (r - l)) / (data[r] - data[l]);
+			if (data[i] < el)
+			{
+				l = i + 1;
+			}
+			else if (data[i] > el)
+			{
+				r = i - 1;
+			
+			}
+			else
+			{
+				return el < data[i] ? i : i + 1;
+			}
+
+			//std::cout << l << " - " << r << std::endl;
+		}
+
+		r = r + 1;
+
+		while (l + 1 < r)
+		{
+			std::size_t i = (l + r) / 2;
+			if (data[i] > el)
+				r = i;
+			else
+				l = i;
+		}
+
+		return el < data[l] ? l : l + 1;
+
+		/*if (el < data[l])
+			return l;
+		else if (el > data[r])
+			return r + 1;
+		else
+			return l + 1;*/
+	}
+	inter_search(const data_element * idata, std::size_t isize) : 
+		data(new data_element[isize]), data_size(isize)
+	{
+		std::copy_n(idata, isize, data);
+	}
+};
+
+class bucket_search
+{
+private:
+	std::size_t data_size;	// total number of elements
+
+	data_element *buckets;
+	std::size_t *gaps;
+	std::size_t size;		// size of buckets and gaps arrays
+
+public:
+	std::size_t get_size() const { return data_size; }
+
+	std::size_t find(const data_element el) const
+	{
+		if (el < buckets[0])
+			return 0;
+
+		// first find bucket index ...
+		std::size_t l = 0;
+		std::size_t r = size - 1;
+		std::size_t i = 0;
+
+		while (l + 1 < r)
+		{
+			i = (l + r) >> 1;
+			if (buckets[i] > el)
+				r = i;
+			else
+				l = i;
+		}
+
+		i = l;
+		
+		// .. then inside the bucket calculate the index
+		std::size_t res = el - gaps[i] + 1;
+		std::size_t bm = buckets[i + 1] - gaps[i + 1];
+		if (res > bm)
+			return bm;
+
+		return res;
+	}
+	bucket_search(const data_element * idata, std::size_t isize)
+		: data_size(isize)
+	{
+		std::vector<data_element> b;
+		std::vector<std::size_t> m;
+		std::size_t missing = idata[0];
+
+		b.push_back(idata[0]);
+		m.push_back(missing);
+
+		data_element el = 0;
+
+		for (std::size_t i = 1; i < isize; ++i)
+		{
+			std::size_t dif = idata[i] - idata[i - 1] - 1;
+			missing += dif;
+
+			if (dif > 0)
+			{
+				b.push_back(idata[i]);
+				m.push_back(missing);
+			}
+		}
+
+		b.push_back(idata[isize - 1]);
+		m.push_back(missing - 1);
+
+		size = b.size();
+		buckets = new data_element[size];
+		std::copy_n(b.begin(), b.size(), buckets);
+
+		gaps = new std::size_t[size];
+		std::copy_n(m.begin(), m.size(), gaps);
+	}
+};
+
+struct node
+{
+	std::size_t value;
+	node *left;
+	node *right;
+};
+
+class interval_search
+{
+private:
+	node *root;
+	data_element minimum;
+	std::size_t data_size;
+	const data_element mask = 1 << (sizeof(data_element) * 8 - 1);
+	//const data_element mask = 1 << 4;
+
+	void build_tree(node *n, data_element mask, const data_element *idata, std::size_t isize)
+	{
+		if (mask == 0)
+			return;
+
+		std::size_t i = 0;
+		while (i < isize && (idata[i] & mask) == 0)
+			++i;
+
+		n->left = new node();
+		n->left->value = i;
+		n->right = new node();
+		n->right->value = 0;
+
+		mask >>= 1;
+
+		if (i > 0)
+			build_tree(n->right, mask, idata, i);
+		if (isize - i > 0)
+			build_tree(n->left, mask, idata + i, isize - i);
+	}
+
+public:
+	std::size_t get_size() const { return data_size; }
+
+	std::size_t find(const data_element el) const
+	{
+		if (el < minimum)
+			return 0;
+
+		node *n = root;
+		std::size_t m = mask;
+		std::size_t res = 0;
+
+		while (n != nullptr)
+		{
+			res += n->value;
+
+			if ((el & m) == 0)
+				n = n->right;
+			else
+				n = n->left;
+			
+			m >>= 1;
+		}
+
+		if (res == data_size)
+			return res;
+		return res + 1;
+	}
+	interval_search(const data_element * idata, std::size_t isize)
+		: data_size(isize), root(new node()), minimum(idata[0])
+	{
+		root->value = 0;
+		build_tree(root, mask, idata, isize);
+	}
+};
+
+class hash_search
+{
+private:
+	data_element minimum;
+	std::map<data_element, std::size_t> data;
+
+public:
+	std::size_t get_size() const { return data.size(); }
+
+	std::size_t find(const data_element el) const
+	{
+		if (el < minimum)
+			return 0;
+
+		auto it = data.upper_bound(el);
+		if (it == data.end())
+			return data.size();
+		else if (it->first == el)
+			return it->second;
+		else
+			return (--it)->second;
+	}
+	hash_search(const data_element * idata, std::size_t isize)
+		: minimum(idata[0])
+	{
+		for (std::size_t i = 0; i < isize; ++i)
+			data.insert(std::make_pair(idata[i], i + 1));
+	}
+};
 
 class emde_boas_search
 {
@@ -957,6 +1065,9 @@ private:
 	std::size_t *bottom_size;
 	// depth in the main tree at particular index in the 
 	std::size_t *subtree_depth;
+private:
+	data_element *data;
+	std::size_t data_size;
 private:
 	void veb_init(std::size_t height, std::size_t depth)
 	{
@@ -981,46 +1092,120 @@ private:
 			veb_init(bottom_height, depth + top_height);
 		}
 	}
-	std::size_t bfs_to_veb(std::size_t bfs)
+	std::size_t hyperceil(std::size_t n)
 	{
-		if (bfs <= 0 || bfs > data_size)
-			return 0;
+		std::size_t value = 1;
+		std::size_t tmp = n;
+		while (tmp != 1)
+		{
+			tmp >>= 1;
+			value <<= 1;
+		}
 
-		std::size_t h = height;
-		std::size_t d = 0;
-		
+		return value == n ? value : (value << 1);
+	}
+	std::size_t pow2(std::size_t n)
+	{
+		return 1 << n;
+	}
+	std::size_t fix_bits(std::size_t x, std::size_t i, std::size_t j)
+	{
+		// delete first j bits and the result move to start at i-th position
+		std::size_t y = (x >> j) << i;
+
+		// take only i-1 first bits of x number
+		std::size_t z = x & ((1 << i) - 1);
+
+		return y + z;
+	}
+	std::size_t bfs_to_veb(std::size_t bfs, std::size_t d, std::size_t h)
+	{
+		// based on this article: http://people.csail.mit.edu/bradley/papers/Kasheff04.pdf
+
+		if (h <= 3)
+			return bfs;
+
+		std::size_t h2 = hyperceil(h >> 1);
+		std::size_t h1 = h - h2;
+
+		if (d < h1)
+			return bfs_to_veb(bfs, d, h1);
+
+		std::size_t d2 = d - h1;
+
+		std::size_t y = pow2(h1);
+		std::size_t a = y - 1;
+		std::size_t b = pow2(h2) - 1;
+
+		std::size_t sh = d2 - 1;
+		std::size_t i = bfs << sh;
+
+		std::size_t x = a + (i - 1) * b;
+
+		std::size_t bfs2 = fix_bits(bfs, d2, sh);
+
+		return x + bfs_to_veb(bfs2, d2, h2);
+
 		/*std::size_t k = fls(bfs);
 		std::size_t p[fls(k)];
 		int i = 0;
 		for (int d = --k; d > 0; d = L.D[d]){
-			int w = v >> (k - d);
-			--d;
-			p[i] = L.T[d] + (w&L.T[d])*L.B[d];
-			++i;
+		int w = v >> (k - d);
+		--d;
+		p[i] = L.T[d] + (w&L.T[d])*L.B[d];
+		++i;
 		}
 		for (p[i] = 1; i > 0; --i)
-			p[i - 1] += p[i];
+		p[i - 1] += p[i];
 		return p[0];*/
-
-		return 0;
 	}
-private:
-	data_element *data;
-	std::size_t data_size;
+	std::size_t bfs_to_veb(std::size_t bfs)
+	{
+		return bfs_to_veb(bfs, height, height) - 1;
+	}
 
+	void build_veb(const data_element * idata, std::size_t l, std::size_t r, std::size_t bfs, std::size_t d, std::size_t h)
+	{
+		if (l < r)
+		{
+			std::size_t i = (r + l) >> 1;
+			std::size_t veb = bfs_to_veb(bfs, d, h);
+			data[veb] = idata[i];
+
+			build_veb(idata, l, i, 2 * bfs, d + 1, h);
+			build_veb(idata, i + 1, r, 2 * bfs + 1, d + 1, h);
+		}
+	}
 
 public:
-	std::size_t get_size() { return data_size; }
-
-	emde_boas_search(const data_element * idata, std::size_t isize)
+	std::size_t get_size() const { return data_size; }
+	std::size_t find(data_element el) const
 	{
-		
+		return 0;
+	}
+
+	emde_boas_search(const data_element * idata, std::size_t isize) :
+		data(new data_element[isize]), data_size(isize),
+		height(std::ceil(std::log2(isize)) + 1)
+	{
+		build_veb(idata, 0, isize, 1, 1, height);
+
+		for (std::size_t i = 0; i < isize; ++i)
+			std::cout << " " << data[i];
+		std::cout << std::endl;
 	}
 };
 
 typedef btree_search bsearch_inner;
 //typedef binary_search bsearch_inner;
 //typedef block_search bsearch_inner;
+//typedef index_search bsearch_inner;
+//typedef inter_search bsearch_inner;
+//typedef emde_boas_search bsearch_inner;
+//typedef hash_search bsearch_inner;
+//typedef bucket_search bsearch_inner;
+//typedef interval_search bsearch_inner;
+
 
 class bsearch_outer {
 private:
