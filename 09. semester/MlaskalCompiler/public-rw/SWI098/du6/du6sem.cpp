@@ -599,7 +599,9 @@ namespace mlc {
 	}
 	/**
 	* Append LREF or GREF instruction for particular variable scope. This function is valid for
-	* global and local variable.
+	* global and local variable or variable passed by reference. Notice that when referencing
+	* variable passed by reference we are actually loading the value of the variable which is
+	* the reference (pointer)
 	*/
 	void append_ref_var(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
 	{
@@ -610,6 +612,9 @@ namespace mlc {
 			break;
 		case symbol_kind::SKIND_GLOBAL_VARIABLE:
 			block->append_instruction(new ai::GREF(tsp->access_global_variable()->address()));
+			break;
+		case symbol_kind::SKIND_PARAMETER_BY_REFERENCE:
+			block->append_instruction(new ai::LLDP(tsp->access_parameter_by_reference()->address()));
 			break;
 		}
 	}
@@ -655,7 +660,7 @@ namespace mlc {
 
 		// 3) CONDITION: for loop condition
 		append_ld_var(out, var);
-		out->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(count)));		// TODO: calculate total number
+		out->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(count)));
 		out->append_instruction(new ai::EQI());
 		out->append_instruction_with_target(new ai::JF(out->end()), l1);
 	}
@@ -831,7 +836,6 @@ namespace mlc {
 	*/
 	void load_const_value(MlaskalCtx *ctx, MlaskalLval &out, MlaskalLval &val, const_type type)
 	{
-		// TODO: refactor
 		create_block_if_empty(out);
 
 		switch (type)
@@ -1244,7 +1248,8 @@ namespace mlc {
 			if (out.code_->empty())
 			{	// access array beginning address
 
-				if (sp->kind() != symbol_kind::SKIND_GLOBAL_VARIABLE && sp->kind() != symbol_kind::SKIND_LOCAL_VARIABLE)
+				if (sp->kind() != symbol_kind::SKIND_GLOBAL_VARIABLE && sp->kind() != symbol_kind::SKIND_LOCAL_VARIABLE
+					&& sp->kind() != symbol_kind::SKIND_PARAMETER_BY_REFERENCE)
 				{
 					error(DUERR_NOTVAR, id_line, *id.id_ci_);
 					return;
@@ -1257,14 +1262,17 @@ namespace mlc {
 				// substract lower bound
 				auto rt = tp->access_array()->index_type();
 				auto lb = rt->access_range()->lowerBound();
-				/*out.code_->append_instruction(new ai::ADDP());
-				out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(-*lb)));*/
 				out.code_->append_instruction(new ai::LDLITI(lb));
 				out.code_->append_instruction(new ai::SUBI());
 			}
 			else
 			{
-				// TODO: check whether current tp is array, otherwise we are indexing a non-array variable
+				// check whether current tp is array, otherwise we are indexing a non-array variable
+				if (tp->cat() != type_category::TCAT_ARRAY)
+				{
+					error(DUERR_NOTARRAY, id_line, *id.id_ci_);
+					return;
+				}
 
 				tp = tp->access_array()->element_type();
 				auto rt = tp->access_array()->index_type();
@@ -1280,8 +1288,6 @@ namespace mlc {
 
 				// calculate next index expression
 				icblock_append_delete(out.code_, expr);
-				/*out.code_->append_instruction(new ai::ADDP());
-				out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(-*lb)));*/
 				out.code_->append_instruction(new ai::LDLITI(lb));
 				out.code_->append_instruction(new ai::SUBI());
 
@@ -1294,19 +1300,11 @@ namespace mlc {
 		out.type_ = tp;
 		idxs.exprs_.clear();
 
-		while (tp->cat() == type_category::TCAT_ARRAY)
+		if (tp->cat() == type_category::TCAT_ARRAY)
 		{
-			// multiply previous value by range size
-			auto rt = tp->access_array()->index_type();
-			auto lb = rt->access_range()->lowerBound();
-			auto ub = rt->access_range()->upperBound();
-			// (ub - lb + 1)
-			auto dim = ctx->tab->ls_int().add(*ub - *lb + 1);
-			out.code_->append_instruction(new ai::LDLITI(dim));
-
+			int dim = get_array_dimension(tp);
+			out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(dim)));
 			out.code_->append_instruction(new ai::MULI());
-
-			tp = tp->access_array()->element_type();
 		}
 
 		// add index to the array begin pointer
@@ -1374,40 +1372,47 @@ namespace mlc {
 
 						// TODO: rafactoring is needed
 
-						if (id[i] != param->idx) // TODO: how to solve these || ex[i]->size() != 1
-						{
-							error(DUERR_NOTPARAMVAR, id_line);
-
-							// evaluate subprogram argument passed by value
+						if (param->ltype->cat() == type_category::TCAT_ARRAY)
+						{	// evaluate array element address
 							icblock_append_delete(out.code_, ex[i]);
 						}
 						else
 						{
-							auto sp = ctx->tab->find_symbol(id[i]);
-							if (sp->kind() == symbol_kind::SKIND_PARAMETER_BY_REFERENCE)
+							if (id[i] != param->idx) // TODO: how to solve these || ex[i]->size() != 1
 							{
-								if (ex[i]->size() != 2)
-								{
-									error(DUERR_NOTPARAMVAR, id_line);
+								error(DUERR_NOTPARAMVAR, id_line);
 
-									icblock_append_delete(out.code_, ex[i]);
-								}
-								else
-								{
-									out.code_->append_instruction(new ai::LLDP(sp->access_typed()->access_parameter_by_reference()->address()));
-								}
+								// evaluate subprogram argument passed by value
+								icblock_append_delete(out.code_, ex[i]);
 							}
 							else
 							{
-								if (ex[i]->size() != 1)
+								auto sp = ctx->tab->find_symbol(id[i]);
+								if (sp->kind() == symbol_kind::SKIND_PARAMETER_BY_REFERENCE)
 								{
-									error(DUERR_NOTPARAMVAR, id_line);
+									if (ex[i]->size() != 2)
+									{
+										error(DUERR_NOTPARAMVAR, id_line);
 
-									icblock_append_delete(out.code_, ex[i]);
+										icblock_append_delete(out.code_, ex[i]);
+									}
+									else
+									{
+										out.code_->append_instruction(new ai::LLDP(sp->access_typed()->access_parameter_by_reference()->address()));
+									}
 								}
 								else
 								{
-									append_ref_var(out.code_, sp->access_typed());
+									if (ex[i]->size() != 1)
+									{
+										error(DUERR_NOTPARAMVAR, id_line);
+
+										icblock_append_delete(out.code_, ex[i]);
+									}
+									else
+									{
+										append_ref_var(out.code_, sp->access_typed());
+									}
 								}
 							}
 						}
@@ -1648,7 +1653,7 @@ namespace mlc {
 	DUERR_NOTPARAMVAR,
 	DUERR_TYPEMISMATCH,
 	DUERR_NOTPROC,
-	DUERR_NOTARRAY,
+	.DUERR_NOTARRAY,
 	.DUERR_NOTRECORD,
 	DUERR_NOTSCALAR,
 	DUERR_PARNUM,

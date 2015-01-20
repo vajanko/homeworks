@@ -28,6 +28,11 @@ Identifiers
 16:	"ARR2"
 17:	"A1"
 18:	"A2"
+19:	"A3"
+20:	"I"
+21:	"SET"
+22:	"A"
+23:	"VAL"
 
 Functions and procedures
 READI:INTEGER	[0;2], used registers=0
@@ -37,10 +42,13 @@ WRITEI(P:INTEGER [size=1;stkoffs=-1])	[9;11], used registers=0
 WRITER(P:REAL [size=1;stkoffs=-1])	[12;14], used registers=0
 WRITES(P:STRING [size=1;stkoffs=-1])	[15;17], used registers=0
 WRITELN	[18;19], used registers=0
-DU4TEST1	[20;51], used registers=0
+SET(A:ADDR [size=1;stkoffs=-3], I:INTEGER [size=1;stkoffs=-2], VAL:INTEGER [size=1;stkoffs=-1])	[20;27], used registers=0
+DU4TEST1	[28;83], used registers=0
 	VAR
-		A1:INTEGER[start=20;end=23;size=4;stkoffs=0]
-		A2:INTEGER[start=24;end=25;size=2;stkoffs=4]
+		A1:INTEGER[start=28;end=31;size=4;stkoffs=0]
+		A2:INTEGER[start=32;end=33;size=2;stkoffs=4]
+		A3:INTEGER[start=34;end=35;size=2;stkoffs=6]
+		I:INTEGER[start=36;end=36;size=1;stkoffs=8]
 
 Instructions
 READI:
@@ -70,37 +78,70 @@ WRITES:
 WRITELN:
 18:	FNCWRITELN
 19:	RET
+SET:
+20:	LLDI	[-1]
+21:	LLDP	[-3]
+22:	LLDI	[-2]
+23:	LDLITI	LITINT[2]
+24:	SUBI
+25:	ADDP
+26:	XSTI
+27:	RET
 DU4TEST1:
-20:	INITI
-21:	INITI
-22:	INITI
-23:	INITI
-24:	INITI
-25:	INITI
-26:	LDLITI	LITINT[0]
-27:	GREF	[4]
-28:	LDLITI	LITINT[2]
-29:	LDLITI	LITINT[2]
-30:	SUBI
-31:	ADDP
-32:	XSTI
-33:	LDLITI	LITINT[1]
-34:	GREF	[4]
-35:	LDLITI	LITINT[3]
-36:	LDLITI	LITINT[2]
-37:	SUBI
-38:	ADDP
-39:	XSTI
-40:	GREF	[0]
-41:	LDLITI	LITINT[0]
-42:	LDLITI	LITINT[0]
-43:	SUBI
-44:	ADDP
+28:	INITI
+29:	INITI
+30:	INITI
+31:	INITI
+32:	INITI
+33:	INITI
+34:	INITI
+35:	INITI
+36:	INITI
+37:	LDLITI	LITINT[2]
+38:	GSTI	[8]
+39:	JMP	12	;; target=51
+40:	GREF	[4]
+41:	GLDI	[8]
+42:	GLDI	[8]
+43:	CALL	20	;; label=SET
+44:	DTORI
 45:	DTORI
-46:	DTORI
-47:	DTORI
-48:	DTORI
-49:	DTORI
-50:	DTORI
-51:	HALT
+46:	DTORP
+47:	GLDI	[8]
+48:	LDLITI	LITINT[0]
+49:	ADDI
+50:	GSTI	[8]
+51:	LDLITI	LITINT[3]
+52:	GLDI	[8]
+53:	GEI
+54:	JT	-14	;; target=40
+55:	LDLITI	LITINT[2]
+56:	GSTI	[8]
+57:	JMP	13	;; target=70
+58:	GREF	[4]
+59:	GLDI	[8]
+60:	LDLITI	LITINT[2]
+61:	SUBI
+62:	ADDP
+63:	XLDI
+64:	CALL	9	;; label=WRITEI
+65:	DTORI
+66:	GLDI	[8]
+67:	LDLITI	LITINT[0]
+68:	ADDI
+69:	GSTI	[8]
+70:	LDLITI	LITINT[3]
+71:	GLDI	[8]
+72:	GEI
+73:	JT	-15	;; target=58
+74:	DTORI
+75:	DTORI
+76:	DTORI
+77:	DTORI
+78:	DTORI
+79:	DTORI
+80:	DTORI
+81:	DTORI
+82:	DTORI
+83:	HALT
 
