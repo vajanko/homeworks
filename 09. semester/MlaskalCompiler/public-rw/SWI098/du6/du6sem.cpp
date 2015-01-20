@@ -10,6 +10,8 @@ DU6SEM.CPP
 
 namespace mlc {
 
+#define LOOP_VAR "loop12345678"
+
 	/**
 	* Gets type of type-identifier and prints an error when there is no such type
 	*/
@@ -625,10 +627,9 @@ namespace mlc {
 	* Append a for loop with fixed number of iterations of given code block. "var" is a pointer to the
 	* loop variable which will be used to count the number of iterations.
 	*/
-	void append_for(MlaskalCtx *ctx, mlc::icblock_pointer out, mlc::icblock_pointer body, int count)
+	void append_for(MlaskalCtx *ctx, mlc::icblock_pointer out, mlc::icblock_pointer body, mlc::symbol_pointer loop_var, int count)
 	{
-		// create a variable for the loop
-		auto var = create_var(ctx, "abc", ctx->tab->logical_integer())->access_typed();
+		auto var = loop_var->access_typed();
 
 		auto l1 = mlc::new_label(ctx);
 		auto l2 = mlc::new_label(ctx);
@@ -658,6 +659,12 @@ namespace mlc {
 		out->append_instruction(new ai::EQI());
 		out->append_instruction_with_target(new ai::JF(out->end()), l1);
 	}
+	void append_for(MlaskalCtx *ctx, mlc::icblock_pointer out, mlc::icblock_pointer body, int count)
+	{
+		// create a variable for the loop
+		auto var = create_var(ctx, LOOP_VAR, ctx->tab->logical_integer());
+		append_for(ctx, out, body, var, count);
+	}
 
 	/**
 	* Get type of array element even if the array is multidimensional
@@ -683,7 +690,7 @@ namespace mlc {
 			int lb = *rt->lowerBound();
 			int ub = *rt->upperBound();
 
-			dim *= (ub - lb);
+			dim *= (ub - lb + 1);
 
 			arr_type = arr_type->access_array()->element_type();
 		}
@@ -691,47 +698,53 @@ namespace mlc {
 		return dim;
 	}
 
-	void append_ld_array(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
+	void append_ld_array(MlaskalCtx *ctx, mlc::icblock_pointer out, mlc::icblock_pointer src, mlc::type_pointer arr_tp)
 	{
-		auto tp = get_element_type(tsp->type());
-		int dim = get_array_dimension(tsp->type());
+		auto loop = icblock_create();
+		auto elem_tp = get_element_type(arr_tp);
 
-		switch (tsp->kind())
-		{
-		case symbol_kind::SKIND_GLOBAL_VARIABLE:
-			for (int i = 0;		i <= dim; ++i)
-				append_gld_ins(block, tp, tsp->access_global_variable()->address() + i);
-			break;
-		case symbol_kind::SKIND_LOCAL_VARIABLE:
-			for (int i = 0; i <= dim; ++i)
-				append_lld_ins(block, tp, tsp->access_local_variable()->address() + i);
-			break;
-		}
+		// create loop variable
+		auto var = create_var(ctx, LOOP_VAR, ctx->tab->logical_integer());
+
+		icblock_append_delete(loop, src);
+		append_ld_var(loop, var->access_typed());
+		loop->append_instruction(new ai::ADDP());
+		append_xld_ins(loop, elem_tp);
+
+		int elem_count = get_array_dimension(arr_tp);
+		append_for(ctx, out, loop, var, elem_count);
 	}
-	void append_st_array(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
+	void append_st_array(MlaskalCtx *ctx, mlc::icblock_pointer out, mlc::icblock_pointer trg, mlc::icblock_pointer src, mlc::type_pointer arr_tp)
 	{
-		auto tp = get_element_type(tsp->type());
-		int dim = get_array_dimension(tsp->type());
+		auto loop = icblock_create();
+		auto elem_tp = get_element_type(arr_tp);
 
-		switch (tsp->kind())
-		{
-		case symbol_kind::SKIND_GLOBAL_VARIABLE:
-			for (int i = dim; i >= 0; --i)
-				append_gst_ins(block, tp, tsp->access_global_variable()->address() + i);
-			break;
-		case symbol_kind::SKIND_LOCAL_VARIABLE:
-			for (int i = dim; i >= 0; --i)
-				append_lst_ins(block, tp, tsp->access_local_variable()->address() + i);
-			break;
-		}
+		// create loop variable
+		auto var = create_var(ctx, LOOP_VAR, ctx->tab->logical_integer());
+
+		// calculate source array address and load its value
+		icblock_append_delete(loop, src);
+		append_ld_var(loop, var->access_typed());
+		loop->append_instruction(new ai::ADDP());
+		append_xld_ins(loop, elem_tp);
+
+		// calculate target address and store value
+		icblock_append_delete(loop, trg);
+		append_ld_var(loop, var->access_typed());
+		loop->append_instruction(new ai::ADDP());
+		append_xst_ins(loop, elem_tp);
+
+		int elem_count = get_array_dimension(arr_tp);
+		append_for(ctx, out, loop, var, elem_count);
 	}
-	void append_dtor_array(mlc::icblock_pointer block, mlc::typed_symbol_pointer tsp)
+	void append_dtor_array(MlaskalCtx *ctx, mlc::icblock_pointer block, mlc::type_pointer arr_type)
 	{
-		auto tp = get_element_type(tsp->type());
-		int dim = get_array_dimension(tsp->type());
+		auto body = icblock_create();
+		append_dtor_ins(body, get_element_type(arr_type));
 
-		for (int i = 0; i <= dim; ++i)
-			append_dtor_ins(block, tp);
+		auto var = create_var(ctx, LOOP_VAR, ctx->tab->logical_integer());
+		int dim = get_array_dimension(arr_type);
+		append_for(ctx, block, body, dim);
 	}
 	
 	/**
@@ -1188,10 +1201,11 @@ namespace mlc {
 
 		if (expr.type_->cat() == type_category::TCAT_ARRAY)
 		{	// store complex array element - whole array
-			auto tsp1 = ctx->tab->find_symbol(expr.id_ci_)->access_typed();
-			auto tsp2 = ctx->tab->find_symbol(arr.id_ci_)->access_typed();
-			append_ld_array(out.code_, tsp1);
-			append_st_array(out.code_, tsp2);
+
+			// just check whether both array are the same
+			store_conversion(out.code_, arr_line, arr.type_, expr.type_);
+
+			append_st_array(ctx, out.code_, arr.code_, expr.code_, expr.type_);
 		}
 		else
 		{	// store single array element
@@ -1243,10 +1257,10 @@ namespace mlc {
 				// substract lower bound
 				auto rt = tp->access_array()->index_type();
 				auto lb = rt->access_range()->lowerBound();
-				out.code_->append_instruction(new ai::ADDP());
-				out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(-*lb)));
-				/*out.code_->append_instruction(new ai::LDLITI(lb));
-				out.code_->append_instruction(new ai::SUBI());*/
+				/*out.code_->append_instruction(new ai::ADDP());
+				out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(-*lb)));*/
+				out.code_->append_instruction(new ai::LDLITI(lb));
+				out.code_->append_instruction(new ai::SUBI());
 			}
 			else
 			{
@@ -1266,10 +1280,10 @@ namespace mlc {
 
 				// calculate next index expression
 				icblock_append_delete(out.code_, expr);
-				out.code_->append_instruction(new ai::ADDP());
-				out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(-*lb)));
-				/*out.code_->append_instruction(new ai::LDLITI(lb));
-				out.code_->append_instruction(new ai::SUBI());*/
+				/*out.code_->append_instruction(new ai::ADDP());
+				out.code_->append_instruction(new ai::LDLITI(ctx->tab->ls_int().add(-*lb)));*/
+				out.code_->append_instruction(new ai::LDLITI(lb));
+				out.code_->append_instruction(new ai::SUBI());
 
 				// and add to the previous result
 				out.code_->append_instruction(new ai::ADDI());
@@ -1348,8 +1362,7 @@ namespace mlc {
 					{	// evaluate subprogram argument passed by value
 						if (param->ltype->cat() == type_category::TCAT_ARRAY)
 						{	// load array by value
-							auto tsp = ctx->tab->find_symbol(id[i])->access_typed();
-							append_ld_array(out.code_, tsp);
+							append_ld_array(ctx, out.code_, ex[i], param->ltype);
 						}
 						else
 						{	// evaluate (or load) expression value
@@ -1413,8 +1426,7 @@ namespace mlc {
 					{
 						if (param->ltype->cat() == type_category::TCAT_ARRAY)
 						{	// destroy array passed by value
-							auto tsp = ctx->tab->find_symbol(*it)->access_typed();
-							append_dtor_array(out.code_, tsp);
+							append_dtor_array(ctx, out.code_, param->ltype);
 						}
 						else
 						{	// destroy single expression value
