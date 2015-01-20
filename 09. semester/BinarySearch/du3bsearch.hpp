@@ -481,6 +481,12 @@ public:
 	}
 };
 
+//struct btree_node
+//{
+//	std::size_t index;		// index to the first 
+//	std::size_t size;
+//	std::size_t first_child;
+//};
 class btree_search {
 private:
 	data_element* data;
@@ -1196,7 +1202,80 @@ public:
 	}
 };
 
-typedef btree_search bsearch_inner;
+class table_search
+{
+private:
+	const std::size_t lut_bits = 16;
+	const std::size_t shift_bits = 32 - lut_bits;
+
+	std::vector<std::pair<std::size_t, std::size_t>> lut;
+	data_element min_elem;
+	data_element max_elem;
+
+	data_element *data;
+	std::size_t data_size;
+
+public:
+	std::size_t get_size() const { return data_size; }
+	std::size_t find(data_element el) const
+	{
+		if (el < min_elem)
+			return 0;
+		else if (el >= max_elem)
+			return data_size;
+		
+		std::size_t idx = el >> shift_bits;
+		std::size_t l = lut[idx].first - 1;
+		std::size_t r = lut[idx].second + 2;
+		std::size_t i = 0;
+
+		while (l + 1 < r)
+		{
+			i = (l + r) >> 1;
+			if (data[i] > el)
+				r = i;
+			else
+				l = i;
+		}
+
+		return l + 1;
+	}
+
+	table_search(const data_element * idata, std::size_t isize) :
+		data_size(isize), data(new data_element[isize]),
+		min_elem(idata[0]), max_elem(idata[isize - 1])
+		//table_size(idata[isize - 1] - idata[0] + 1), table(new std::size_t[idata[isize - 1] - idata[0]] + 1)
+	{
+		std::copy_n(idata, isize, data);
+
+		const std::size_t lut_size = 1 << lut_bits;
+		lut.resize(lut_size);
+
+		// populate look-up-table
+		size_t thresh = 0, last = 0;
+
+		for (std::size_t i = 0; i < isize - 1; i++)
+		{
+			const size_t nextThresh = idata[i + 1] >> shift_bits;
+			lut[thresh] = { last, i };
+
+			if (nextThresh > thresh) // more than one LUT entry to fill?
+			{
+				last = i + 1;
+				for (std::size_t j = thresh + 1; j <= nextThresh; j++)
+					lut[j] = { last, i };
+			}
+
+			thresh = nextThresh;
+		}
+
+		// set remaining thresholds that couldn't be found
+		for (std::size_t i = thresh; i < lut.size(); i++)
+			lut[i] = { last, isize - 1 };
+	}
+};
+
+//typedef btree_search bsearch_inner;
 //typedef binary_search bsearch_inner;
 //typedef block_search bsearch_inner;
 //typedef index_search bsearch_inner;
@@ -1205,6 +1284,7 @@ typedef btree_search bsearch_inner;
 //typedef hash_search bsearch_inner;
 //typedef bucket_search bsearch_inner;
 //typedef interval_search bsearch_inner;
+typedef table_search bsearch_inner;
 
 
 class bsearch_outer {

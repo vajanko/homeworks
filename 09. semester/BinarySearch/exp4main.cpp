@@ -12,15 +12,15 @@
 
 void test()
 {
-	const std::size_t in_size = 7;
+	const std::size_t in_size = 6;
 
-	data_element in_data[in_size] = { 1,2,3,4,5,6,7 };// 16 , 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32 };
+	data_element in_data[in_size] = { 0x00010001, 0x00010002, 0x00010003, 0x00020005, 0x00020006, 0x00030007 };// 16 , 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32 };
 
 	bsearch_inner inner(in_data, in_size);
 
 	const std::size_t out_size = 29;
 	bsearch_outer outer(inner, out_size);
-	data_element out_data[out_size] = { 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27,28 };
+	data_element out_data[out_size] = { 0x00020004, 0x00010009, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28 };
 
 	outer.bucketize(out_data);
 	for (std::size_t i = 0; i < in_size + 1; ++i)
@@ -39,9 +39,9 @@ void test()
 
 int main( int argc, char * * argv)
 {
-	test();
+	/*test();
 	system("pause");
-	return 0;
+	return 0;*/
 
 	generator_list< param_type_4, time_complexity> gl;
 
