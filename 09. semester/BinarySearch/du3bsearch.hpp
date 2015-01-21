@@ -222,12 +222,6 @@ public:
 	}
 };
 
-//struct btree_node
-//{
-//	std::size_t index;		// index to the first 
-//	std::size_t size;
-//	std::size_t first_child;
-//};
 class btree_search {
 private:
 	data_element* data;
