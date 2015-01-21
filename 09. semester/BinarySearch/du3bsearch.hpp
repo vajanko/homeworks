@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <queue>
 #include <map>
+#include <assert.h>
+#include <intrin.h>
 
 typedef unsigned long data_element;
 
@@ -16,27 +18,21 @@ template<typename T> T smaller(T x, T y) { return (x<y) ? x : y; }
 template<typename T> T greater(T x, T y) { return (x>y) ? x : y; }
 template<typename T> T binary_tree_size(T height) { return (1 << height) - 1; }
 
-#undef VEB_SEARCH
-
 class binary_search {
 public:
-	std::unique_ptr<data_element[]> data;
-	std::size_t isize;
-	std::size_t height;
+	data_element *data;
+	std::size_t data_size;
 public:
-    std::size_t get_size() const { return isize; }
+	std::size_t get_size() const { return data_size; }
     std::size_t find(const data_element el) const
     {
-#if _DEBUG
-        data_element *data = this->data.get();
-#endif
         std::size_t l = 0;
-        std::size_t r = isize;
+		std::size_t r = data_size;
         std::size_t i = 0;
 
         while (l + 1 < r)
         {
-            i = (l + r) / 2;
+            i = (l + r) >> 1;
             if (data[i] > el)
                 r = i;
             else
@@ -46,344 +42,89 @@ public:
         return el < data[l] ? l : l + 1;
     }
 
-	void find_many(const data_element *els, const std::size_t count, std::size_t *results) const
-	{
-		std::size_t *i = new std::size_t[count];
-		std::size_t size = isize >> 1;
-		std::fill(i, i + count, size);
-
-		for (std::size_t j = 0; j < height; ++j)
-		{
-			size = size >> 1;
-
-			for (std::size_t k = 0; k < count; ++k)
-			{
-				if (data[i[k]] > els[k])
-					i[k] = i[k] - size;
-				else
-					i[k] = i[k] + size;
-			}
-		}
-
-		for (std::size_t k = 0; k < count; ++k)
-			results[k] = els[k] < data[i[k]] ? i[k] : i[k] + 1;
-
-		/*std::size_t *l = new std::size_t[count];
-		std::size_t *r = new std::size_t[count];
-		std::size_t i;
-		
-		std::fill(l, l + count, 0);
-		std::fill(r, r + count, isize);
-
-		for (std::size_t j = 0; j < height; ++j)
-		{
-			for (std::size_t k = 0; k < count; ++k)
-			{
-				i = (l[k] + r[k]) >> 1;
-				if (data[i] > els[k])
-					r[k] = i;
-				else
-					l[k] = i;
-			}
-		}
-
-		for (std::size_t k = 0; k < count; ++k)
-			results[k] = els[k] < data[l[k]] ? l[k] : l[k] + 1;*/
-	}
-
-    binary_search(const data_element * idata, std::size_t isize) : data(isize == 0 ? nullptr : new data_element[isize]), isize(isize),
-		height(std::log2(isize))
+    binary_search(const data_element *idata, std::size_t isize) : 
+		data(new data_element[isize]), data_size(isize)
     {
-		if (data.get() != nullptr)
-			std::copy_n(idata, isize, data.get());
+		std::copy_n(idata, isize, data);
     }
-	binary_search(binary_search &&val) : data(std::move(val.data)), isize(val.isize){ }
-	binary_search &operator=(binary_search &&val)
-	{
-		data = std::move(val.data);
-		isize = val.isize;
-
-		return *this;
-	}
 };
 
-class sequence_search {
-public:
+class linear_search 
+{
+private:
 	data_element* data;
-	std::size_t isize;
-
+	std::size_t data_size;
+public:
+	std::size_t get_size() const { return data_size; }
 	std::size_t find(const data_element el) const
 	{
 		std::size_t i = 0;
 
-		while (i < isize && data[i] <= el)
+		for (;;) 
 		{
+			if (data[i] >= el)
+				return i;
+			++i;
+		}
+	}
+
+	linear_search(const data_element * idata, std::size_t isize)
+		: data(new data_element[isize + 1]), data_size(isize)
+	{
+		std::copy_n(idata, isize, data);
+		data[isize] = ULONG_MAX;
+	}
+};
+
+class linear_sse_search
+{
+private:
+	data_element* data;
+	std::size_t data_size;
+public:
+	std::size_t get_size() const { return data_size; }
+	std::size_t find(const data_element el) const
+	{
+		if (el < data[0])
+			return 0;
+
+		std::size_t i = 0;
+		__m128i el4 = _mm_set_epi32(el, el, el, el);
+		__m128i *d4 = (__m128i*)data;
+		int res;
+		
+		for (;;)
+		{
+			__m128i tmp = _mm_cmpgt_epi32(el4, d4[i]);
+			res = _mm_movemask_epi8(tmp);
+			if (res != 0xffff)
+				break;
 			++i;
 		}
 
-		return i;
+		unsigned long index;
+		_BitScanForward(&index, ~res);
+		std::size_t r = i * 4 + index / 4;
+
+		
+		if (el == data[r])
+			++r;
+		else if (r > data_size)
+			r = data_size;
+
+		return r;
 	}
 
-	sequence_search(const data_element * idata, std::size_t isize) : data(new data_element[isize]), isize(isize)
+	linear_sse_search(const data_element * idata, std::size_t isize)
+		: data(new data_element[isize + 4]), data_size(isize)
 	{
 		std::copy_n(idata, isize, data);
+		data[isize] = ULONG_MAX;
+		data[isize + 1] = ULONG_MAX;
+		data[isize + 2] = ULONG_MAX;
+		data[isize + 3] = ULONG_MAX;
 	}
 };
-
-#ifdef VEB_SEARCH
-
-class vEBTraverser {
-public:
-	uint64_t root() {
-		d = 0;
-		cix = 1;
-		return 1;
-	}
-	uint64_t left() {
-		d++;
-		cix <<= 1;
-		return vEBIndex();
-	}
-	uint64_t right() {
-		d++;
-		cix = (cix << 1) + 1;
-		return vEBIndex();
-	}
-private:
-	uint64_t cix;
-	uint64_t d;
-
-	uint64_t vEBIndex() {
-		// Start with largest sub-tree, work down to smallest.
-		uint64_t ix = 1;
-		uint32_t new_d = d;
-		for (char b = 4; b >= 0; --b) {
-			const uint64_t b_val = 1L << b;
-			if (d & b_val) {
-				// Determine sub triangle and add start offset to index.
-				const uint64_t masked_d = d & (b_val - 1);
-				const uint64_t new_node_size = (1L << b_val) - 1;
-				uint64_t subtri_ix = (cix >> masked_d) & new_node_size;
-				ix += new_node_size * (1L + subtri_ix);
-			}
-		}
-		return ix;
-	}
-};
-
-class bsearch_inner {
-public:
-	data_element* data;
-	std::size_t isize;
-	std::size_t tsize;
-	std::size_t rsize;
-	data_element* rdata;
-	std::size_t height;
-
-	std::size_t find(const data_element el) const
-	{
-		/*vEBTraverser tr;
-		std::size_t i = tr.root();
-		while (true)
-		{
-			if (data[i] > el)
-				i = tr.right();
-			else
-				i = tr.left();
-		}*/
-
-		std::size_t left = 0;
-		std::size_t right = 0;
-		std::size_t h = height;		// currently searched tree depth
-		std::size_t d = 0;			// search depth
-
-		while (right - left > 256)	// ??
-		{
-			std::size_t r_height = h / 2;
-			std::size_t ch_height = r_height + h % 2;
-
-			// TODO: this can be done more efficiently
-			std::size_t r_nodes = std::pow(2, r_height) - 1;
-
-			++d;
-		}
-
-		// regular binary search in small blocks
-		while (left + 1 < right)
-		{
-			std::size_t i = (left + right) >> 1;		// div by 2
-			if (data[i] > el)
-				right = i;
-			else
-				left = i;
-		}
-
-		return left;
-	}
-
-	void build_bst(const data_element *idata, std::size_t isize, data_element *data) const
-	{
-		data_element leaf_idx = 0;
-		std::vector<data_element> wdata(idata, idata + isize);
-
-		std::size_t m = 0;
-		while ((2 << m) - 1 <= isize)
-			++m;
-
-		// now holds: isize < 2^m -1 and "m" is minimal
-		--m;
-		std::size_t leafs = isize - (2 << m) + 1;
-
-		std::size_t step = 2;
-		long pos = isize - 1;
-
-		// remove the leafs
-		for (long i = leafs * step - 2; i >= 0; i -= step)
-		{
-			data[pos] = wdata.at(i);
-			--pos;
-		}
-		for (long i = leafs * step - 2; i >= 0; i -= step)
-		{
-			wdata.erase(wdata.begin() + i);
-		}
-
-		// now wdata has size 2^m -1
-		while (pos >= 0)
-		{
-			for (long i = wdata.size() - 1; i >= 0; i -= step)
-			{
-				data[pos] = wdata.at(i);
-				--pos;
-			}
-			for (long i = wdata.size() - 1; i >= 0; i -= step)
-			{
-				wdata.erase(wdata.begin() + i);
-			}
-		}
-
-		// init leafs
-		for (std::size_t i = isize; i < tsize; ++i)
-			data[i] = i - isize;
-		/*for (std::size_t i = isize; i < tsize - leafs - 1; ++i)
-			data[i] = i - isize + leafs + 1;
-
-		for (std::size_t i = 0; i < leafs + 1; ++i)
-			data[tsize - leafs - 1 + i] = i;*/
-	}
-	void build_veb(std::size_t &i_pos, data_element *odata, std::size_t o_pos, std::size_t height) const
-	{
-		if (height == 1)
-		{
-			odata[o_pos] = data[i_pos];
-			i_pos = i_pos * 2 + 1;
-		}
-		else
-		{
-			std::size_t r_height = height / 2;
-			std::size_t ch_height = height / 2 + height % 2;
-
-			std::size_t r_nodes = std::pow(2, r_height) - 1;
-			std::size_t ch_pos = i_pos;
-			build_veb(ch_pos, odata, o_pos, r_height);
-
-			// points to the first child tree
-			i_pos = ch_pos;
-			//i_pos += r_nodes;
-			o_pos += r_nodes;
-
-			// number of nodes in the child tree
-			std::size_t ch_nodes = std::pow(2, ch_height) - 1;
-			std::size_t ch_trees = r_height * 2;
-
-			for (std::size_t i = 0; i < ch_trees; ++i)
-			{
-				ch_pos = i_pos;
-				build_veb(ch_pos, odata, o_pos, ch_height);
-				i_pos += 1;
-				o_pos += ch_nodes;
-			}
-		}
-	}
-	bsearch_inner(const data_element * idata, std::size_t isize) : isize(isize), tsize(isize * 2 + 1), data(new data_element[(isize * 2 + 1) * 2])
-	{
-		/*std::size_t m = 0;
-		while ((2 << m) - 1 <= isize)
-			++m;
-
-		rsize = isize - (std::pow(2, m) - 1);
-		this->isize -= rsize;
-		isize -= rsize;
-
-		rdata = new data_element[rsize];
-		std::copy(idata + isize, idata + isize + rsize, rdata);*/
-
-		build_bst(idata, isize, data);
-
-		/*for (std::size_t i = 0; i < tsize; ++i)
-			std::cout << data[i] << " ";
-		std::cout << std::endl;*/
-
-		height = std::ceil(std::log2(isize)) + 1;
-		std::size_t i_pos = 0;
-		data_element *tmp = new data_element[tsize];
-
-		build_veb(i_pos, tmp, 0, height);
-
-		/*for (std::size_t i = 0; i < (isize * 2 + 1) * 2; ++i)
-			succ[i] = 0;
-
-		std::size_t j;
-		for (std::size_t i = 0; i < isize; ++i)
-		{
-			std::size_t k = std::distance(tmp, std::find(tmp, tmp + tsize, data[i]));
-
-			if (2 * i + 1 < tsize)
-			{
-				data_element l = data[2 * i + 1];
-				for (j = i + 1; j < tsize; ++j)
-				{
-					if (tmp[j] == l)
-					{
-						succ[k * 2] = j;
-						break;
-					}
-				}
-			}
-
-			if (2 * i + 2 < tsize)
-			{
-				data_element r = data[2 * i + 2];
-				for (j = j + 1; j < tsize; ++j)
-				{
-					if (tmp[j] == r)
-					{
-						succ[k * 2 + 1] = j;
-						break;
-					}
-				}
-			}
-		}*/
-
-
-		delete[] data;
-		data = tmp;
-
-		/*for (std::size_t i = 0; i < tsize; ++i)
-			std::cout << data[i] << " ";
-		std::cout << std::endl;
-		for (std::size_t i = 0; i < tsize; ++i)
-			std::cout << succ[2 * i] << " ";
-		std::cout << std::endl;
-		for (std::size_t i = 0; i < tsize; ++i)
-			std::cout << succ[2 * i + 1] << " ";*/
-	}
-	~bsearch_inner()
-	{
-		//delete[] data;
-	}
-};
-#endif
 
 class block_search {
 private:
@@ -1221,15 +962,18 @@ public:
 	{
 		if (el < min_elem)
 			return 0;
-		else if (el >= max_elem)
-			return data_size;
+		/*else if (el >= max_elem)
+			return data_size;*/
 		
-		std::size_t idx = el >> shift_bits;
-		std::size_t l = lut[idx].first - 1;
-		std::size_t r = lut[idx].second + 2;
+		// table search - direct index
+		// based on: https://geidav.wordpress.com/2013/12/29/optimizing-binary-search/
+		auto it = lut.at(el >> shift_bits);
+		std::size_t l = it.first;
+		std::size_t r = it.second;
 		std::size_t i = 0;
 
-		while (l + 1 < r)
+		// binary search
+		while (l + 64 < r)
 		{
 			i = (l + r) >> 1;
 			if (data[i] > el)
@@ -1237,18 +981,54 @@ public:
 			else
 				l = i;
 		}
+		// return l + 1;
 
-		return l + 1;
+		// linear search with sse
+		/*__m128i el4 = _mm_set_epi32(el, el, el, el);
+		__m128i *d4 = (__m128i*)data;
+		std::size_t ln = l >> 2;
+
+		for (;;)
+		{
+			int cmp = _mm_movemask_epi8(_mm_cmpgt_epi32(el4, d4[ln]));
+			if (cmp != 0xffff)
+			{
+				unsigned long index;
+				_BitScanForward(&index, ~cmp);
+				std::size_t res = (ln << 2) + (index >> 2);
+
+				if (el == data[res])
+					++res;
+				else if (r > data_size)
+					r = data_size;
+
+				return res;
+			}
+				
+			++ln;
+		}*/
+
+		// linear search
+		for (;;)
+		{
+			if (data[l] > el)
+				return l;
+			++l;
+		}
 	}
 
 	table_search(const data_element * idata, std::size_t isize) :
-		data_size(isize), data(new data_element[isize]),
+		data_size(isize), data(new data_element[isize + 4]),
 		min_elem(idata[0]), max_elem(idata[isize - 1])
 	{
 		lut_bits = isize >= (1 << 18) ? 24 : 16;
 		shift_bits = 32 - lut_bits;
 
 		std::copy_n(idata, isize, data);
+		data[isize] = ULONG_MAX;
+		data[isize + 1] = ULONG_MAX;
+		data[isize + 2] = ULONG_MAX;
+		data[isize + 3] = ULONG_MAX;
 
 		const std::size_t lut_size = 1 << lut_bits;
 		lut.resize(lut_size);
@@ -1259,13 +1039,13 @@ public:
 		for (std::size_t i = 0; i < isize - 1; i++)
 		{
 			const size_t nextThresh = idata[i + 1] >> shift_bits;
-			lut[thresh] = { last, i };
+			lut[thresh] = { last > 0 ? last - 1 : 0, i + 2 };
 
 			if (nextThresh > thresh) // more than one LUT entry to fill?
 			{
 				last = i + 1;
 				for (std::size_t j = thresh + 1; j <= nextThresh; j++)
-					lut[j] = { last, i };
+					lut[j] = { last > 0 ? last - 1 : 0, i + 2 };
 			}
 
 			thresh = nextThresh;
@@ -1279,6 +1059,8 @@ public:
 
 //typedef btree_search bsearch_inner;
 //typedef binary_search bsearch_inner;
+//typedef linear_search bsearch_inner;
+//typedef linear_sse_search bsearch_inner;
 //typedef block_search bsearch_inner;
 //typedef index_search bsearch_inner;
 //typedef inter_search bsearch_inner;
@@ -1321,45 +1103,20 @@ public:
 
 		// clear bucket_size array
 		std::fill(bucket_size, bucket_size + bucket_count, 0);
-
-		/*inner.find_many(odata, osize, bucket_index);
-		for (std::size_t i = 0; i < osize; ++i)
-		{
-			++bucket_size[bucket_index[i]];
-		}*/
-
-		/*const std::size_t step = 1;
-		for (std::size_t i = 0; i < osize; i += step)
-		{
-			inner.find_many(odata + i, step, bucket_index + i);
-			for (std::size_t k = 0; k < step; ++k)
+		
+		/*__m128i *b4 = (__m128i*)bucket_size;
+		std::size_t count4 = bucket_count >> 2;
+		for (std::size_t i = 0; i < count4; ++i)
+			b4[i] = _mm_setzero_si128();
+		for (std::size_t i = bucket_count - bucket_count % 4; i < bucket_count; ++i)
+			bucket_size[i] = 0;*/
+		/*for (std::size_t i = 0; i < bucket_count; ++i)
+			if (bucket_size[i] != 0)
 			{
-				++bucket_size[bucket_index[i + k]];
-			}
-		}*/
-
-		/*std::size_t isize = inner.get_size();
-		std::size_t l = 0;
-		std::size_t r = isize;
-		std::size_t idx = inner.find(odata[0], l, r);
-		bucket_index[0] = idx;
-		++bucket_size[idx];
-
-		for (std::size_t i = 1; i < osize; ++i)
-		{
-			if (odata[i - 1] > odata[i])
-				r = idx;
-			else
-				r = isize;
-			if (odata[i - 1] < odata[i])
-				l = idx;
-			else
-				l = 0;
-
-			idx = inner.find(odata[i], l, r);
-			bucket_index[i] = idx;
-			++bucket_size[idx];
-		}*/
+				std::cout << " non-zero: " << i << std::endl;
+				throw 0;
+			}*/
+			//assert(bucket_size[i] == 0);
 
 		for (std::size_t i = 0; i < osize; ++i)
 		{
