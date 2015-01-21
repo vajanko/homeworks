@@ -18,5 +18,22 @@
     <ClCompile Include="du4levenshtein.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="du4levenstein.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="exp4main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="du4levenstein.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="task4.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="testbed.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

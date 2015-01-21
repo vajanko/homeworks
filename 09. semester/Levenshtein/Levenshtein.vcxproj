@@ -77,6 +77,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="du4levenshtein.cpp" />
+    <ClCompile Include="du4levenstein.cpp" />
+    <ClCompile Include="exp4main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="du4levenstein.hpp" />
+    <ClInclude Include="task4.hpp" />
+    <ClInclude Include="testbed.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

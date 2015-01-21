@@ -2,14 +2,8 @@
 
 using namespace std;
 
-template<typename T> T smaller(T x, T y)
-{
-	return (x<y) ? x : y;
-}
-template<typename T> T smaller(T x, T y, T z)
-{
-	return smaller<T>(smaller<T>(x, y), z);
-}
+template<typename T> T smaller(T x, T y) { return (x<y) ? x : y; }
+template<typename T> T smaller(T x, T y, T z) { return smaller<T>(smaller<T>(x, y), z); }
 
 size_t levenshtein_serial(const char *s, size_t s_size, const char *t, size_t t_size)
 {
@@ -48,9 +42,9 @@ size_t levenshtein_serial(const char *s, size_t s_size, const char *t, size_t t_
 	return dst2[t_size];
 }
 
-int main(int argc, char **argv)
-{
-
-
-	return 0;
-}
+//int main(int argc, char **argv)
+//{
+//
+//
+//	return 0;
+//}
