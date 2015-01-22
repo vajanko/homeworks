@@ -8,20 +8,31 @@
 
 ///////////////////////////////
 ///////////////////////////////
+void test()
+{
+	char *str2 = "kiitn";
+	char *str1 = "sktti";
+
+	levenstein lev(str1, str1 + strlen(str1), str2, str2 + strlen(str2));
+	int res = lev.compute();
+	std::cout << res << std::endl;
+}
 ///////////////////////////////
 
 int main( int argc, char * * argv)
 {
-	// test();
-	// return 0;
+	 /*test();
+	 return 0;*/
 
 	generator_list< param_type_4, time_complexity> gl;
 
 #ifdef _DEBUG
 	std::size_t min_inner = 64UL;	
+	//std::size_t min_inner = 1024UL;
 	std::size_t step_inner = 4;	
 	std::size_t max_inner = 2UL * 1024UL;
 	std::size_t min_outer = 64UL;	
+	//std::size_t min_outer = 6UL;
 	std::size_t step_outer = 4;	
 	std::size_t max_outer = 2UL * 1024UL;
 	time_complexity target_complexity = 250000UL;

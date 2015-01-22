@@ -135,7 +135,7 @@ struct task_4 {
 	{
 		data_element s = data.loew_.compute();
 
-		// assert( s == check);
+		 //assert( s == check);
 	}
 
 

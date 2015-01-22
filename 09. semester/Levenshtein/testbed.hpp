@@ -290,7 +290,7 @@ private:
 		double ns = (1000000.0 * (double)(post_mach - pre_mach) / ((double)sq.iterations * (double)sq.complexity));
 
 		log.os() 
-			<< "\t"
+			<< "\t\t"
 			<< ns
 			;
 
