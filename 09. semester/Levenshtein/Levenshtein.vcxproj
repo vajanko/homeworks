@@ -214,6 +214,7 @@
     <ClCompile Include="du4levenshtein.cpp" />
     <ClCompile Include="du4levenstein.cpp" />
     <ClCompile Include="exp4main.cpp" />
+    <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="du4levenstein.hpp" />
